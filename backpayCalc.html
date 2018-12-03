@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title>Backpay Calculator</title>
+		<meta name="dc.title" content="Test of backpayCalc">
+		<meta name="dcterms.title" content="Test of backpayCalc">
+		<link rel="Stylesheet" type="text/css" href="backpayCalc.css" >
+	</head>
+	<body>
+		<header>
+			<h1>Backpay Calculator</h1>
+		</header>
+		<main>
+		<form id="mainForm">
+			<p><strong>Note:</strong> All dates should be formatted as <span id="dateFormat">YYYY-MM-DD</span>.</p>
+			<div class="fieldHolder">
+				<label for="levelSelect">Select your Level on December 22, 2014 (of your substantive position)</label>
+				<select id="levelSelect">
+					<option value="0">Select your level</option>
+					<option value="1">CS-01</option>
+					<option value="2">CS-02</option>
+					<option value="3">CS-03</option>
+					<option value="4">CS-04</option>
+					<option value="5">CS-05</option>
+				</select>
+			</div>
+			<div class="fieldHolder">
+				<label for="startDateTxt">When did you start at that level?</label> 
+				<input type="date" id="startDateTxt" aria-describedby="dateFormat" value="">
+			</div>
+			<div class="fieldHolder">
+				<label for="stepSelect">Select your salary on December 22, 2014 (of your substantive position)</label> 
+				<select id="stepSelect">
+				</select>
+			</div>
+			<div class="fieldHolder">
+				<label for="phoenixDateTxt">When was Phoenix implemented for you?</label> 
+				<input type="date" id="phoenixDateTxt" aria-describedby="dateFormat" value="2016-04-01">
+			</div>
+			<div class="fieldHolder">
+				<label for="endDateTxt">When should this stop calculating?</label> 
+				<input type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat lastDayBug" value="2017-08-24">
+				<span id="endDateFormat" class="helper">(ie: either the date you stopped being a CS, or when the contract is implemented.)</span>
+				<span class="" id="lastDayBug">Due to a bug, set this as one day <em>after</em> the calculation should end. Ex: if it should stop calculating on Aug. 23, 2017, enter 2017-08-24.</span>
+			</div>
+			<fieldset id="promotionsFS">
+				<legend>Promotions</legend>
+				<div class="fieldHolder">
+					<label for="numPromotions">How many times were you promoted (to another CS level) during this time?</label>
+					<input id="numPromotions" value="0" type="number" min="0" max="4">
+				</div>
+				<div id="promotionsDiv"></div>
+			</fieldset>
+			<fieldset id="actingFS">
+				<legend>Acting</legend>
+				<input type="button" id="addActingBtn" value="Add Acting Period">
+				<div id="actingsDiv"></div>
+			</fieldset>
+			<fieldset id="LWoPFS">
+				<legend>Leave without Pay</legend>
+				<input type="button" id="addLWoPBtn" value="Add LwoP Period">
+				<div id="LWoPDiv"></div>
+			</fieldset>
+			<fieldset id="overtimeFS">
+				<legend aria-describedby="overtimeExp">Overtimes</legend>
+				<p id="overtimeExp">You don't need to put every single overtime instane in.  Just a total of hours for each rate (1.5 or 2.0) for each period.  Example: if you worked for an extra hour every day for a week where your pay rate didn't change, enter any date within that week, and enter 5 for the number of hours, and 1.5x for the rate.</p>
+				<input type="button" id="addOvertimeBtn" value="Add Overtime">
+				<div id="overtimeDiv"></div>
+			</fieldset>
+			<fieldset id="lumpSumsFS">
+				<legend aria-describedby="lumpSumExp">Lump Sum Payments</legend>
+				<p id="lumpSumExp">Example: unused vacation cash-out.</p>
+				<input type="button" id="addlumpSumBtn" value="Add Lump Sum Payment">
+				<div id="lumpSumDiv"></div>
+			</fieldset>
+			<div class="fieldHolder">
+				<input type="button" id="calcBtn" value="Calculate">
+			</div>
+		</form>
+		<div id="resultsDiv">
+			<h2>Results</h2>
+			<p>All amounts are gross.  You'll have to figure out your own taxes.</p>
+			<table id="resultsTable">
+				<caption>Pay periods</caption>
+				<thead>
+					<tr id="resultsTheadTR">
+						<th scope="col">Period</th>
+						<th scope="col">What You Made</th>
+						<th scope="col">What You Should Have Made</th>
+						<th scope="col">Backpay Amount</th>
+					</tr>
+				</thead>
+				<tbody id="resultsBody">
+				</tbody>
+				<tfoot id="resultsFoot">
+				</tfoot>
+			</table>
+		</div>
+		</main>
+		<footer>
+			<h2>Note</h2>
+			<p>This calculator was built as a hobby and is provided "as is" as proof-of-concept. There is absolutely no guarantee of accuracy, or officialness. It should be used for interest sakes, not as an authority.</p>
+		</footer>
+		<script src="backpayCalc.js" type="text/javascript"></script>
+	</body>
+</html>
