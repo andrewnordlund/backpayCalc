@@ -12,7 +12,7 @@
  *
  */
 
-var dbug = true;
+var dbug = !true;
 var showExtraCols = true;
 var level = -1;
 var step = -1;
@@ -27,7 +27,8 @@ var addActingBtn = null;
 var addOvertimeBtn = null;
 var addLWoPBtn = null;
 var addlumpSumBtn = null;
-var endDateTxt = "2017-09-24";
+var resultStatus = null;
+var endDateTxt = "2021-01-01";
 var TABegin = new Date("2018", "11", "22");
 var EndDate = new Date("2020", "11", "31");
 var day = (1000 * 60 * 60 * 24);
@@ -83,6 +84,7 @@ function init () {
 	resultsBody = document.getElementById("resultsBody");
 	resultsFoot = document.getElementById("resultsFoot");
 	resultsTheadTR = document.getElementById("resultsTheadTR");
+	resultStatus = document.getElementById("resultStatus");
 	if (dbug || showExtraCols) {
 		var ths = resultsTheadTR.getElementsByTagName("th");
 		if (ths.length == 4) {
@@ -115,6 +117,7 @@ function init () {
 	}
 	console.log ("Finished initing.");
 } // End of init
+
 function populateSalary () {
 	removeChildren(stepSelect);
 	if (levelSel.value >0 && levelSel.value <= 5) {
@@ -124,7 +127,9 @@ function populateSalary () {
 		}
 	}
 	if (startDateTxt.value.replace(/[^-\d]/, "").match(/(\d\d\d\d)-(\d\d)-(\d\d)/)) selectSalary();
-}
+} // End of populateSalary
+
+// Once a CS-level and startDate have been selected, select the most likely salary from the dropdown
 function selectSalary () {
 	//if (!(levelSelect.value > 0 && levelSelect.value <= 5))
 	var parts = null;
@@ -160,7 +165,8 @@ function selectSalary () {
 		}
 
 	}
-}
+} // End of selectSalary
+
 function startProcess () {
 	periods = [];
 	lumpSumPeriods = {};
@@ -215,12 +221,13 @@ function startProcess () {
 
 	calculate();
 
-}
+} // End of startProcess
+
 function guessSalary () {
 	var levelSelect = document.getElementById("levelSelect");
 	var lvl = levelSelect.value.replace(/\D/, "");
 	if (dbug) console.log ("Got level " + lvl + "."); // and start date of " + strtDte + ".");
-	if (lvl < 1 || lvl > 5) {
+	if (lvl < 1 || lvl > 5) {	// Should only happen if someone messes with the querystring
 		if (dbug) console.log ("guessSalary::Error:  lvl is -1.");
 		var errDiv = createHTMLElement("div", {"parentNode":levelSelect.parentNode, "id":"levelSelectError", "class":"error"});
 		createHTMLElement("span", {"parentNode":errDiv, "nodeText":"Please select a level"});
@@ -280,7 +287,7 @@ function guessSalary () {
 		}
 		//add anniversarys
 		if (dbug) console.log ("guessSalary::Going to set anniversary dates.");
-		for (var i = 2014; i < EndDate.getFullYear(); i++) {
+		for (var i = 2018; i < EndDate.getFullYear(); i++) {
 			if (stp < salaries[level].length) {
 				if (dbug) console.log ("guessSalary::Going to set anniversary date " + i + "-" + (startDate.getMonth()+1) + "-" + startDate.getDate() + ".");
 				addPeriod ({startDate: i + "-" + ((startDate.getMonth()+1) > 9 ? "" : "0") + (startDate.getMonth()+1)	+ "-" + (startDate.getDate() > 9 ? "" : "0") +  startDate.getDate(), "increase":0, "reason":"Anniversary Increase", "multiplier":1});
@@ -326,7 +333,7 @@ function addPromotions () {
 		var promoDate  = promotions[i].getElementsByTagName("input")[0].value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 		if (dbug) console.log("addPromotions::promoDate " + i + ": " + promoDate[0] + ".");
 		if (promoDate) {
-			if (promoDate[0] > "2014-12-22" && promoDate[0] < EndDate.toISOString().substr(0, 10) && promoLevel > 0 && promoLevel <=5) {
+			if (promoDate[0] > "2018-12-22" && promoDate[0] < EndDate.toISOString().substr(0, 10) && promoLevel > 0 && promoLevel <=5) {
 				if (dbug) console.log ("addPromotions::Adding a promotion on " + promoDate[0] + " at level " + promoLevel +".");
 				// add the promo period
 				var j = addPeriod ({"startDate":promoDate[0],"increase":0, "reason":"promotion", "multiplier":1, "level":(promoLevel-1)});
@@ -346,7 +353,7 @@ function addPromotions () {
 
 			} else {
 				if (dbug) {
-					if (promoDate[0] > "2014-12-22") console.log ("addPromotions::It's after the beginning.");
+					if (promoDate[0] > "2018-12-22") console.log ("addPromotions::It's after the beginning.");
 					if (promoDate[0] < EndDate.toISOString().substr(0, 10)) console.log ("addPromotions::It's before the end.");
 					if (promoLevel > 0) console.log ("addPromotions::It's greater than 0.");
 					if (promoLevel < 5) console.log ("addPromotions::It's less than or equal to 5.");
@@ -371,7 +378,7 @@ function getActings () {
 		if (dbug) console.log("getActings::Checking acting at " + actingLvl + " from " + actingFromDate + " to " + actingToDate + ".");
 		if (actingLvl >=0 && actingLvl <5 && actingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("getActings::Passed the initial tests.");
-			if (actingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= "2014-12-22" && actingToDate > actingFromDate) {
+			if (actingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= "2018-12-22" && actingToDate > actingFromDate) {
 				if (dbug) console.log ("getActings::And the dates are in the right range.");
 				// add a period for starting
 				var from = addPeriod({"startDate":actingFromDate, "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
@@ -392,7 +399,7 @@ function getActings () {
 			} else {
 				if (dbug) {
 					if (actingFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingFrom is before EndDate");
-					if (actingToDate >= "2014-12-22") console.log ("getActings::actingTo is after startDate");
+					if (actingToDate >= "2018-12-22") console.log ("getActings::actingTo is after startDate");
 					if (actingToDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingTo is before EndDate");
 					if (actingToDate > actingFromDate) console.log ("getActings::actingTo is after actingFrom");
 				}
@@ -419,7 +426,7 @@ function getLWoPs () {
 		var lwopToDate = dates[1].value;
 		if (lwopFromDate.match(/\d\d\d\d-\d\d-\d\d/) && lwopToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("getLWoPs::Passed the initial tests.");
-			if (lwopFromDate >= "2014-12-22" && lwopFromDate <= EndDate.toISOString().substr(0, 10) && lwopToDate >= "2014-12-22" && lwopToDate <= EndDate.toISOString().substr(0, 10) && lwopToDate > lwopFromDate) {
+			if (lwopFromDate >= "2018-12-22" && lwopFromDate <= EndDate.toISOString().substr(0, 10) && lwopToDate >= "2018-12-22" && lwopToDate <= EndDate.toISOString().substr(0, 10) && lwopToDate > lwopFromDate) {
 				if (dbug) console.log ("getLWoPs::And the dates are in the right range.");
 				// add a period for starting
 				var from = addPeriod({"startDate":lwopFromDate, "increase":0, "reason":"LWoP Start", "multiplier":0});
@@ -436,9 +443,9 @@ function getLWoPs () {
 				//lwopFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 			} else {
 				if (dbug) {
-					if (lwopFromDate >= "2014-12-22") console.log ("lwopFrom is after startDate");
+					if (lwopFromDate >= "2018-12-22") console.log ("lwopFrom is after startDate");
 					if (lwopFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("lwopFrom is before EndDate");
-					if (lwopToDate >= "2014-12-22") console.log ("lwopTo is after startDate");
+					if (lwopToDate >= "2018-12-22") console.log ("lwopTo is after startDate");
 					if (lwopToDate <= EndDate.toISOString().substr(0, 10)) console.log ("lwopTo is before EndDate");
 					if (lwopToDate > lwopFromDate) console.log ("lwopTo is after lwopFrom");
 				}
@@ -465,14 +472,14 @@ function getOvertimes () {
 		var overtimeRate = overtimeStints[i].querySelector("select").value;
 		if (overtimeDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("Passed the initial tests.");
-			if (overtimeDate >= "2014-12-22" && overtimeDate <= EndDate.toISOString().substr(0, 10) && overtimeAmount > 0) {
+			if (overtimeDate >= "2018-12-22" && overtimeDate <= EndDate.toISOString().substr(0, 10) && overtimeAmount > 0) {
 				if (dbug) console.log ("overtimes::And the dates are in the right range.");
 				// add a period for starting
 				var from = addPeriod({"startDate":overtimeDate, "increase":0, "reason":"Overtime", "multiplier":0, "hours":overtimeAmount, "rate":overtimeRate});
 				
 			} else {
 				if (dbug) {
-					if (overtimeDate >= "2014-12-22") console.log ("overtimeDate is after startDate");
+					if (overtimeDate >= "2018-12-22") console.log ("overtimeDate is after startDate");
 					if (overtimeDate <= EndDate.toISOString().substr(0, 10)) console.log ("overtimeDate is before EndDate");
 					if (overtimeAmount > 0) console.log ("overtimeAmount > 0");
 				}
@@ -495,14 +502,14 @@ function getLumpSums () {
 		var lumpSumAmount = lumpsums[i].querySelector("input[type=text]").value.replace(/[^\d\.]/, "");
 		if (lumpSumDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("Passed the initial tests.");
-			if (lumpSumDate >= "2014-12-22" && lumpSumDate <= EndDate.toISOString().substr(0, 10) && lumpSumAmount > 0) {
+			if (lumpSumDate >= "2018-12-22" && lumpSumDate <= EndDate.toISOString().substr(0, 10) && lumpSumAmount > 0) {
 				if (dbug) console.log ("And the dates are in the right range.");
 				// add a period for starting
 				var from = addPeriod({"startDate":lumpSumDate, "increase":0, "reason":"Lump Sum", "multiplier":0, "hours":lumpSumAmount});
 				
 			} else {
 				if (dbug) {
-					if (lumpSumDate >= "2014-12-22") console.log ("lumpSumDate is after startDate");
+					if (lumpSumDate >= "2018-12-22") console.log ("lumpSumDate is after startDate");
 					if (lumpSumDate <= EndDate.toISOString().substr(0, 10)) console.log ("lumpSumDate is before EndDate");
 					if (lumpSumAmount > 0) console.log ("lumpSumAmount > 0");
 				}
@@ -639,12 +646,12 @@ function addOvertimeHandler () {
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"2.0", "nodeText":"2.0x"});
 
 	var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Remove"});
-	var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Add another Lump Sum period"});
+	var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Add another Overtime period"});
 	newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
 	newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
 
 	overtimes++;
-}
+} // End of addOvertimeHandler
 
 function addLumpSumHandler () {
 	var LumpSumDiv = document.getElementById("lumpSumDiv");
@@ -675,7 +682,8 @@ function addLumpSumHandler () {
 	newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 
 	lumpSums++;
-}
+} // End of addLumpSum Handler
+
 function removeActingDiv (e) {
 	var btn= e.target;
 	var fs = btn.parentNode;
@@ -766,6 +774,7 @@ function addPeriod (p) {
 }
 
 function calculate() {
+	resultStatus.innerHTML="";
 	//if (step == salaries[level].length -1) {
 		//if (dbug) console.log ("Top of your level.  This should be easy.");
 		if (dbug) console.log ("\n\nCalculating:  There are " + periods.length + " periods to be concerned with.");
@@ -991,6 +1000,7 @@ function calculate() {
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText":"$" + total["shouldHaveMade"].toFixed(2)});
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText":"$" + total["backpay"].toFixed(2)});
 		}
+		resultStatus.innerHTML = "Results shown below.";
 	//} else {
 		//if (dbug) console.log ("Not the top of your level.  This should be difficult.");
 		
@@ -1002,7 +1012,7 @@ function calculate() {
 function addStartDateErrorMessage () {
 	if (dbug) console.log ("Error:  st is " + startDateTxt.value + ".");
 	var errDiv = createHTMLElement("div", {"parentNode":startDateTxt.parentNode, "id":"startDateError", "class":"error"});
-	createHTMLElement("p", {"parentNode":errDiv, "nodeText":"Please enter the date at which you started at the level you were at on December 22, 2014. If you weren't a CS at that time, enter the date you started as a CS.  All dates must be in the format of YYYY-MM-DD."});
+	createHTMLElement("p", {"parentNode":errDiv, "nodeText":"Please enter the date at which you started at the level you were at on December 22, 2018. If you weren't a CS at that time, enter the date you started as a CS.  All dates must be in the format of YYYY-MM-DD."});
 	levelSel.setAttribute("aria-describedby", "startDateError");
 	return;
 }
