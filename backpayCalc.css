@@ -17,6 +17,13 @@ legend {
 	font-size: 120%;
 	padding: .1em .4em;
 }
+
+footer {
+	border-top: thin solid #808080;
+	width: 100%;
+	font-size: 80%;
+}
+
 .fieldHolder {
 	margin: .5em .5em;
 }
