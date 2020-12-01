@@ -27,6 +27,7 @@ var addActingBtn = null;
 var addOvertimeBtn = null;
 var addLWoPBtn = null;
 var addlumpSumBtn = null;
+var resultStatus = null;
 var endDateTxt = "2021-01-01";
 var TABegin = new Date("2018", "11", "22");
 var EndDate = new Date("2020", "11", "31");
@@ -83,6 +84,7 @@ function init () {
 	resultsBody = document.getElementById("resultsBody");
 	resultsFoot = document.getElementById("resultsFoot");
 	resultsTheadTR = document.getElementById("resultsTheadTR");
+	resultStatus = document.getElementById("resultStatus");
 	if (dbug || showExtraCols) {
 		var ths = resultsTheadTR.getElementsByTagName("th");
 		if (ths.length == 4) {
@@ -644,12 +646,12 @@ function addOvertimeHandler () {
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"2.0", "nodeText":"2.0x"});
 
 	var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Remove"});
-	var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Add another Lump Sum period"});
+	var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Add another Overtime period"});
 	newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
 	newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
 
 	overtimes++;
-}
+} // End of addOvertimeHandler
 
 function addLumpSumHandler () {
 	var LumpSumDiv = document.getElementById("lumpSumDiv");
@@ -680,7 +682,8 @@ function addLumpSumHandler () {
 	newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 
 	lumpSums++;
-}
+} // End of addLumpSum Handler
+
 function removeActingDiv (e) {
 	var btn= e.target;
 	var fs = btn.parentNode;
@@ -771,6 +774,7 @@ function addPeriod (p) {
 }
 
 function calculate() {
+	resultStatus.innerHTML="";
 	//if (step == salaries[level].length -1) {
 		//if (dbug) console.log ("Top of your level.  This should be easy.");
 		if (dbug) console.log ("\n\nCalculating:  There are " + periods.length + " periods to be concerned with.");
@@ -996,6 +1000,7 @@ function calculate() {
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText":"$" + total["shouldHaveMade"].toFixed(2)});
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText":"$" + total["backpay"].toFixed(2)});
 		}
+		resultStatus.innerHTML = "Results shown below.";
 	//} else {
 		//if (dbug) console.log ("Not the top of your level.  This should be difficult.");
 		

@@ -28,6 +28,7 @@ footer {
 	margin: .5em .5em;
 }
 .fieldHolder label {
+	font-weight: bold;
 display: block;
 }
 .fieldHolder input, .fieldHolder select {
@@ -50,3 +51,12 @@ display: block;
 .promotions {
 	border: thin solid green;
 }
+.invisibleStuff {
+		position: absolute;
+		height: 1px;
+		width: 1px;
+		clip: rect(1px, 1px, 1px, 1px);
+		overflow: hidden;
+		margin: 0;
+	}
+
