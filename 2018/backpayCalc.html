@@ -14,6 +14,18 @@
 			<h1>Backpay Calculator for 2018 CS CA</h1>
 		</header>
 		<main>
+		<details>
+		<summary>How this calculator works</summary>
+		<p>After entering in all your details this calculator breaks everything down into <dfn>periods</dfn> which are ranges of dates with the same yearly, hourly, and/or daily rate of pay.</p>
+		<p>For example, let's say you became a CS-02 (step 1) on August 1, 2017. This collective agreement will come into effect on <time datetime="2018-12-22">December 22, 2018</time>.  No backpay will be calculated before the start date of the collective agreement.  So, from <time datetime="2018-12-22">December 22, 2018</time> to  <time datetime="2019-07-31">July 31, 2019</time> you're annual rate of pay will be $70&nbsp;439. That's the first period. Then on  <time datetime="2019-08-01">August 1, 2019</time> you have your 1 year anniversary as a CS-02 and you move up to step 2.  From <time datetime="2019-08-01">August 1, 2019</time> to <time datetime="2019-12-21">December 21, 2019</time> you'll have an annual rate of pay of $72&nbsp;694.  That's the second period.</p>
+		<p>If you start an Acting period, that starts a new period which goes until your pay changes again, either through a raise in the collective agreement, the end of your Acting period, or an anniversary raise.</p>
+		<p>Anything which causes a change in your rate of pay starts a new period.  And the period lasts as long as you're at that rate of pay.</p>
+		<p>When you click "Calculate", the calculator takes your yearly rate of pay to get what step you're at, and when your anniversary date is (if you're not yet at the highest step).  It takes all your acting periods, and leave-without-pay periods and creates a succession of periods each with its own rate of pay.  Then for each of those periods it calculates what you did make (based on the top rates in the last collective agreement), and what you would have made had the current offer/tentative agreement been signed by the start date of that agreement.  The Results table, which appears below the Calculate button after it's clicked, shows these, and the difference, your level, your step your rate of pay, and the number used to calculate that rate of pay.</p>
+		<p>For each of those periods the calculator counts the weekdays in the period and multiplies that by the daily rate of pay at that step.  <strong>This calculator assumes you work full time hours on a regular schedule.  This will not work for those on part time schedules, or who work erratic schedule.</strong></p>
+		<p>Within each period, extra money made through overtime, or standby, or vacation cash-out will be paid out based on your rate of pay at that time.<p>
+		<p>Using the above example, if you do 4 hours of overtime at time-and-a-half on <time datetime="2019-05-15">May 15, 2019</time>, that's part of the first period.  In terms of calculating your backpay, it doesn't matter when exactly you did that overtime.  All that matters is what your rate of pay was in that period.  That's why the dates aren't the same in the results table as what you entered into the date fields.</p>
+		<p>That also means that if you do one hour of overtime once a week for 4 weeks during a particular period, you don't need to add 4 separate overtime amounts.  Instead pick a single date in that period and enter 4 hours.</p>
+		</details>
 		<form id="mainForm">
 			<p><strong>Note:</strong> All dates should be formatted as <span id="dateFormat">YYYY-MM-DD</span>.</p>
 			<div class="fieldHolder">
@@ -62,7 +74,7 @@
 				<div id="LWoPDiv"></div>
 			</fieldset>
 			<fieldset id="overtimeFS">
-				<legend>Overtimes</legend>
+				<legend>Overtime / Standby</legend>
 				<p id="overtimeExp">You don't need to put every single overtime instance in.  Just a total of hours for each rate (1.5 or 2.0) for each period.  Example: if you worked for an extra hour every day for a week where your pay rate didn't change, enter any date within that week, and enter 5 for the number of hours, and 1.5x for the rate.</p>
 				<input type="button" id="addOvertimeBtn" value="Add Overtime" aria-describedby="overtimeExp">
 				<div id="overtimeDiv"></div>
