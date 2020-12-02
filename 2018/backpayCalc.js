@@ -215,7 +215,6 @@ function startProcess () {
 
 	// Add Overtimes
 	getOvertimes();
-
 	// Add Lump Sums
 	getLumpSums ();
 
@@ -475,6 +474,7 @@ function getOvertimes () {
 			if (overtimeDate >= "2018-12-22" && overtimeDate <= EndDate.toISOString().substr(0, 10) && overtimeAmount > 0) {
 				if (dbug) console.log ("overtimes::And the dates are in the right range.");
 				// add a period for starting
+				
 				var from = addPeriod({"startDate":overtimeDate, "increase":0, "reason":"Overtime", "multiplier":0, "hours":overtimeAmount, "rate":overtimeRate});
 				
 			} else {
@@ -642,6 +642,8 @@ function addOvertimeHandler () {
 	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Overtime Rate:", "for":"overtimeRate" + id});
 	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, "id":"overtimeRate"+id});
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":"Select Overtime Rate"});
+	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0.125", "nodeText":"1/8x - Standby", "selected":"selected"});
+	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"1.0", "nodeText":"1.0x", "selected":"selected"});
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"1.5", "nodeText":"1.5x", "selected":"selected"});
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"2.0", "nodeText":"2.0x"});
 
@@ -733,15 +735,22 @@ function addPeriod (p) {
 				}
 				looking = false;
 			} else if (p["reason"] == "Overtime") {
-				if (overtimePeriods.hasOwnProperty(periods["startDate"])) {
+				//dbug = true;
+				if (dbug) console.log ("Does overtimePeriods have anything in " + periods[i-1]["startDate"] + "?");
+				if (overtimePeriods.hasOwnProperty(periods[i-1]["startDate"])) {
+					if (dbug) console.log ("Yes.  But does it have anything in rate: " + p["rate"] + "?");
 					if (overtimePeriods[periods[i-1]["startDate"]].hasOwnProperty(p["rate"])) {
-						overtimePeriods[periods[i-1]["startDate"]][p["rate"]] += p["amount"];
-						if (dbug) console.log ("Adding overtime amount to " + periods[i]["startDate"] + " of " +p["hours"] + " x " + p["rate"] + ".");
+						if (dbug) console.log("Yup.  So gonna add " + periods[i-1]["startDate"][p["rate"]] + " to " + p["hours"] +".");
+						overtimePeriods[periods[i-1]["startDate"]][p["rate"]] += p["hours"];
+						if (dbug) console.log ("Adding overtime amount to " + periods[i-1]["startDate"] + " of " +p["hours"] + " x " + p["rate"] + ".");
+						if (dbug) console.log ("And it came to " + overtimePeriods[periods[i-1]["startDate"]][p["rate"]] +".");
 					} else {
-						overtimePeriods[periods[i-1]["startDate"]][p["rate"]] = p["amount"];
-						if (dbug) console.log ("Adding overtime amount for " + periods[i-1]["startDate"] + " of " +p["hours"] + " x " + p["rate"] + ".");
+						if (dbug) console.log ("No, so gonna set amount " + p["hours"] + " to " + periods[i-1]["startDate"][p["rate"]] + ".");
+						overtimePeriods[periods[i-1]["startDate"]][p["rate"]] = p["hours"];
+						if (dbug) console.log ("Adding overtime amount for " + periods[i-1]["startDate"] + " of " +p["hours"] + " x " + p["rate"] + " to equal " + overtimePeriods[periods[i-1]["startDate"]][p["rate"]] + " which should be " + p["hours"] + ".");
 					}
 				} else {
+					if (dbug) console.log ("No.  So gonna add one.");
 					if (dbug) console.log("addPeriod::p[rate]: " + p["rate"] + ".");
 					if (dbug) console.log("addPeriod::p[hours]: " + p["hours"] + ".");
 					overtimePeriods[periods[i-1]["startDate"]] = {};
@@ -749,6 +758,7 @@ function addPeriod (p) {
 					if (dbug) console.log("addPeriod::Now in " + periods[i-1]["startDate"] + " at rate of " + p["rate"] + ": " + overtimePeriods[periods[i-1]["startDate"]][p["rate"]] + ".");
 				}
 				looking = false;
+				//dbug = false;
 			} else {
 				periods.splice(i, 0, p);
 				rv = i;
@@ -771,7 +781,7 @@ function addPeriod (p) {
 		}
 	}
 	return rv;
-}
+} // End of addPeriod
 
 function calculate() {
 	resultStatus.innerHTML="";
@@ -902,11 +912,12 @@ function calculate() {
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (step >=0 ? (daily[level][step] * periods[i]["multiplier"]).toFixed(2) + " -> " + (newDaily[level][step] * periods[i]["multiplier"]).toFixed(2) : "0") + " / day"});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": days});
 			}
-
+			
 			if (overtimePeriods.hasOwnProperty(periods[i]["startDate"])) {
 				if (dbug) console.log ("Yup there are OT for " + periods[i]["startDate"] + ".");
 				for (var rate in overtimePeriods[periods[i]["startDate"]]) {
 					if (dbug) console.log ("rate: " + rate + ".");
+					if (dbug) console.log ("amount: " + overtimePeriods[periods[i]["startDate"]][rate] + ".");
 					var made = overtimePeriods[periods[i]["startDate"]][rate] * hourly[level][step] * rate;
 					var shouldHaveMade = overtimePeriods[periods[i]["startDate"]][rate] * newHourly[level][step] * rate;
 					var backpay = shouldHaveMade - made;
@@ -933,6 +944,7 @@ function calculate() {
 			} else {
 				if (dbug) console.log ("Nope, there aren't OT for " + periods[i]["startDate"] + ".");
 			}
+			dbug = false;
 
 			if (lumpSumPeriods.hasOwnProperty(periods[i]["startDate"])) {
 				var made = lumpSumPeriods[periods[i]["startDate"]] * hourly[level][step];
