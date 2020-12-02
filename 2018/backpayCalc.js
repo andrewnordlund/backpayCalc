@@ -628,7 +628,7 @@ function addOvertimeHandler () {
 		}
 	}
 	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes"});
-	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":"Overtime"});
+	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":"Overtime or Standby"});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
 	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":"Date of Overtime:", "for":"overtimeDate" + id});
@@ -648,7 +648,7 @@ function addOvertimeHandler () {
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"2.0", "nodeText":"2.0x"});
 
 	var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Remove"});
-	var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Add another Overtime period"});
+	var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Add another Overtime or Standby period"});
 	newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
 	newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
 
@@ -741,7 +741,7 @@ function addPeriod (p) {
 					if (dbug) console.log ("Yes.  But does it have anything in rate: " + p["rate"] + "?");
 					if (overtimePeriods[periods[i-1]["startDate"]].hasOwnProperty(p["rate"])) {
 						if (dbug) console.log("Yup.  So gonna add " + periods[i-1]["startDate"][p["rate"]] + " to " + p["hours"] +".");
-						overtimePeriods[periods[i-1]["startDate"]][p["rate"]] += p["hours"];
+						overtimePeriods[periods[i-1]["startDate"]][p["rate"]] = (overtimePeriods[periods[i-1]["startDate"]][p["rate"]]*1) + (p["hours"]*1);
 						if (dbug) console.log ("Adding overtime amount to " + periods[i-1]["startDate"] + " of " +p["hours"] + " x " + p["rate"] + ".");
 						if (dbug) console.log ("And it came to " + overtimePeriods[periods[i-1]["startDate"]][p["rate"]] +".");
 					} else {
