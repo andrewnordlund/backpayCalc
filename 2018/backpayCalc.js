@@ -202,11 +202,12 @@ function startProcess () {
 	}
 
 	// get salary?
+	//dbug = true;
 	guessSalary();
 
 	// Add promotions
 	addPromotions();
-		
+	//dbug = false;
 	// Add actings
 	getActings ();
 
@@ -256,7 +257,11 @@ function guessSalary () {
 		// Edit the increases in this line for future contracts.
 
 		// I don't know why this line is here rather than at the top
-		periods = [{startDate : "2018-12-22", "increase":2.80, "reason":"Contractual Increase", "multiplier" : 1}, {startDate : "2019-12-22", "increase":2.20, "reason":"Contractual Increase", "multiplier" : 1}, {startDate : "2020-12-22", "increase":1.50, "reason":"Contractual Increase", "multiplier" : 1}];
+		periods = [
+			{startDate : "2018-12-22", "increase":2.80, "reason":"Contractual Increase", "multiplier" : 1},
+			{startDate : "2019-12-22", "increase":2.20, "reason":"Contractual Increase", "multiplier" : 1}, 
+			{startDate : "2020-12-22", "increase":1.50, "reason":"Contractual Increase", "multiplier" : 1}
+		];
 		level -= 1;
 
 		if (dbug) console.log("guessSalary::Got valid data (" + parts[1] + "-" + parts[2] + "-" + parts[3] + ")....now trying to figure out salary.");
@@ -277,6 +282,7 @@ function guessSalary () {
 			if (dbug) console.log ("guessSalary::Your step would be " + step + ".");
 		}
 		var stp = step;
+
 		parts = null;
 		parts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 		if (parts) {
@@ -284,19 +290,19 @@ function guessSalary () {
 			if (dbug) console.log ("guessSalary::Got EndDateTxt as " + endDateTxt.value + ".");
 			//if (dbug) console.log ("Got EndDate as " + EndDate.toISOString().substr(0, 10) + ".");
 		}
+		//This used to be below adding anniversaries, but some anniversaries were being missed
+		if (dbug) console.log ("guessSalary::About to set EndDate to " + EndDate.toISOString().substr(0, 10) + ".");
+		addPeriod ({startDate : EndDate.toISOString().substr(0, 10), "increase":0, "reason":"end", "multiplier" : 1});
+
 		//add anniversarys
-		if (dbug) console.log ("guessSalary::Going to set anniversary dates.");
-		for (var i = 2018; i < EndDate.getFullYear(); i++) {
+		if (dbug) console.log ("guessSalary::Going to set anniversary dates: " + EndDate.getFullYear() + ".");
+		for (var i = 2018; i <=EndDate.getFullYear(); i++) {
 			if (stp < salaries[level].length) {
 				if (dbug) console.log ("guessSalary::Going to set anniversary date " + i + "-" + (startDate.getMonth()+1) + "-" + startDate.getDate() + ".");
 				addPeriod ({startDate: i + "-" + ((startDate.getMonth()+1) > 9 ? "" : "0") + (startDate.getMonth()+1)	+ "-" + (startDate.getDate() > 9 ? "" : "0") +  startDate.getDate(), "increase":0, "reason":"Anniversary Increase", "multiplier":1});
 				stp++;
 			}
 		}
-		
-		if (dbug) console.log ("guessSalary::About to set EndDate to " + EndDate.toISOString().substr(0, 10) + ".");
-		addPeriod ({startDate : EndDate.toISOString().substr(0, 10), "increase":0, "reason":"end", "multiplier" : 1});
-
 		if (timeDiff < 0) {
 			if (dbug) console.log ("guessSalary::You weren't even there then.");
 			// remove all older periods?? Maybe?  Or just somehow make them 0s?
@@ -722,10 +728,20 @@ function addPeriod (p) {
 		if (p["reason"] == "Anniversary Increase") {
 			periods[0]["reason"] += " & " + p["reason"];
 			looking = false;
+			if (dbug) console.log ("addPeriod::Not gonna add this period because the anniversary date is the same as the first date of the CA.");
+		}
+	}
+	if (p["reason"] == "Anniversary Increase" && dbug) {
+		if (looking) {
+			console.log ("addPeriod::Gonna start looking for the place to insert this anniversary inclease.")
+		} else {
+			console.log ("addPeriod::Would look for the anniversary but looking is false.");
 		}
 	}
 	for (var i = 1; i < periods.length && looking; i++) {
+		if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]Is p[startDate](" + p["startDate"] + ") before periods["+i+"][startDate](" + periods[i]["startDate"] + ")?");
 		if (p["startDate"] < periods[i]["startDate"]) {
+			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It is!");
 			if (p["reason"] == "Lump Sum") {
 				if (lumpSumPeriods.hasOwnProperty(periods["startDate"])) {
 					lumpSumPeriods[periods[i-1]["startDate"]] += p["hours"];
@@ -761,6 +777,7 @@ function addPeriod (p) {
 				looking = false;
 				//dbug = false;
 			} else {
+				if (p["reason"] == "Anniversary Increase" && dbug) console.log ("addPeriod::Adding anniversary increase.");
 				periods.splice(i, 0, p);
 				rv = i;
 				looking = false;
@@ -770,6 +787,7 @@ function addPeriod (p) {
 				}
 			}
 		} else if (p["startDate"] == periods[i]["startDate"]) {
+			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It's the same date!");
 			if (p["reason"] == "Phoenix") {
 				periods[i]["reason"] += " & Phoenix";
 				looking = false;
@@ -779,6 +797,8 @@ function addPeriod (p) {
 				looking = false;
 				rv = i;
 			}
+		} else {
+			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It's after.");
 		}
 	}
 	return rv;
@@ -945,7 +965,7 @@ function calculate() {
 			} else {
 				if (dbug) console.log ("Nope, there aren't OT for " + periods[i]["startDate"] + ".");
 			}
-			dbug = false;
+			//dbug = false;
 
 			if (lumpSumPeriods.hasOwnProperty(periods[i]["startDate"])) {
 				var made = lumpSumPeriods[periods[i]["startDate"]] * hourly[level][step];
