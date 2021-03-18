@@ -28,7 +28,7 @@ var addOvertimeBtn = null;
 var addLWoPBtn = null;
 var addlumpSumBtn = null;
 var resultStatus = null;
-var endDateTxt = "2021-01-01";
+var endDateTxt = "2021-04-15";
 var TABegin = new Date("2018", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var EndDate = new Date("2020", "07", "26");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var day = (1000 * 60 * 60 * 24);
