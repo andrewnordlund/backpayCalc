@@ -258,8 +258,8 @@ function guessSalary () {
 
 		// I don't know why this line is here rather than at the top
 		periods = [
-			{startDate : "2018-12-22", "increase":2.80, "reason":"Contractual Increase", "multiplier" : 1},
-			{startDate : "2019-12-22", "increase":2.20, "reason":"Contractual Increase", "multiplier" : 1}, 
+			{startDate : "2018-12-22", "increase":2.816, "reason":"Contractual Increase", "multiplier" : 1},
+			{startDate : "2019-12-22", "increase":2.204, "reason":"Contractual Increase", "multiplier" : 1}, 
 			{startDate : "2020-12-22", "increase":1.50, "reason":"Contractual Increase", "multiplier" : 1}
 		];
 		level -= 1;
