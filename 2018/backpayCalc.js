@@ -115,7 +115,6 @@ function init () {
 	} else {
 		if (dbug) console.error ("Couldn't get levelSelect.");
 	}
-	console.log ("Finished initing.");
 } // End of init
 
 function populateSalary () {
@@ -168,7 +167,7 @@ function selectSalary () {
 } // End of selectSalary
 
 function startProcess () {
-	periods = [];
+	periods = initPeriods();
 	lumpSumPeriods = {};
 	overtimePeriods = {};
 	if (resultsBody) {
@@ -223,6 +222,14 @@ function startProcess () {
 
 } // End of startProcess
 
+function initPeriods () {
+	return ([
+		{startDate : "2018-12-22", "increase":2.816, "reason":"Contractual Increase", "multiplier" : 1},
+		{startDate : "2019-12-22", "increase":2.204, "reason":"Contractual Increase", "multiplier" : 1}, 
+		{startDate : "2020-12-22", "increase":1.50, "reason":"Contractual Increase", "multiplier" : 1}
+	]);
+} // End of initPeriods
+
 function guessSalary () {
 	var levelSelect = document.getElementById("levelSelect");
 	var lvl = levelSelect.value.replace(/\D/, "");
@@ -254,14 +261,7 @@ function guessSalary () {
 	}
 	if (dbug) console.log ("guessSalary::Parts: " + parts + ".");
 	if (level && parts) {
-		// Edit the increases in this line for future contracts.
-
-		// I don't know why this line is here rather than at the top
-		periods = [
-			{startDate : "2018-12-22", "increase":2.816, "reason":"Contractual Increase", "multiplier" : 1},
-			{startDate : "2019-12-22", "increase":2.204, "reason":"Contractual Increase", "multiplier" : 1}, 
-			{startDate : "2020-12-22", "increase":1.50, "reason":"Contractual Increase", "multiplier" : 1}
-		];
+		
 		level -= 1;
 
 		if (dbug) console.log("guessSalary::Got valid data (" + parts[1] + "-" + parts[2] + "-" + parts[3] + ")....now trying to figure out salary.");
@@ -368,7 +368,7 @@ function addPromotions () {
 			if (dbug) console.log("addPromotions::Didn't get promoDate.");
 		}
 	}
-}
+} // End of addPromotions
 
 function getActings () {
 	// Add actings
@@ -384,6 +384,7 @@ function getActings () {
 		if (actingLvl >=0 && actingLvl <5 && actingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("getActings::Passed the initial tests.");
 			if (actingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= "2018-12-22" && actingToDate > actingFromDate) {
+				if (actingFromDate < "2018-12-22" && actingToDate >= "2018-12-22") actingFromDate = "2018-12-22";
 				if (dbug) console.log ("getActings::And the dates are in the right range.");
 				// add a period for starting
 				var from = addPeriod({"startDate":actingFromDate, "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
@@ -577,8 +578,8 @@ function addActingHandler () {
 	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, "id":"actingLevel" + id});
 	for (var j = 0; j < 6; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
+		if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
 	}
-
 	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"From", "for":"actingFrom" + id});
 	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat"});
 	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"To", "for":"actingTo"+id});
