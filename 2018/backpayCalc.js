@@ -338,7 +338,7 @@ function addPromotions () {
 		var promoDate  = promotions[i].getElementsByTagName("input")[0].value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 		if (dbug) console.log("addPromotions::promoDate " + i + ": " + promoDate[0] + ".");
 		if (promoDate) {
-			if (promoDate[0] > "2018-12-22" && promoDate[0] < EndDate.toISOString().substr(0, 10) && promoLevel > 0 && promoLevel <=5) {
+			if (promoDate[0] > TABegin.toISOString().substr(0,10) && promoDate[0] < EndDate.toISOString().substr(0, 10) && promoLevel > 0 && promoLevel <=5) {
 				if (dbug) console.log ("addPromotions::Adding a promotion on " + promoDate[0] + " at level " + promoLevel +".");
 				// add the promo period
 				var j = addPeriod ({"startDate":promoDate[0],"increase":0, "reason":"promotion", "multiplier":1, "level":(promoLevel-1)});
@@ -358,7 +358,7 @@ function addPromotions () {
 
 			} else {
 				if (dbug) {
-					if (promoDate[0] > "2018-12-22") console.log ("addPromotions::It's after the beginning.");
+					if (promoDate[0] > TABegin.toISOString().substr(0,10)) console.log ("addPromotions::It's after the beginning.");
 					if (promoDate[0] < EndDate.toISOString().substr(0, 10)) console.log ("addPromotions::It's before the end.");
 					if (promoLevel > 0) console.log ("addPromotions::It's greater than 0.");
 					if (promoLevel < 5) console.log ("addPromotions::It's less than or equal to 5.");
@@ -383,8 +383,8 @@ function getActings () {
 		if (dbug) console.log("getActings::Checking acting at " + actingLvl + " from " + actingFromDate + " to " + actingToDate + ".");
 		if (actingLvl >=0 && actingLvl <5 && actingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("getActings::Passed the initial tests.");
-			if (actingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= "2018-12-22" && actingToDate > actingFromDate) {
-				if (actingFromDate < "2018-12-22" && actingToDate >= "2018-12-22") actingFromDate = "2018-12-22";
+			if (actingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= TABegin.toISOString().substr(0,10) && actingToDate > actingFromDate) {
+				if (actingFromDate < TABegin.toISOString().substr(0,10) && actingToDate >= TABegin.toISOString().substr(0,10)) actingFromDate = TABegin.toISOString().substr(0,10);
 				if (dbug) console.log ("getActings::And the dates are in the right range.");
 				// add a period for starting
 				var from = addPeriod({"startDate":actingFromDate, "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
@@ -405,7 +405,7 @@ function getActings () {
 			} else {
 				if (dbug) {
 					if (actingFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingFrom is before EndDate");
-					if (actingToDate >= "2018-12-22") console.log ("getActings::actingTo is after startDate");
+					if (actingToDate >= TABegin.toISOString().substr(0,10)) console.log ("getActings::actingTo is after startDate");
 					if (actingToDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingTo is before EndDate");
 					if (actingToDate > actingFromDate) console.log ("getActings::actingTo is after actingFrom");
 				}
@@ -431,8 +431,12 @@ function getLWoPs () {
 		var lwopFromDate = dates[0].value;
 		var lwopToDate = dates[1].value;
 		if (lwopFromDate.match(/\d\d\d\d-\d\d-\d\d/) && lwopToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
-			if (dbug) console.log ("getLWoPs::Passed the initial tests.");
-			if (lwopFromDate >= "2018-12-22" && lwopFromDate <= EndDate.toISOString().substr(0, 10) && lwopToDate >= "2018-12-22" && lwopToDate <= EndDate.toISOString().substr(0, 10) && lwopToDate > lwopFromDate) {
+			if (dbug) console.log ("getLWoPs::Passed the initial tests for " + lwopFromDate + " to " + lwopToDate + ".");
+			if (lwopFromDate <= EndDate.toISOString().substr(0, 10) && 
+					lwopToDate >= TABegin.toISOString().substr(0,10) && 
+					lwopToDate > lwopFromDate) {
+				if (lwopFromDate <= TABegin.toISOString().substr(0, 10) && lwopToDate >= TABegin.toISOString().substr(0,10)) lwopFromDate = TABegin.toISOString().substr(0, 10);
+				if (lwopFromDate <= EndDate.toISOString().substr(0, 10) && lwopToDate > EndDate.toISOString().substr(0, 10)) lwopToDate = EndDate.toISOString().substr(0, 10);
 				if (dbug) console.log ("getLWoPs::And the dates are in the right range.");
 				// add a period for starting
 				var from = addPeriod({"startDate":lwopFromDate, "increase":0, "reason":"LWoP Start", "multiplier":0});
@@ -442,17 +446,15 @@ function getLWoPs () {
 				lwopToDate = new Date(toParts[1], (toParts[2]-1), toParts[3]);
 				lwopToDate.setDate(lwopToDate.getDate() + parseInt(1));
 				var to = addPeriod({"startDate":lwopToDate.toISOString().substr(0, 10), "increase":0, "reason":"LWoP Finished", "multiplier":1});
-				for (var i = from; i < to; i++) {
-					periods[i]["multiplier"] = 0;
+				for (var j = from; j < to; j++) {
+					periods[j]["multiplier"] = 0;
 				}
 				//var fromParts = lwopFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				//lwopFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 			} else {
 				if (dbug) {
-					if (lwopFromDate >= "2018-12-22") console.log ("lwopFrom is after startDate");
 					if (lwopFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("lwopFrom is before EndDate");
-					if (lwopToDate >= "2018-12-22") console.log ("lwopTo is after startDate");
-					if (lwopToDate <= EndDate.toISOString().substr(0, 10)) console.log ("lwopTo is before EndDate");
+					if (lwopToDate >= TABegin.toISOString().substr(0,10)) console.log ("lwopTo is after startDate");
 					if (lwopToDate > lwopFromDate) console.log ("lwopTo is after lwopFrom");
 				}
 			}
@@ -478,7 +480,7 @@ function getOvertimes () {
 		var overtimeRate = overtimeStints[i].querySelector("select").value;
 		if (overtimeDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("Passed the initial tests.");
-			if (overtimeDate >= "2018-12-22" && overtimeDate <= EndDate.toISOString().substr(0, 10) && overtimeAmount > 0) {
+			if (overtimeDate >= TABegin.toISOString().substr(0,10) && overtimeDate <= EndDate.toISOString().substr(0, 10) && overtimeAmount > 0) {
 				if (dbug) console.log ("overtimes::And the dates are in the right range.");
 				// add a period for starting
 				
@@ -486,7 +488,7 @@ function getOvertimes () {
 				
 			} else {
 				if (dbug) {
-					if (overtimeDate >= "2018-12-22") console.log ("overtimeDate is after startDate");
+					if (overtimeDate >= TABegin.toISOString().substr(0,10)) console.log ("overtimeDate is after startDate");
 					if (overtimeDate <= EndDate.toISOString().substr(0, 10)) console.log ("overtimeDate is before EndDate");
 					if (overtimeAmount > 0) console.log ("overtimeAmount > 0");
 				}
@@ -509,14 +511,14 @@ function getLumpSums () {
 		var lumpSumAmount = lumpsums[i].querySelector("input[type=text]").value.replace(/[^\d\.]/, "");
 		if (lumpSumDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("Passed the initial tests.");
-			if (lumpSumDate >= "2018-12-22" && lumpSumDate <= EndDate.toISOString().substr(0, 10) && lumpSumAmount > 0) {
+			if (lumpSumDate >= TABegin.toISOString().substr(0,10) && lumpSumDate <= EndDate.toISOString().substr(0, 10) && lumpSumAmount > 0) {
 				if (dbug) console.log ("And the dates are in the right range.");
 				// add a period for starting
 				var from = addPeriod({"startDate":lumpSumDate, "increase":0, "reason":"Lump Sum", "multiplier":0, "hours":lumpSumAmount});
 				
 			} else {
 				if (dbug) {
-					if (lumpSumDate >= "2018-12-22") console.log ("lumpSumDate is after startDate");
+					if (lumpSumDate >= TABegin.toISOString().substr(0,10)) console.log ("lumpSumDate is after startDate");
 					if (lumpSumDate <= EndDate.toISOString().substr(0, 10)) console.log ("lumpSumDate is before EndDate");
 					if (lumpSumAmount > 0) console.log ("lumpSumAmount > 0");
 				}
@@ -556,6 +558,7 @@ function handlePromotions () {
 			}
 		}
 	}
+	resultStatus.innerHTML="New promotions section added.";
 } // End of handlePromotions
 
 function addActingHandler () {
@@ -592,7 +595,9 @@ function addActingHandler () {
 	newDelActingBtn.addEventListener("click", removeActingDiv, false);
 
 	actings++;
-}
+	resultStatus.innerHTML="New Acting section added.";
+} // End of addActingHandler
+
 function addLWoPHandler () {
 	var LWoPDiv = document.getElementById("LWoPDiv");
 
@@ -621,7 +626,8 @@ function addLWoPHandler () {
 	newDelLWoPBtn.addEventListener("click", removeLWoPDiv, false);
 
 	lwops++;
-}
+	resultStatus.innerHTML="New leave without pay section added.";
+} // End of lWoPHandler
 
 function addOvertimeHandler () {
 	var OvertimeDiv = document.getElementById("overtimeDiv");
@@ -661,6 +667,7 @@ function addOvertimeHandler () {
 	newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
 
 	overtimes++;
+	resultStatus.innerHTML="New overtime section added.";
 } // End of addOvertimeHandler
 
 function addLumpSumHandler () {
@@ -692,6 +699,7 @@ function addLumpSumHandler () {
 	newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 
 	lumpSums++;
+	resultStatus.innerHTML="New lump sum section added.";
 } // End of addLumpSum Handler
 
 function removeActingDiv (e) {
