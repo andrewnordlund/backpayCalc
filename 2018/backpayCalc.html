@@ -58,9 +58,9 @@
 			</div>
 			<fieldset id="promotionsFS">
 				<legend>Promotions</legend>
+				<p id="promoDesc">Were you promoted (to another CS level) during this time?  (Promotions to EX should be considered as Leave Without Pay.)</label>
 				<div class="fieldHolder">
-					<label for="numPromotions">How many times were you promoted (to another CS level) during this time?</label>
-					<input id="numPromotions" value="0" type="number" min="0" max="4">
+					<button id="addPromotionBtn" aria-describedby="promoDesc" type="button">Add Promotion</button>
 				</div>
 				<div id="promotionsDiv"></div>
 			</fieldset>
@@ -71,7 +71,7 @@
 			</fieldset>
 			<fieldset id="LWoPFS">
 				<legend>Leave without Pay</legend>
-				<input type="button" id="addLWoPBtn" value="Add LwoP Period">
+				<input type="button" id="addLwopBtn" value="Add LwoP Period">
 				<div id="LWoPDiv"></div>
 			</fieldset>
 			<fieldset id="overtimeFS">
@@ -83,7 +83,7 @@
 			<fieldset id="lumpSumsFS">
 				<legend>Lump Sum Payments</legend>
 				<p id="lumpSumExp">Example: unused vacation cash-out.</p>
-				<input type="button" id="addlumpSumBtn" value="Add Lump Sum Payment" aria-describedby="lumpSumExp">
+				<input type="button" id="addLumpSumBtn" value="Add Lump Sum Payment" aria-describedby="lumpSumExp">
 				<div id="lumpSumDiv"></div>
 			</fieldset>
 			<div class="fieldHolder">
