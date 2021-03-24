@@ -23,10 +23,11 @@ var startDateTxt = null;
 var levelSel = null;
 var stepSelect = null;
 var numPromotions = null;
+var addPromotionBtn = null;
 var addActingBtn = null;
 var addOvertimeBtn = null;
-var addLWoPBtn = null;
-var addlumpSumBtn = null;
+var addLwopBtn = null;
+var addLumpSumBtn = null;
 var resultStatus = null;
 var endDateTxt = "2021-04-15";
 var TABegin = new Date("2018", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
@@ -39,6 +40,7 @@ var resultsTheadTR = null;
 var periods = [];
 var lumpSumPeriods = {};
 var overtimePeriods = {};
+var promotions = 0;
 var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
@@ -76,11 +78,11 @@ function init () {
 	resultsDiv = document.getElementById("resultsDiv");
 	startDateTxt = document.getElementById("startDateTxt");
 	endDateTxt = document.getElementById("endDateTxt");
-	numPromotions = document.getElementById("numPromotions");
+	addPromotionBtn = document.getElementById("addPromotionBtn");
 	addActingBtn = document.getElementById("addActingBtn");
 	addOvertimeBtn = document.getElementById("addOvertimeBtn");
-	addLWoPBtn = document.getElementById("addLWoPBtn");
-	addlumpSumBtn = document.getElementById("addlumpSumBtn");
+	addLwopBtn = document.getElementById("addLwopBtn");
+	addLumpSumBtn = document.getElementById("addLumpSumBtn");
 	resultsBody = document.getElementById("resultsBody");
 	resultsFoot = document.getElementById("resultsFoot");
 	resultsTheadTR = document.getElementById("resultsTheadTR");
@@ -99,7 +101,7 @@ function init () {
 		results[r] = document.getElementById(r);
 	}*/
 	if (dbug) console.log("init::MainForm is " + mainForm + ".");
-	if (levelSel && stepSelect && mainForm && startDateTxt && calcBtn && addActingBtn && numPromotions) {
+	if (levelSel && stepSelect && mainForm && startDateTxt && calcBtn && addActingBtn && addPromotionBtn) {
 		if (dbug) console.log ("Adding change event to calcBtn.");
 		levelSel.addEventListener("change", populateSalary, false);
 		if (levelSel.value.match(/[1-5]/)) populateSalary();
@@ -108,10 +110,10 @@ function init () {
 
 		calcBtn.addEventListener("click", startProcess, false);
 		addActingBtn.addEventListener("click", addActingHandler, false);
-		addLWoPBtn.addEventListener("click", addLWoPHandler, false);
+		addLwopBtn.addEventListener("click", addLWoPHandler, false);
 		addOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
-		addlumpSumBtn.addEventListener("click", addLumpSumHandler, false);
-		numPromotions.addEventListener("change", handlePromotions, false);
+		addLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
+		addPromotionBtn.addEventListener("click", addPromotionHandler, false);
 	} else {
 		if (dbug) console.error ("Couldn't get levelSelect.");
 	}
@@ -531,6 +533,9 @@ function getLumpSums () {
 	}
 } // End of getLumpSums
 	
+/*
+Defunct:
+
 function handlePromotions () {
 	//var lvl = parseInt(document.getElementById("levelSelect").value.replace(/\D/, ""));
 	var promotionsDiv = document.getElementById("promotionsDiv");
@@ -560,11 +565,51 @@ function handlePromotions () {
 	}
 	resultStatus.innerHTML="New promotions section added.";
 } // End of handlePromotions
+*/
+
+function addPromotionHandler () {
+	let promotionsDiv = document.getElementById("promotionsDiv");
+	let id = promotions;
+	let looking = true;
+	while (looking) {
+		if (document.getElementById("promotion" + id)) {
+			id++;
+		} else {
+			looking = false;
+		}
+	}
+
+	let newPromotionFS = createHTMLElement("fieldset", {"parentNode":promotionsDiv, "class":"fieldHolder promotions", "id" :"promo" + id});
+	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":"Promotion"});
+
+	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promoDate" + id, "nodeText":"Date of promotion: "});
+	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat"});
+
+	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promotionLevel" + id, "nodeText":"Promoted to level: "});
+	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"actingLevel" + id});
+	for (var j = 0; j < 6; j++) {
+		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
+		if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
+	}
+
+
+	var br = createHTMLElement("br", {"parentNode":newPromotionFS});
+
+	var newDelPromotionBtn = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"button", "value":"Remove", "id": "removePromotionBtn" + promotions});
+	var newAddPromotionBtn = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"button", "value":"Add another promotion", "class":"promotionsBtn", "id": "addPromotionsBtn" + id});
+	newAddPromotionBtn.addEventListener("click", addPromotionHandler, false);
+	newDelPromotionBtn.addEventListener("click", removePromotionDiv, false);
+
+	promotions++;
+
+
+	resultStatus.innerHTML="New Acting section added.";
+} // End of addPromotionHandler
 
 function addActingHandler () {
 	var actingsDiv = document.getElementById("actingsDiv");
 	
-	var id = lwops;
+	var id = actings;
 	var looking = true;
 	while (looking) {
 		if (document.getElementById("actingLevel" + id)) {
@@ -589,8 +634,8 @@ function addActingHandler () {
 	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat"});
 	var br = createHTMLElement("br", {"parentNode":newActingFS});
 
-	var newDelActingBtn = createHTMLElement("input", {"parentNode":newActingFS, "type":"button", "value":"Remove"});
-	var newAddActingBtn = createHTMLElement("input", {"parentNode":newActingFS, "type":"button", "value":"Add another acting period"});
+	var newDelActingBtn = createHTMLElement("input", {"parentNode":newActingFS, "type":"button", "value":"Remove", "id": "removeActingBtn" + id});
+	var newAddActingBtn = createHTMLElement("input", {"parentNode":newActingFS, "type":"button", "value":"Add another acting period", "class":"actingBtn", "id":"addActingsBtn" + id});
 	newAddActingBtn.addEventListener("click", addActingHandler, false);
 	newDelActingBtn.addEventListener("click", removeActingDiv, false);
 
@@ -620,8 +665,8 @@ function addLWoPHandler () {
 	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat"});
 	var br = createHTMLElement("br", {"parentNode":newLWoPFS});
 
-	var newDelLWoPBtn = createHTMLElement("input", {"parentNode":newLWoPFS, "type":"button", "value":"Remove"});
-	var newAddLWoPBtn = createHTMLElement("input", {"parentNode":newLWoPFS, "type":"button", "value":"Add another lwop period"});
+	var newDelLWoPBtn = createHTMLElement("input", {"parentNode":newLWoPFS, "type":"button", "value":"Remove", "id": "removeLwopBtn" + id});
+	var newAddLWoPBtn = createHTMLElement("input", {"parentNode":newLWoPFS, "type":"button", "value":"Add another lwop period", "class":"lwopBtn", "id":"addLwopsBtn" + id});
 	newAddLWoPBtn.addEventListener("click", addLWoPHandler, false);
 	newDelLWoPBtn.addEventListener("click", removeLWoPDiv, false);
 
@@ -661,8 +706,8 @@ function addOvertimeHandler () {
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"1.5", "nodeText":"1.5x", "selected":"selected"});
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"2.0", "nodeText":"2.0x"});
 
-	var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Remove"});
-	var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Add another Overtime or Standby period"});
+	var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Remove", "id": "removeOvertimeBtn" + id});
+	var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Add another Overtime or Standby period", "class":"overtimeBtn", "id":"addOvertimesBtn" + id});
 	newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
 	newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
 
@@ -693,8 +738,8 @@ function addLumpSumHandler () {
 	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Hours-worth of payout", "for":"lumpSumAmount" + id});
 	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"lumpSumAmount"+id, "type":"text"});
 
-	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Remove"});
-	var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Add another Lump Sum period"});
+	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Remove", "id": "removeLumpSumBtn" + id});
+	var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Add another Lump Sum period", "class":"lumpsumBtn", "id":"addLumpSumsBtn" + id});
 	newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 	newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 
@@ -702,30 +747,160 @@ function addLumpSumHandler () {
 	resultStatus.innerHTML="New lump sum section added.";
 } // End of addLumpSum Handler
 
+function removePromotionDiv (e) {
+	var btn= e.target;
+	var btnID = btn.getAttribute("id")
+	btnID = btnID.replaceAll(/\D/g, "");
+	if (btnID > 0) btnID--;
+	var fs = btn.parentNode;
+	fs.parentNode.removeChild(fs);
+	promotions--;
+	if (promotions == 0 || btnID < 0) {
+		addPromotionBtn.focus();
+	} else {
+		let promotionBtns = null;
+		promotionBtns = document.getElementById("addPromotionsBtn" + btnID);
+		if (!promotionBtns) {
+			for (var j = btnID; promotionBtns === null && j >0; j--) {
+				promotionBtns = document.getElementById("addPromotionsBtn" + j);
+			}
+			if (j == 0) promotionBtns = addPromotionBtn;
+		}
+		try {
+			promotionBtns.focus();
+		}
+		catch (ex) {
+			console.error ("Exception: " + ex.toString());
+			addPromotionBtn.focus();
+		}
+	}
+	resultStatus.innerHTML="Promotion section removed.";
+}
+
 function removeActingDiv (e) {
 	var btn= e.target;
+	var btnID = btn.getAttribute("id")
+	btnID = btnID.replaceAll(/\D/g, "");
+	if (btnID > 0) btnID--;
 	var fs = btn.parentNode;
 	fs.parentNode.removeChild(fs);
 	actings--;
+	if (actings == 0 || btnID < 0) {
+		addActingBtn.focus();
+	} else {
+		let actingBtns = null;
+		actingBtns = document.getElementById("addActingsBtn" + btnID);
+		if (!actingBtns) {
+			for (var j = btnID; actingBtns === null && j >0; j--) {
+				actingBtns = document.getElementById("addActingsBtn" + j);
+			}
+			if (j == 0) actingBtns = addActingBtn;
+		}
+		
+
+		try {
+			actingBtns.focus();
+		}
+		catch (ex) {
+			console.error ("Exception: " + ex.toString());
+			addActingBtn.focus();
+		}
+	}
+	resultStatus.innerHTML="Acting section removed.";
 }
 function removeLWoPDiv (e) {
 	var btn= e.target;
+	var btnID = btn.getAttribute("id")
+	btnID = btnID.replaceAll(/\D/g, "");
+	if (btnID > 0) btnID--;
 	var fs = btn.parentNode;
 	fs.parentNode.removeChild(fs);
 	lwops--;
+	if (lwops == 0 || btnID < 0) {
+		addLwopBtn.focus();
+	} else {
+		let lwopBtns = null;
+		lwopBtns = document.getElementById("addLwopsBtn" + btnID);
+		if (!lwopBtns) {
+			for (var j = btnID; lwopBtns === null && j >0; j--) {
+				lwopBtns = document.getElementById("addLwopsBtn" + j);
+			}
+			if (j == 0) lwopBtns = addLwopBtn;
+		}
+		
+
+		try {
+			lwopBtns.focus();
+		}
+		catch (ex) {
+			console.error ("Exception: " + ex.toString());
+			addLwopBtn.focus();
+		}
+	}
+	resultStatus.innerHTML="Leave Without Pay section removed.";
 }
 function removeLumpSumDiv (e) {
 	var btn= e.target;
+	var btnID = btn.getAttribute("id")
+	btnID = btnID.replaceAll(/\D/g, "");
+	if (btnID > 0) btnID--;
 	var fs = btn.parentNode;
 	fs.parentNode.removeChild(fs);
 	lumpSums--;
+	if (lumpSums == 0 || btnID < 0) {
+		addLumpSumBtn.focus();
+	} else {
+		let lumpSumBtns = null;
+		lumpSumBtns = document.getElementById("addLumpSumsBtn" + btnID);
+		if (!lumpSumBtns) {
+			for (var j = btnID; lumpSumBtns === null && j >0; j--) {
+				lumpSumBtns = document.getElementById("addLumpSumsBtn" + j);
+			}
+			if (j == 0) lumpSumBtns = addLumpSumBtn;
+		}
+		
+
+		try {
+			lumpSumBtns.focus();
+		}
+		catch (ex) {
+			console.error ("Exception: " + ex.toString());
+			addLumpSumBtn.focus();
+		}
+	}
+	resultStatus.innerHTML="Lump sum section removed.";
 }
 
 function removeOvertimeDiv (e) {
 	var btn= e.target;
+	var btnID = btn.getAttribute("id")
+	btnID = btnID.replaceAll(/\D/g, "");
+	if (btnID > 0) btnID--;
 	var fs = btn.parentNode;
 	fs.parentNode.removeChild(fs);
 	overtimes--;
+	if (overtimes == 0 || btnID < 0) {
+		addOvertimeBtn.focus();
+	} else {
+		let overtimeBtns = null;
+		overtimeBtns = document.getElementById("addOvertimesBtn" + btnID);
+		if (!overtimeBtns) {
+			for (var j = btnID; overtimeBtns === null && j >0; j--) {
+				overtimeBtns = document.getElementById("addOvertimesBtn" + j);
+			}
+			if (j == 0) overtimeBtns = addOvertimeBtn;
+		}
+		
+
+		try {
+			overtimeBtns.focus();
+		}
+		catch (ex) {
+			console.error ("Exception: " + ex.toString());
+			addOvertimeBtn.focus();
+		}
+	}
+	resultStatus.innerHTML="Overtime section removed.";
 }
 function addPeriod (p) {
 	var rv = null;
