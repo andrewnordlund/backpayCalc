@@ -31,7 +31,7 @@ var addLumpSumBtn = null;
 var resultStatus = null;
 var endDateTxt = "2021-04-15";
 var TABegin = new Date("2018", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
-var EndDate = new Date("2020", "07", "26");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+var EndDate = new Date("2021", "03", "01");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var day = (1000 * 60 * 60 * 24);
 var parts = [];
 var resultsBody = null;
@@ -45,6 +45,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
+var lastModified: new Date("2021", "03", "05");
 // taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
 var salaries = [
 	[56907, 59011, 61111, 63200, 65288, 67375, 69461, 73333],
