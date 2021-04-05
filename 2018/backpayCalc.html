@@ -16,7 +16,7 @@
 		</header>
 		<main>
 		<details>
-		<summary>How this calculator works</summary>
+		<summary><h2 class="summary">How this calculator works</h2></summary>
 		<p>After entering in all your details this calculator breaks everything down into <dfn>periods</dfn> which are ranges of dates with the same yearly, hourly, and/or daily rate of pay.</p>
 		<p>For example, let's say you became a CS-02 (step 1) on August 1, 2017. This collective agreement will come into effect on <time datetime="2018-12-22">December 22, 2018</time>.  No backpay will be calculated before the start date of the collective agreement.  So, from <time datetime="2018-12-22">December 22, 2018</time> to  <time datetime="2019-07-31">July 31, 2019</time> your annual rate of pay will be $70&nbsp;439. That's the first period. Then on  <time datetime="2019-08-01">August 1, 2019</time> you have your 1 year anniversary as a CS-02 and you move up to step 2.  From <time datetime="2019-08-01">August 1, 2019</time> to <time datetime="2019-12-21">December 21, 2019</time> you'll have an annual rate of pay of $72&nbsp;694.  That's the second period.</p>
 		<p>If you start an Acting period, that starts a new period which goes until your pay changes again, either through a raise in the collective agreement, the end of your Acting period, or an anniversary raise.</p>
@@ -26,6 +26,11 @@
 		<p>Within each period, extra money made through overtime, or standby, or vacation cash-out will be paid out based on your rate of pay at that time.<p>
 		<p>Using the above example, if you do 4 hours of overtime at time-and-a-half on <time datetime="2019-05-15">May 15, 2019</time>, that's part of the first period.  In terms of calculating your backpay, it doesn't matter when exactly you did that overtime.  All that matters is what your rate of pay was in that period.  That's why the dates aren't the same in the results table as what you entered into the date fields.</p>
 		<p>That also means that if you do one hour of overtime once a week for 4 weeks during a particular period, you don't need to add 4 separate overtime amounts.  Instead pick a single date in that period and enter 4 hours.</p>
+		<h3>What This Calculator Doesn't Do</h3>
+		<dl><dt>Parental Leave</dt><dd>This calculator doesn't handle parental leave.  I'm not sure how that works. If you know how it works, and want it added, <a href="">submit an issue on the GitHub Repo</a> with a link or explanation of how it works.  Or fork this repo, add it, and submit a pull request.</dd>
+		<dt>Collective agreements other than the PIPSC CS groups</dt><dd>Eventually, I'd like to build that in.  So if you're a CS with CRA, this won't have your numbers.  If you're an AS, then this won't be of help.</dd>
+		<dt>Part time work</dt><dd>If you work only 3 days a week, or 5 hours a day, this won't help you.  Maybe one day.</dd>
+		</dl>
 		</details>
 		<form id="mainForm">
 			<p><strong>Note:</strong> All dates should be formatted as <span id="dateFormat">YYYY-MM-DD</span>.</p>
@@ -52,7 +57,7 @@
 			</div>
 			<div class="fieldHolder">
 				<label for="endDateTxt">When should this stop calculating?</label> 
-				<input type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat lastDayBug" value="2021-04-15">
+				<input type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat lastDayBug" value="2021-04-01">
 				<span id="endDateFormat" class="helper">(ie: either the date you stopped being a CS, or when the contract is implemented.)</span>
 				<span class="" id="lastDayBug">Due to a bug, set this as one day <em>after</em> the calculation should end. Ex: if it should stop calculating on Dec. 31, 2020, enter <time>2021-01-01</time>.</span>
 			</div>
@@ -114,8 +119,12 @@
 			<h2>Note</h2>
 			<p>This calculator was built as a hobby and is provided "as is" as proof-of-concept. There is absolutely no guarantee of accuracy, or officialness. It should be used for interest sakes, not as an authority.</p>
 			<p>Back to the <a href="../index.html">Backpay Calculator</a> home page.</p>
-		</footer>
-		<script src="backpayCalc.js" type="text/javascript"></script>
+		<script src="backpayCalc.js"></script>
 		<div id="resultStatus" role="status" aria-live="polite" class="invisibleStuff"></div>
+		<dl>
+			<dt>Last Modified:</dt>
+			<dd><time datetime="2021-04-05">2021-04-05</time</dd>
+		</dl>
+		</footer>
 	</body>
 </html>
