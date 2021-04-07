@@ -45,7 +45,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified: new Date("2021", "03", "05");
+var lastModified = new Date("2021", "03", "05");
 // taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
 var salaries = [
 	[56907, 59011, 61111, 63200, 65288, 67375, 69461, 73333],
