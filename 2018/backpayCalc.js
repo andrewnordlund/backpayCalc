@@ -228,8 +228,11 @@ function startProcess () {
 function initPeriods () {
 	return ([
 		{startDate : "2018-12-22", "increase":2.816, "reason":"Contractual Increase", "multiplier" : 1},
+		{startDate : "2019-04-01", "increase":0.00, "reason":"Fiscal New Year", "multiplier" : 1},
 		{startDate : "2019-12-22", "increase":2.204, "reason":"Contractual Increase", "multiplier" : 1}, 
-		{startDate : "2020-12-22", "increase":1.50, "reason":"Contractual Increase", "multiplier" : 1}
+		{startDate : "2020-04-01", "increase":0.00, "reason":"Fiscal New Year", "multiplier" : 1},
+		{startDate : "2020-12-22", "increase":1.50, "reason":"Contractual Increase", "multiplier" : 1},
+		{startDate : "2021-02-26", "increase":0.00, "reason":"Contract Signed", "multiplier" : 1}
 	]);
 } // End of initPeriods
 
