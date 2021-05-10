@@ -31,7 +31,7 @@ var addLumpSumBtn = null;
 var resultStatus = null;
 var endDateTxt = "2021-04-15";
 var TABegin = new Date("2018", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
-var EndDate = new Date("2021", "03", "01");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+var EndDate = new Date("2021", "02", "18");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var day = (1000 * 60 * 60 * 24);
 var parts = [];
 var resultsBody = null;
