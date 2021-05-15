@@ -12,7 +12,7 @@
  *
  */
 
-var dbug = !true;
+var dbug = true;
 var showExtraCols = true;
 var level = -1;
 var step = -1;
@@ -29,6 +29,7 @@ var addOvertimeBtn = null;
 var addLwopBtn = null;
 var addLumpSumBtn = null;
 var resultStatus = null;
+var calcStartDate = null;
 var endDateTxt = "2021-04-15";
 var TABegin = new Date("2018", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var EndDate = new Date("2021", "02", "18");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
@@ -79,6 +80,7 @@ function init () {
 	resultsDiv = document.getElementById("resultsDiv");
 	startDateTxt = document.getElementById("startDateTxt");
 	endDateTxt = document.getElementById("endDateTxt");
+	calcStartDate = document.getElementById("calcStartDate");
 	addPromotionBtn = document.getElementById("addPromotionBtn");
 	addActingBtn = document.getElementById("addActingBtn");
 	addOvertimeBtn = document.getElementById("addOvertimeBtn");
@@ -108,18 +110,23 @@ function init () {
 		if (levelSel.value.match(/[1-5]/)) populateSalary();
 		startDateTxt.addEventListener("change", selectSalary, false);
 		if (startDateTxt.value.replace(/[^-\d]/, "").match(/YYYY-MM-DD/)) populateSalary();
-
+	
+		/*
 		calcBtn.addEventListener("click", startProcess, false);
 		addActingBtn.addEventListener("click", addActingHandler, false);
 		addLwopBtn.addEventListener("click", addLWoPHandler, false);
 		addOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
 		addLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 		addPromotionBtn.addEventListener("click", addPromotionHandler, false);
+		*/
 	} else {
 		if (dbug) console.error ("Couldn't get levelSelect.");
 	}
 } // End of init
 
+/*
+   Populates the Salary Select basedon the CS-0x level selected
+*/
 function populateSalary () {
 	removeChildren(stepSelect);
 	if (levelSel.value >0 && levelSel.value <= 5) {
@@ -132,12 +139,58 @@ function populateSalary () {
 } // End of populateSalary
 
 // Once a CS-level and startDate have been selected, select the most likely salary from the dropdown
+// Called from init when startDateTxt has changed, and from populateSalary if startDateTxt is a date (####-##-##)
+
+// I don't get it.  What's the difference btween selectSalary and guessSalary?
+// They both start the same way: get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
 function selectSalary () {
 	//if (!(levelSelect.value > 0 && levelSelect.value <= 5))
-	var parts = null;
-	parts = startDateTxt.value.replace(/[^-\d]/, "").match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-	if (dbug) console.log ("Got startDateTxt " + startDateTxt.value.replace(/[^-\d]/, "") + ".");
+	if (parts && levelSel.value >0 && levelSel.value <= 5) {	// if you have a start date, and a CS-0x level
+		let startDate = getStartDate();
+		startDateTxt.value = startDate.toISOString().substr(0,10)
+		let timeDiff = (TABegin - startDate) / day;
+		let years = Math.floor(timeDiff/365);
+
+		if (dbug) console.log ("TimeDiff between " + TABegin.toString() + " and " + startDate.toString() + ": "  + timeDiff + ".");
+
+		if (timeDiff < 0) {
+			// You started after the CA started
+			calcStartDate.setAttribute("datetime", startDate.toISOString().substr(0,10));
+			calcStartDate.innerHTML = startDate.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });
+
+			step = 1;
+		} else {
+			// You started after the CA started
+			calcStartDate.setAttribute("datetime", TABegin.toISOString().substr(0,10));
+			calcStartDate.innerHTML = TABegin.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });
+
+			var step = Math.ceil(years, salaries[levelSel.value].length-1) + 1;
+		}
+		if (dbug) console.log ("Your step would be " + step + ".");
+		if (step > salaries[levelSel.value].length) step = salaries[levelSel.value].length;
+		if (dbug) console.log ("But there ain't that many steps.  so you're step " + step +".");
+
+		stepSelect.selectedIndex=step;
+		//step = Math.min(years, salaries[levelSel.value].length);
+
+		/*
+		var opts = stepSelect.getElementsByTagName("option");
+		for (var i = 0; i < opts.length; i++) {
+			if (opts[i].hasAttribute("selected")) opts[i].removeAttribute("selected");
+			if (i == step) opts[i].setAttribute("selected", "selected");
+		}
+		*/
+
+	}
+} // End of selectSalary
+
+function getStartDate () {
+	let parts = null;
+	startDateTxt.value = startDateTxt.value.replace(/[^-\d]/, "");
+	parts = startDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+	if (dbug) console.log ("Got startDateTxt " + startDateTxt.value + ".");
 	if (dbug) console.log ("Got parts " + parts + ".");
+	// Leap years
 	if (parts[2] == "02" && parts[3] > "28") {
 		if (parseInt(parts[1]) % 4 === 0 && parts[3] == "29") {
 			// Do nothing right now
@@ -145,29 +198,9 @@ function selectSalary () {
 			parts[3]=(parseInt(parts[1]) % 4 === 0? "29" : "28");
 		}
 	}
-	startDateTxt.value = parts[1] + "-" + parts[2] + "-" + parts[3];
-	if (dbug) console.log ("Got parts " + parts + " and levelSel: " + levelSel.value + ".");
-	if (parts && levelSel.value >0 && levelSel.value <= 5) {
-		var startDate = new Date(parts[1], parts[2]-1, parts[3]);
-		var timeDiff = (TABegin - startDate) / day;
-		if (dbug) console.log ("TimeDiff between " + TABegin.toString() + " and " + startDate.toString() + ": "  + timeDiff + ".");
-		
-		var years = Math.floor(timeDiff/365);
-		var step = Math.ceil(years, salaries[levelSel.value].length-1) + 1;
-		if (dbug) console.log ("Your step would be " + step + ".");
-		if (step > salaries[levelSel.value].length) step = salaries[levelSel.value].length;
-		if (dbug) console.log ("But there ain't that many steps.  so you're step " + step +".");
+	return new Date(parts[1], parts[2]-1, parts[3]);
 
-		//step = Math.min(years, salaries[levelSel.value].length);
-
-		var opts = stepSelect.getElementsByTagName("option");
-		for (var i = 0; i < opts.length; i++) {
-			if (opts[i].hasAttribute("selected")) opts[i].removeAttribute("selected");
-			if (i == step) opts[i].setAttribute("selected", "selected");
-		}
-
-	}
-} // End of selectSalary
+} // End of getStartDate
 
 function startProcess () {
 	periods = initPeriods();
@@ -236,6 +269,10 @@ function initPeriods () {
 	]);
 } // End of initPeriods
 
+// guessSalary called during startProcess.  "guess" isn't really a good word for this.
+
+// I don't get it.  What's the difference btween selectSalary and guessSalary?
+// This ones starts: get the CS-0level, get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
 function guessSalary () {
 	var levelSelect = document.getElementById("levelSelect");
 	var lvl = levelSelect.value.replace(/\D/, "");
@@ -248,14 +285,11 @@ function guessSalary () {
 		levelSelect.focus();
 		//return;
 	}
+	level = ((lvl > 0 && lvl < salaries.length+1) ? lvl : null);
+
 	var strtDte = startDateTxt.value;
 	if (dbug) console.log ("guessSalary::Got start date of " + strtDte + ".");
-	/*if (lvl > 0 && lvl < salaries.length) {
-		if (dbug) console.log ("Valid.");
-	} else {
-		if (dbug) console.log ("Not Valid.");
-	}*/
-	level = ((lvl > 0 && lvl < salaries.length+1) ? lvl : null);
+
 	var parts = null;
 	parts = strtDte.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 	if (parts[2] == "02" && parts[3] > "28") {
@@ -1217,9 +1251,9 @@ function calculate() {
 			*/
 			var totalTR = createHTMLElement("tr", {"parentNode":resultsFoot});
 			var totalTH = createHTMLElement("th", {"parentNode":totalTR, "scope":"row", "nodeText":"Total"});
-			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText":"$" + total["made"].toFixed(2)});
-			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText":"$" + total["shouldHaveMade"].toFixed(2)});
-			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText":"$" + total["backpay"].toFixed(2)});
+			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["made"])});
+			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["shouldHaveMade"])});
+			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["backpay"])});
 		}
 		resultStatus.innerHTML = "Results shown below.";
 	//} else {
@@ -1237,6 +1271,17 @@ function addStartDateErrorMessage () {
 	levelSel.setAttribute("aria-describedby", "startDateError");
 	return;
 }
+
+var formatter = new Intl.NumberFormat('en-CA', {
+  style: 'currency',
+  currency: 'CAD',
+
+  // These options are needed to round to whole numbers if that's what you want.
+  //minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
+  //maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
+  // Taken from https://stackoverflow.com/questions/149055/how-to-format-numbers-as-currency-string
+});
+
 
 function createHTMLElement (type, attribs) {
 	var newEl = document.createElement(type);
