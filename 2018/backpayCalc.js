@@ -29,9 +29,10 @@ var addOvertimeBtn = null;
 var addLwopBtn = null;
 var addLumpSumBtn = null;
 var resultStatus = null;
+var calcStartDate = null;
 var endDateTxt = "2021-04-15";
 var TABegin = new Date("2018", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
-var EndDate = new Date("2021", "02", "18");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+var EndDate = new Date("2021", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var day = (1000 * 60 * 60 * 24);
 var parts = [];
 var resultsBody = null;
@@ -45,7 +46,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2021", "03", "05");
+var lastModified = new Date("2021", "05", "15");
 // taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
 var salaries = [
 	[56907, 59011, 61111, 63200, 65288, 67375, 69461, 73333],
@@ -79,6 +80,7 @@ function init () {
 	resultsDiv = document.getElementById("resultsDiv");
 	startDateTxt = document.getElementById("startDateTxt");
 	endDateTxt = document.getElementById("endDateTxt");
+	calcStartDate = document.getElementById("calcStartDate");
 	addPromotionBtn = document.getElementById("addPromotionBtn");
 	addActingBtn = document.getElementById("addActingBtn");
 	addOvertimeBtn = document.getElementById("addOvertimeBtn");
@@ -108,7 +110,7 @@ function init () {
 		if (levelSel.value.match(/[1-5]/)) populateSalary();
 		startDateTxt.addEventListener("change", selectSalary, false);
 		if (startDateTxt.value.replace(/[^-\d]/, "").match(/YYYY-MM-DD/)) populateSalary();
-
+	
 		calcBtn.addEventListener("click", startProcess, false);
 		addActingBtn.addEventListener("click", addActingHandler, false);
 		addLwopBtn.addEventListener("click", addLWoPHandler, false);
@@ -120,6 +122,9 @@ function init () {
 	}
 } // End of init
 
+/*
+   Populates the Salary Select basedon the CS-0x level selected
+*/
 function populateSalary () {
 	removeChildren(stepSelect);
 	if (levelSel.value >0 && levelSel.value <= 5) {
@@ -132,12 +137,58 @@ function populateSalary () {
 } // End of populateSalary
 
 // Once a CS-level and startDate have been selected, select the most likely salary from the dropdown
+// Called from init when startDateTxt has changed, and from populateSalary if startDateTxt is a date (####-##-##)
+
+// I don't get it.  What's the difference btween selectSalary and getSalary?
+// They both start the same way: get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
 function selectSalary () {
 	//if (!(levelSelect.value > 0 && levelSelect.value <= 5))
-	var parts = null;
-	parts = startDateTxt.value.replace(/[^-\d]/, "").match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-	if (dbug) console.log ("Got startDateTxt " + startDateTxt.value.replace(/[^-\d]/, "") + ".");
+	if (parts && levelSel.value >0 && levelSel.value <= 5) {	// if you have a start date, and a CS-0x level
+		let startDate = getStartDate();
+		startDateTxt.value = startDate.toISOString().substr(0,10)
+		let timeDiff = (TABegin - startDate) / day;
+		let years = Math.floor(timeDiff/365);
+
+		if (dbug) console.log ("TimeDiff between " + TABegin.toString() + " and " + startDate.toString() + ": "  + timeDiff + ".");
+
+		if (timeDiff < 0) {
+			// You started after the CA started
+			calcStartDate.setAttribute("datetime", startDate.toISOString().substr(0,10));
+			calcStartDate.innerHTML = startDate.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });
+
+			step = 1;
+		} else {
+			// You started after the CA started
+			calcStartDate.setAttribute("datetime", TABegin.toISOString().substr(0,10));
+			calcStartDate.innerHTML = TABegin.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });
+
+			var step = Math.ceil(years, salaries[levelSel.value].length-1) + 1;
+		}
+		if (dbug) console.log ("Your step would be " + step + ".");
+		if (step > salaries[levelSel.value].length) step = salaries[levelSel.value].length;
+		if (dbug) console.log ("But there ain't that many steps.  so you're step " + step +".");
+
+		stepSelect.selectedIndex=step;
+		//step = Math.min(years, salaries[levelSel.value].length);
+
+		/*
+		var opts = stepSelect.getElementsByTagName("option");
+		for (var i = 0; i < opts.length; i++) {
+			if (opts[i].hasAttribute("selected")) opts[i].removeAttribute("selected");
+			if (i == step) opts[i].setAttribute("selected", "selected");
+		}
+		*/
+
+	}
+} // End of selectSalary
+
+function getStartDate () {
+	let parts = null;
+	startDateTxt.value = startDateTxt.value.replace(/[^-\d]/, "");
+	parts = startDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+	if (dbug) console.log ("Got startDateTxt " + startDateTxt.value + ".");
 	if (dbug) console.log ("Got parts " + parts + ".");
+	// Leap years
 	if (parts[2] == "02" && parts[3] > "28") {
 		if (parseInt(parts[1]) % 4 === 0 && parts[3] == "29") {
 			// Do nothing right now
@@ -145,29 +196,9 @@ function selectSalary () {
 			parts[3]=(parseInt(parts[1]) % 4 === 0? "29" : "28");
 		}
 	}
-	startDateTxt.value = parts[1] + "-" + parts[2] + "-" + parts[3];
-	if (dbug) console.log ("Got parts " + parts + " and levelSel: " + levelSel.value + ".");
-	if (parts && levelSel.value >0 && levelSel.value <= 5) {
-		var startDate = new Date(parts[1], parts[2]-1, parts[3]);
-		var timeDiff = (TABegin - startDate) / day;
-		if (dbug) console.log ("TimeDiff between " + TABegin.toString() + " and " + startDate.toString() + ": "  + timeDiff + ".");
-		
-		var years = Math.floor(timeDiff/365);
-		var step = Math.ceil(years, salaries[levelSel.value].length-1) + 1;
-		if (dbug) console.log ("Your step would be " + step + ".");
-		if (step > salaries[levelSel.value].length) step = salaries[levelSel.value].length;
-		if (dbug) console.log ("But there ain't that many steps.  so you're step " + step +".");
+	return new Date(parts[1], parts[2]-1, parts[3]);
 
-		//step = Math.min(years, salaries[levelSel.value].length);
-
-		var opts = stepSelect.getElementsByTagName("option");
-		for (var i = 0; i < opts.length; i++) {
-			if (opts[i].hasAttribute("selected")) opts[i].removeAttribute("selected");
-			if (i == step) opts[i].setAttribute("selected", "selected");
-		}
-
-	}
-} // End of selectSalary
+} // End of getStartDate
 
 function startProcess () {
 	periods = initPeriods();
@@ -205,7 +236,7 @@ function startProcess () {
 
 	// get salary?
 	//dbug = true;
-	guessSalary();
+	getSalary();
 
 	// Add promotions
 	addPromotions();
@@ -236,102 +267,116 @@ function initPeriods () {
 	]);
 } // End of initPeriods
 
-function guessSalary () {
+// getSalary called during startProcess.  "guess" isn't really a good word for this, so I changed it to "get"
+
+// I don't get it.  What's the difference btween selectSalary and getSalary?
+// This ones starts: get the CS-0level, get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
+function getSalary () {
 	var levelSelect = document.getElementById("levelSelect");
 	var lvl = levelSelect.value.replace(/\D/, "");
-	if (dbug) console.log ("Got level " + lvl + "."); // and start date of " + strtDte + ".");
+	if (dbug) console.log ("Got level " + lvl + "."); // and start date of " + startDate + ".");
 	if (lvl < 1 || lvl > 5) {	// Should only happen if someone messes with the querystring
-		if (dbug) console.log ("guessSalary::Error:  lvl is -1.");
+		if (dbug) console.log ("getSalary::Error:  lvl is -1.");
 		var errDiv = createHTMLElement("div", {"parentNode":levelSelect.parentNode, "id":"levelSelectError", "class":"error"});
 		createHTMLElement("span", {"parentNode":errDiv, "nodeText":"Please select a level"});
 		levelSelect.setAttribute("aria-describedby", "levelSelectError");
 		levelSelect.focus();
 		//return;
 	}
-	var strtDte = startDateTxt.value;
-	if (dbug) console.log ("guessSalary::Got start date of " + strtDte + ".");
-	/*if (lvl > 0 && lvl < salaries.length) {
-		if (dbug) console.log ("Valid.");
-	} else {
-		if (dbug) console.log ("Not Valid.");
-	}*/
 	level = ((lvl > 0 && lvl < salaries.length+1) ? lvl : null);
-	var parts = null;
-	parts = strtDte.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-	if (parts[2] == "02" && parts[3] > "28") {
-		if (parseInt(parts[1]) % 4 == 0 && parts[3] == "29") {
-			// Do nothing right now
-		} else {
-			parts[3]=(parseInt(parts[1]) % 4  == 0? "29" : "28");
-		}
-	}
-	if (dbug) console.log ("guessSalary::Parts: " + parts + ".");
-	if (level && parts) {
+
+	let startDate = getStartDate();
+	if (level && startDate) {
 		
 		level -= 1;
 
-		if (dbug) console.log("guessSalary::Got valid data (" + parts[1] + "-" + parts[2] + "-" + parts[3] + ")....now trying to figure out salary.");
-		//if (dbug) console.log ("And TABegin: " + TABegin.toString() + ".");
-		startDate = new Date(parts[1], parts[2]-1, parts[3]);
-		if (dbug) console.log ("guessSalary::Inited start date as " + startDate.toString() + ".");
+		if (dbug) console.log("getSalary::Got valid data (" + startDate.toISOString().substr(0,10) + ")....now trying to figure out salary.");
+			
+		let timeDiff = (TABegin - startDate) / day;
+
 
 		if (stepSelect.value && stepSelect.value >= 0 && stepSelect.value < salaries[level].length) {
 			step = stepSelect.value;
-			if (dbug) console.log ("guessSalary::Got step from the stepSelect.  And it's " + step + ".");
+			if (dbug) console.log ("getSalary::Got step from the stepSelect.  And it's " + step + ".");
 		} else {
-			if (dbug) console.log ("guessSalary::Couldn't get step from the stepSelect.  Value: " + stepSelect.value + ".");
-			var timeDiff = (TABegin - startDate) / day;
-			if (dbug) console.log ("guessSalary::TimeDiff: "  + timeDiff + ".");
+			if (dbug) console.log ("getSalary::Couldn't get step from the stepSelect. Gotta guess. stepSelect.value: " + stepSelect.value + ".");
+			if (dbug) console.log ("getSalary::TimeDiff: "  + timeDiff + ".");
 		
-			var years = Math.floor(timeDiff/365);
+			let years = Math.floor(timeDiff/365);
 			step = Math.min(years, salaries[level].length-1);
-			if (dbug) console.log ("guessSalary::Your step would be " + step + ".");
+			if (dbug) console.log ("getSalary::Your step would be " + step + ".");
 		}
 		var stp = step;
 
-		parts = null;
+		let parts = null;
 		parts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 		if (parts) {
 			EndDate = new Date(parts[1], (parts[2]-1), parts[3]);
-			if (dbug) console.log ("guessSalary::Got EndDateTxt as " + endDateTxt.value + ".");
+			EndDate.setDate(EndDate.getDate() + parseInt(1));
+			if (dbug) console.log ("getSalary::Got EndDateTxt as " + endDateTxt.value + ".");
 			//if (dbug) console.log ("Got EndDate as " + EndDate.toISOString().substr(0, 10) + ".");
 		}
 		//This used to be below adding anniversaries, but some anniversaries were being missed
-		if (dbug) console.log ("guessSalary::About to set EndDate to " + EndDate.toISOString().substr(0, 10) + ".");
-		addPeriod ({startDate : EndDate.toISOString().substr(0, 10), "increase":0, "reason":"end", "multiplier" : 1});
+		if (dbug) console.log ("getSalary::About to set EndDate to " + EndDate.toISOString().substr(0, 10) + ".");
+		addPeriod ({"startDate" : EndDate.toISOString().substr(0, 10), "increase":0, "reason":"end", "multiplier" : 1});
 
 		//add anniversarys
-		if (dbug) console.log ("guessSalary::Going to set anniversary dates: " + EndDate.getFullYear() + ".");
-		for (var i = 2018; i <=EndDate.getFullYear(); i++) {
+		//dbug = true;
+		let startYear = Math.max(2018, startDate.getFullYear());
+		if (dbug) console.log ("getSalary::Going to set anniversary dates betwixt: " + startYear + " and " + EndDate.getFullYear() + ".");
+		for (var i = startYear; i <=EndDate.getFullYear(); i++) {
 			if (stp < salaries[level].length) {
-				if (dbug) console.log ("guessSalary::Going to set anniversary date " + i + "-" + (startDate.getMonth()+1) + "-" + startDate.getDate() + ".");
-				addPeriod ({startDate: i + "-" + ((startDate.getMonth()+1) > 9 ? "" : "0") + (startDate.getMonth()+1)	+ "-" + (startDate.getDate() > 9 ? "" : "0") +  startDate.getDate(), "increase":0, "reason":"Anniversary Increase", "multiplier":1});
-				stp++;
+				let dateToAdd = i + "-" + ((startDate.getMonth()+1) > 9 ? "" : "0") + (startDate.getMonth()+1)	+ "-" + (startDate.getDate() > 9 ? "" : "0") +  startDate.getDate();
+				if (dbug) console.log ("getSalary::Going to set anniversary date " + dateToAdd + ".");
+				if (dateToAdd > startDate.toISOString().substr(0,10)) {
+					if (dbug) console.log ("getSalary::Going to add anniversary on " + dateToAdd + " because it's past " + startDate.toISOString().substr(0,10) + ".");
+					addPeriod ({"startDate": dateToAdd, "increase":0, "reason":"Anniversary Increase", "multiplier":1});
+					stp++;
+				} else {
+					if (dbug) console.log ("getSalary::Not going to add anniversary on " + dateToAdd + " because it's too early.");
+				}
 			}
 		}
+		//dbug = false;
 		if (timeDiff < 0) {
-			if (dbug) console.log ("guessSalary::You weren't even there then.");
+			if (dbug) console.log ("getSalary::You weren't even there then.");
 			// remove all older periods?? Maybe?  Or just somehow make them 0s?
+			// This one makes the mulitpliers 0.
+			addPeriod ({"startDate" : startDate.toISOString().substr(0,10), "increase":0, "reason":"Starting", "multiplier":1});
 			for (var i = 0; i < periods.length; i++) {
-				if (strtDte > periods[i]["startDate"]) periods[i]["multiplier"] = 0;
+				if (startDate.toISOString().substr(0,10) > periods[i]["startDate"]) periods[i]["multiplier"] = 0;
 			}
-
+			
+			// This one removes the ones before start date.
+			// This _sounds_ good, but it totally messes up the compounding raises later.
+			/*
+			addPeriod ({"startDate" : startDate.toISOString().substr(0,10), "increase":0, "reason":"Starting", "multiplier":1});
+			do {
+				periods.shift();
+			} while (periods[0]["startDate"] <= startDate.toISOString().substr(0,10) && periods[0]["reason"] != "Starting");
+			*/
+			//for (var i = periods.length-1; i >=0; i--)
+			/*
+			if (dbug) console.log ("getSalary::From step " + step + ".");
+			step = step - startYear - EndDate.getFullYear();
+			if (dbug) console.log ("getSalary::to step " + step + ".");
+			*/
 		} else {
 			//var salary = salaries[level][step];
 			//if (dbug) console.log ("You were there at that point, and your salary would be $" + salary.toFixed(2) + ".");
 		}
 		if (dbug) {
-			console.log("guessSalary::pre-calc checks:");
+			console.log("getSalary::pre-calc checks:");
 			for (var i = 0; i < periods.length; i++) {
-				console.log ("guessSalary::" + periods[i]["reason"] + ": " + periods[i]["startDate"] + ".");
+				console.log ("getSalary::" + periods[i]["reason"] + ": " + periods[i]["startDate"] + ".");
 			}
 		}
 
 	} else {
-		if (dbug) console.log ("guessSalary::Something's not valid.  Lvl: " + level + ", strtDte: " + strtDte + ".");
+		if (dbug) console.log ("getSalary::Something's not valid.  Lvl: " + level + ", startDate: " + startDate + ".");
 		addStartDateErrorMessage();
 	}
-} // End of guessSalary
+} // End of getSalary
 
 function addPromotions () {
 	// Add promotions
@@ -359,7 +404,7 @@ function addPromotions () {
 				if (dbug) console.log ("addPromotions::Starting with promo anniversaries k: " + k + ", and make sure it's <= " + EndDate.getFullYear() + ".");
 				for (k; k <= EndDate.getFullYear(); k++) {
 					if (dbug) console.log ("addPromotions::Adding anniversary date " + k + "-" + promoDate[2] + "-" + promoDate[3] + ".");
-					addPeriod ({startDate: k + "-" + promoDate[2] + "-" + promoDate[3], "increase":0, "reason":"Anniversary Increase", "multiplier":1});
+					addPeriod ({"startDate": k + "-" + promoDate[2] + "-" + promoDate[3], "increase":0, "reason":"Anniversary Increase", "multiplier":1});
 				}
 
 			} else {
@@ -921,13 +966,13 @@ function addPeriod (p) {
 	}
 	if (p["reason"] == "Anniversary Increase" && dbug) {
 		if (looking) {
-			console.log ("addPeriod::Gonna start looking for the place to insert this anniversary inclease.")
+			console.log ("addPeriod::Gonna start looking for the place to insert this anniversary increase.")
 		} else {
 			console.log ("addPeriod::Would look for the anniversary but looking is false.");
 		}
 	}
 	for (var i = 1; i < periods.length && looking; i++) {
-		if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]Is p[startDate](" + p["startDate"] + ") before periods["+i+"][startDate](" + periods[i]["startDate"] + ")?");
+		//if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]Is p[startDate](" + p["startDate"] + ") before periods["+i+"][startDate](" + periods[i]["startDate"] + ")?");
 		if (p["startDate"] < periods[i]["startDate"]) {
 			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It is!");
 			if (p["reason"] == "Lump Sum") {
@@ -986,7 +1031,7 @@ function addPeriod (p) {
 				rv = i;
 			}
 		} else {
-			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It's after.");
+			//if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It's after.");
 		}
 	}
 	return rv;
@@ -1075,9 +1120,9 @@ function calculate() {
 				for (var l = 0; l < newSalaries.length; l++) {
 					for (var s = 0; s < newSalaries[l].length; s++) {
 						if (dbug && l == level) console.log ("Multiplying " + newSalaries[l][s] + " * " + multiplier + ".");
-						newSalaries[l][s] = Math.round(newSalaries[l][s] * multiplier);
-						newDaily[l][s] = (newSalaries[l][s] / 260.88).toFixed(2);
-						newHourly[l][s] = (newSalaries[l][s] / 1956.6).toFixed(2);
+						newSalaries[l][s] = (newSalaries[l][s] * multiplier).toFixed(2);
+						newDaily[l][s] = (newSalaries[l][s] / 260.88); //.toFixed(2);
+						newHourly[l][s] = (newSalaries[l][s] / 1956.6); //.toFixed(2);
 						if (dbug && l == level) console.log ("And it came to " + newSalaries[l][s] + ".");
 					}
 				}
@@ -1108,11 +1153,13 @@ function calculate() {
 			periods[i]["backpay"] = periods[i]["shouldHaveMade"] - periods[i]["made"];
 
 			var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
-			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"] + " - " + periods[i+1]["startDate"]});
+			let endDate = new Date(periods[i+1]["startDate"]);
+			endDate.setDate(endDate.getDate() -1);
+			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"] + " - " + endDate.toISOString().substr(0,10)});
 			var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + periods[i]["reason"] + ")", "class":"small"});
-			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + periods[i]["made"].toFixed(2)});
-			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + periods[i]["shouldHaveMade"].toFixed(2)});
-			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + periods[i]["backpay"].toFixed(2)});
+			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["made"])}); //.toFixed(2)});
+			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["shouldHaveMade"])}); //.toFixed(2)});
+			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["backpay"])}); //.toFixed(2)});
 
 			if (dbug || showExtraCols) {
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "CS-0" + (level +1)});
@@ -1134,9 +1181,9 @@ function calculate() {
 					var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
 					var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(Overtime Payment x " + rate + ")", "class":"small"});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + made.toFixed(2)});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + shouldHaveMade.toFixed(2)});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + backpay.toFixed(2)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
 
 					if (dbug || showExtraCols) {
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "CS-0" + (level +1)});
@@ -1163,9 +1210,9 @@ function calculate() {
 				var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
 				var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(Lump Sum Payment)", "class":"small"});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + made.toFixed(2)});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + shouldHaveMade.toFixed(2)});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + backpay.toFixed(2)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
 
 				
 				if (dbug || showExtraCols) {
@@ -1217,9 +1264,9 @@ function calculate() {
 			*/
 			var totalTR = createHTMLElement("tr", {"parentNode":resultsFoot});
 			var totalTH = createHTMLElement("th", {"parentNode":totalTR, "scope":"row", "nodeText":"Total"});
-			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText":"$" + total["made"].toFixed(2)});
-			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText":"$" + total["shouldHaveMade"].toFixed(2)});
-			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText":"$" + total["backpay"].toFixed(2)});
+			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["made"])});
+			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["shouldHaveMade"])});
+			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["backpay"])});
 		}
 		resultStatus.innerHTML = "Results shown below.";
 	//} else {
@@ -1227,7 +1274,7 @@ function calculate() {
 		
 
 	//}
-}
+} // End of calculate
 
 
 function addStartDateErrorMessage () {
@@ -1237,6 +1284,17 @@ function addStartDateErrorMessage () {
 	levelSel.setAttribute("aria-describedby", "startDateError");
 	return;
 }
+
+var formatter = new Intl.NumberFormat('en-CA', {
+  style: 'currency',
+  currency: 'CAD',
+
+  // These options are needed to round to whole numbers if that's what you want.
+  //minimumFractionDigits: 0, // (this suffices for whole numbers, but will print 2500.10 as $2,500.1)
+  //maximumFractionDigits: 0, // (causes 2500.99 to be printed as $2,501)
+  // Taken from https://stackoverflow.com/questions/149055/how-to-format-numbers-as-currency-string
+});
+
 
 function createHTMLElement (type, attribs) {
 	var newEl = document.createElement(type);
