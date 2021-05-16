@@ -46,7 +46,8 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2021", "05", "15");
+var lastModified = new Date("2021", "04", "15");
+var lastModTime = null;
 // taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
 var salaries = [
 	[56907, 59011, 61111, 63200, 65288, 67375, 69461, 73333],
@@ -90,6 +91,13 @@ function init () {
 	resultsFoot = document.getElementById("resultsFoot");
 	resultsTheadTR = document.getElementById("resultsTheadTR");
 	resultStatus = document.getElementById("resultStatus");
+	lastModTime = document.getElementById("lastModTime");
+
+	if (lastModTime) {
+		lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0,10));
+		lastModTime.innerHTML = lastModified.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });	
+	}
+
 	if (dbug || showExtraCols) {
 		var ths = resultsTheadTR.getElementsByTagName("th");
 		if (ths.length == 4) {
