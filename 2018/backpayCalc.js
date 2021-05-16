@@ -32,7 +32,7 @@ var resultStatus = null;
 var calcStartDate = null;
 var endDateTxt = "2021-04-15";
 var TABegin = new Date("2018", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
-var EndDate = new Date("2021", "02", "18");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+var EndDate = new Date("2021", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var day = (1000 * 60 * 60 * 24);
 var parts = [];
 var resultsBody = null;
@@ -312,6 +312,7 @@ function getSalary () {
 		parts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 		if (parts) {
 			EndDate = new Date(parts[1], (parts[2]-1), parts[3]);
+			EndDate.setDate(EndDate.getDate() + parseInt(1));
 			if (dbug) console.log ("getSalary::Got EndDateTxt as " + endDateTxt.value + ".");
 			//if (dbug) console.log ("Got EndDate as " + EndDate.toISOString().substr(0, 10) + ".");
 		}
@@ -320,7 +321,7 @@ function getSalary () {
 		addPeriod ({"startDate" : EndDate.toISOString().substr(0, 10), "increase":0, "reason":"end", "multiplier" : 1});
 
 		//add anniversarys
-		dbug = true;
+		//dbug = true;
 		let startYear = Math.max(2018, startDate.getFullYear());
 		if (dbug) console.log ("getSalary::Going to set anniversary dates betwixt: " + startYear + " and " + EndDate.getFullYear() + ".");
 		for (var i = startYear; i <=EndDate.getFullYear(); i++) {
@@ -336,7 +337,7 @@ function getSalary () {
 				}
 			}
 		}
-		dbug = false;
+		//dbug = false;
 		if (timeDiff < 0) {
 			if (dbug) console.log ("getSalary::You weren't even there then.");
 			// remove all older periods?? Maybe?  Or just somehow make them 0s?
@@ -965,7 +966,7 @@ function addPeriod (p) {
 	}
 	if (p["reason"] == "Anniversary Increase" && dbug) {
 		if (looking) {
-			console.log ("addPeriod::Gonna start looking for the place to insert this anniversary inclease.")
+			console.log ("addPeriod::Gonna start looking for the place to insert this anniversary increase.")
 		} else {
 			console.log ("addPeriod::Would look for the anniversary but looking is false.");
 		}
@@ -1119,9 +1120,9 @@ function calculate() {
 				for (var l = 0; l < newSalaries.length; l++) {
 					for (var s = 0; s < newSalaries[l].length; s++) {
 						if (dbug && l == level) console.log ("Multiplying " + newSalaries[l][s] + " * " + multiplier + ".");
-						newSalaries[l][s] = Math.round(newSalaries[l][s] * multiplier);
-						newDaily[l][s] = (newSalaries[l][s] / 260.88).toFixed(2);
-						newHourly[l][s] = (newSalaries[l][s] / 1956.6).toFixed(2);
+						newSalaries[l][s] = (newSalaries[l][s] * multiplier).toFixed(2);
+						newDaily[l][s] = (newSalaries[l][s] / 260.88); //.toFixed(2);
+						newHourly[l][s] = (newSalaries[l][s] / 1956.6); //.toFixed(2);
 						if (dbug && l == level) console.log ("And it came to " + newSalaries[l][s] + ".");
 					}
 				}
@@ -1156,9 +1157,9 @@ function calculate() {
 			endDate.setDate(endDate.getDate() -1);
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"] + " - " + endDate.toISOString().substr(0,10)});
 			var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + periods[i]["reason"] + ")", "class":"small"});
-			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + periods[i]["made"].toFixed(2)});
-			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + periods[i]["shouldHaveMade"].toFixed(2)});
-			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + periods[i]["backpay"].toFixed(2)});
+			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["made"])}); //.toFixed(2)});
+			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["shouldHaveMade"])}); //.toFixed(2)});
+			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["backpay"])}); //.toFixed(2)});
 
 			if (dbug || showExtraCols) {
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "CS-0" + (level +1)});
@@ -1180,9 +1181,9 @@ function calculate() {
 					var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
 					var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(Overtime Payment x " + rate + ")", "class":"small"});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + made.toFixed(2)});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + shouldHaveMade.toFixed(2)});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + backpay.toFixed(2)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
 
 					if (dbug || showExtraCols) {
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "CS-0" + (level +1)});
@@ -1209,9 +1210,9 @@ function calculate() {
 				var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
 				var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(Lump Sum Payment)", "class":"small"});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + made.toFixed(2)});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + shouldHaveMade.toFixed(2)});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "$ " + backpay.toFixed(2)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
 
 				
 				if (dbug || showExtraCols) {
@@ -1273,7 +1274,7 @@ function calculate() {
 		
 
 	//}
-}
+} // End of calculate
 
 
 function addStartDateErrorMessage () {

@@ -56,10 +56,9 @@
 				</select>
 			</div>
 			<div class="fieldHolder">
-				<label for="endDateTxt">When should this stop calculating?</label> 
-				<input type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat lastDayBug" value="2021-03-18">
+				<label for="endDateTxt">When is the last day this should this stop calculating?</label> 
+				<input type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat lastDayBug" value="2021-03-17">
 				<span id="endDateFormat" class="helper">(ie: either the date you stopped being a CS, or when the contract is implemented.)</span>
-				<span class="" id="lastDayBug">Due to a bug, set this as one day <em>after</em> the calculation should end. Ex: if it should stop calculating on Dec. 31, 2020, enter <time>2021-01-01</time>.</span>
 			</div>
 			<fieldset id="promotionsFS">
 				<legend>Promotions</legend>
@@ -97,7 +96,7 @@
 		</form>
 		<div id="resultsDiv">
 			<h2>Results</h2>
-			<p>All amounts are gross.  You'll have to figure out your own taxes.</p>
+			<p>All amounts are gross.  You'll have to figure out your own taxes. (And sometimes your taxes are pretty gross!  Nyuk nyuk nyuk)</p>
 			<table id="resultsTable">
 				<caption>Pay periods</caption>
 				<thead>
@@ -118,6 +117,7 @@
 		<footer>
 			<h2>Note</h2>
 			<p>This calculator was built as a hobby and is provided "as is" as proof-of-concept. There is absolutely no guarantee of accuracy, or officialness. It should be used for interest sakes, not as an authority.</p>
+			<p>See a problem?  Have a suggestion? <a href="https://github.com/andrewnordlund/backpayCalc/issues">Submit an issue</a>.</p>
 			<p>Back to the <a href="../index.html">Backpay Calculator</a> home page.</p>
 		<script src="backpayCalc.js"></script>
 		<div id="resultStatus" role="status" aria-live="polite" class="invisibleStuff"></div>
