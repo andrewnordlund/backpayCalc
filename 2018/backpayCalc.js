@@ -12,7 +12,7 @@
  *
  */
 
-var dbug = !true;
+var dbug = true;
 var showExtraCols = true;
 var level = -1;
 var step = -1;
