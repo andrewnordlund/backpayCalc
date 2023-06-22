@@ -48,7 +48,11 @@ var overtimes = 0;
 var lwops = 0;
 var lastModified = new Date("2021", "04", "15");
 var lastModTime = null;
+var salaries = [];
+var daily = [];
+var hourly = [];
 // taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
+/*
 var salaries = [
 	[56907, 59011, 61111, 63200, 65288, 67375, 69461, 73333],
 	[70439, 72694, 74947, 77199, 79455, 81706, 83960, 86213],
@@ -71,6 +75,7 @@ var hourly = [
 	[48.66, 50.33, 52.01, 53.69, 55.37, 57.04, 58.72, 60.56],
 	[55.47, 57.54, 59.60, 61.67, 63.74, 65.81, 67.88, 69.94, 72.28]
 ];
+*/
 //var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 //var days = [31, 29, 31
 function init () {
@@ -97,7 +102,6 @@ function init () {
 		lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0,10));
 		lastModTime.innerHTML = lastModified.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });	
 	}
-
 	if (dbug || showExtraCols) {
 		var ths = resultsTheadTR.getElementsByTagName("th");
 		if (ths.length == 4) {
@@ -1348,5 +1352,23 @@ function removeChildren (el) {
 		el.removeChild(el.firstChild);
 	}
 }
+
+async function getData () {
+	let response = await fetch("raiseInfo.json");
+	if (response.ok) { // if HTTP-status is 200-299
+		// get the response body (the method explained below)
+		let json = await response.json();
+		if (dbug) console.log ("Got json: "  + JSON.stringify(json) + ".");
+		salaries = json["IT"]["2018-2021"]["salaries"]["annual"];
+		daily = json["IT"]["2018-2021"]["salaries"]["daily"];
+		hourly = json["IT"]["2018-2021"]["salaries"]["hourly"];
+		
+		init();
+	} else {
+		console.error ("HTTP-Error: " + response.status);
+	}
+} // End of getData
+
 if (dbug) console.log ("Finished loading backpayCalc.js.");
-document.addEventListener('DOMContentLoaded', init, false);
+document.addEventListener('DOMContentLoaded', getData, false);
+
