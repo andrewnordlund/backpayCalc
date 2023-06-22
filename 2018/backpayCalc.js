@@ -39,6 +39,7 @@ var resultsBody = null;
 var resultsFoot = null;
 var resultsTheadTR = null;
 var periods = [];
+var initPeriods = [];
 var lumpSumPeriods = {};
 var overtimePeriods = {};
 var promotions = 0;
@@ -213,7 +214,7 @@ function getStartDate () {
 } // End of getStartDate
 
 function startProcess () {
-	periods = initPeriods();
+	periods = resetPeriods();
 	lumpSumPeriods = {};
 	overtimePeriods = {};
 	if (resultsBody) {
@@ -268,16 +269,10 @@ function startProcess () {
 
 } // End of startProcess
 
-function initPeriods () {
-	return ([
-		{startDate : "2018-12-22", "increase":2.816, "reason":"Contractual Increase", "multiplier" : 1},
-		{startDate : "2019-04-01", "increase":0.00, "reason":"Fiscal New Year", "multiplier" : 1},
-		{startDate : "2019-12-22", "increase":2.204, "reason":"Contractual Increase", "multiplier" : 1}, 
-		{startDate : "2020-04-01", "increase":0.00, "reason":"Fiscal New Year", "multiplier" : 1},
-		{startDate : "2020-12-22", "increase":1.50, "reason":"Contractual Increase", "multiplier" : 1},
-		{startDate : "2021-02-26", "increase":0.00, "reason":"Contract Signed", "multiplier" : 1}
-	]);
-} // End of initPeriods
+function resetPeriods () {
+	periods = [];
+	periods = initPeriods;
+} // End of resetPeriods
 
 // getSalary called during startProcess.  "guess" isn't really a good word for this, so I changed it to "get"
 
@@ -1362,6 +1357,7 @@ async function getData () {
 		salaries = json["IT"]["2018-2021"]["salaries"]["annual"];
 		daily = json["IT"]["2018-2021"]["salaries"]["daily"];
 		hourly = json["IT"]["2018-2021"]["salaries"]["hourly"];
+		initPeriods = json["IT"]["2018-2021"]["periods"];
 		
 		init();
 	} else {
