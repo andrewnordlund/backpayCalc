@@ -1,6 +1,6 @@
 {
 	"IT" : {
-		"2018-2020" : {
+		"2018-2021" : {
 			"salaries" : {
 				"annual" : [
 					[56907, 59011, 61111, 63200, 65288, 67375, 69461, 73333],
@@ -24,6 +24,14 @@
 					[55.47, 57.54, 59.60, 61.67, 63.74, 65.81, 67.88, 69.94, 72.28]
 				]
 			},
+			"periods" : [
+				{"startDate" : "2018-12-22", "increase":2.816, "reason":"Contractual Increase", "multiplier" : 1},
+				{"startDate" : "2019-04-01", "increase":0.00, "reason":"Fiscal New Year", "multiplier" : 1},
+				{"startDate" : "2019-12-22", "increase":2.204, "reason":"Contractual Increase", "multiplier" : 1}, 
+				{"startDate" : "2020-04-01", "increase":0.00, "reason":"Fiscal New Year", "multiplier" : 1},
+				{"startDate" : "2020-12-22", "increase":1.50, "reason":"Contractual Increase", "multiplier" : 1},
+				{"startDate" : "2021-02-26", "increase":0.00, "reason":"Contract Signed", "multiplier" : 1}
+			],
 			"TABegin" : "2018-12-22",
 			"TAEnd" : "2021-03-17"
 		}
