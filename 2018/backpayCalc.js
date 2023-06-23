@@ -13,6 +13,8 @@
  */
 
 var dbug = !true;
+var updateHash = true;
+var saveValues = null;
 var showExtraCols = true;
 var level = -1;
 var step = -1;
@@ -80,13 +82,20 @@ var hourly = [
 //var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 //var days = [31, 29, 31
 function init () {
+	console.log ("Initting");
+	saveValues = new Map();
 	var calcBtn = document.getElementById("calcBtn");
 	levelSel = document.getElementById("levelSelect");
+	if (updateHash) levelSel.addEventListener("change", saveValue, false);
+
 	stepSelect = document.getElementById("stepSelect");
+	if (updateHash) stepSelect.addEventListener("change", saveValue, false);
 	mainForm = document.getElementById("mainForm");
 	resultsDiv = document.getElementById("resultsDiv");
 	startDateTxt = document.getElementById("startDateTxt");
+	if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
 	endDateTxt = document.getElementById("endDateTxt");
+	if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
 	calcStartDate = document.getElementById("calcStartDate");
 	addPromotionBtn = document.getElementById("addPromotionBtn");
 	addActingBtn = document.getElementById("addActingBtn");
@@ -98,6 +107,9 @@ function init () {
 	resultsTheadTR = document.getElementById("resultsTheadTR");
 	resultStatus = document.getElementById("resultStatus");
 	lastModTime = document.getElementById("lastModTime");
+
+	console.log ("Gonna check the hash.");
+	handleHash ();
 
 	if (lastModTime) {
 		lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0,10));
@@ -134,6 +146,90 @@ function init () {
 		if (dbug) console.error ("Couldn't get levelSelect.");
 	}
 } // End of init
+
+
+// Check the document location for saved things
+function handleHash () {
+	let thisURL = new URL(document.location);
+	let params = thisURL.searchParams;
+	let hash = thisURL.hash;
+	if (params.get("dbug")) {
+		if (params.get("dbug") == "true") dbug= true;
+	}
+
+	if (params.get("lvl")) {
+		let lvl = params.get("lvl").replace(/\D/g, "");
+		levelSel.selectedIndex = lvl;
+	}
+	if (params.get("strtdt")) {
+		let sd = params.get("strtdt");
+		if (sd.match(/\d\d\d\d-\d\d-\d\d/)) startDateTxt.value = sd;
+	}
+	setTimeout (function () {
+		if (params.get("stp")) {
+			let stp = params.get("stp").replace(/\D/g, "");
+			stepSelect.selectedIndex = stp;
+		}}, 500);
+	if (params.get("enddt")) {
+		let ed = params.get("enddt");
+		if (ed.match(/\d\d\d\d-\d\d-\d\d/)) endDateTxt.value = ed;
+	}
+
+} // End of handleHash
+
+function saveValue (e) {
+	let ot = e.originalTarget;
+	let key = ot.id;
+	console.log ("ot: " + typeof(ot) + ".");
+	let value = (ot.toString().match(/HTMLSelect/) ? ot.selectedIndex : ot.value);
+	console.log ("Got: " + key + "=>" + value);
+	//saveValues[key] = value;
+	saveValues.set(key, value);
+	if (updateHash) setURL();
+} // End of saveValue
+
+// set the URL
+function setURL () {
+	let url = new URL(document.location);
+	let newURL = url.toString().replace(/#.*$/, "");
+	newURL = newURL.replace(/\?.*$/, "");
+	//let params = [];
+	/*for (let id in filters) {
+		if (!filters[id].checked) {
+			params.push(id.replace("Chk", ""));
+			if (id.match(/levelA/)) {
+				params[params.length-1] += "$";
+			}
+		}
+	}*/
+	/*
+	if (levelSel) saveValues["lvl"] = levelSel.selectedIndex);
+	if (startDateTxt.value) ("strtdt=" +  startDateTxt.value);
+	if (stepSelect) params.push("stp=" +  stepSelect.selectedIndex);
+	if (endDateTxt.value) params.push("enddt=" +  endDateTxt.value);
+
+	newURL += "?" + params.join("&");
+	*/
+	newURL += "?";
+	saveValues.forEach(function (val, key, saveValues) {
+		console.log ("adding " + key + "=" + val);
+		newURL += key + "=" + val + "&";
+		});
+	newURL = newURL.substring(0, newURL.length - 1);
+	/*
+	if (params.length > 0) {
+		newURL += "?filters=" + params.join(sep) + (selectedTab != "" ? "&" + selectedTab : "") + url.hash;
+	} else {
+		newURL += (selectedTab != "" ? "?" + selectedTab : "") + url.hash;
+	}
+	*/
+	history.pushState({}, document.title, newURL);
+	
+
+} // End of setURL
+
+
+
 
 /*
    Populates the Salary Select basedon the CS-0x level selected
@@ -640,6 +736,7 @@ function addPromotionHandler () {
 
 	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promoDate" + id, "nodeText":"Date of promotion: "});
 	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat"});
+	newPromoDate.addEventListener("change", saveValue, false);
 
 	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promotionLevel" + id, "nodeText":"Promoted to level: "});
 	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"actingLevel" + id});
@@ -647,6 +744,7 @@ function addPromotionHandler () {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
 		if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
 	}
+	newPromoSel.addEventListener("change", saveValue, false);
 
 
 	var br = createHTMLElement("br", {"parentNode":newPromotionFS});
@@ -1353,7 +1451,7 @@ async function getData () {
 	if (response.ok) { // if HTTP-status is 200-299
 		// get the response body (the method explained below)
 		let json = await response.json();
-		if (dbug) console.log ("Got json: "  + JSON.stringify(json) + ".");
+		if (dbug || true) console.log ("Got json: "  + JSON.stringify(json) + ".");
 		salaries = json["IT"]["2018-2021"]["salaries"]["annual"];
 		daily = json["IT"]["2018-2021"]["salaries"]["daily"];
 		hourly = json["IT"]["2018-2021"]["salaries"]["hourly"];
