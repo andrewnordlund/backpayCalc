@@ -185,6 +185,9 @@ function saveValue (e) {
 	console.log ("Got: " + key + "=>" + value);
 	//saveValues[key] = value;
 	saveValues.set(key, value);
+
+	
+
 	if (updateHash) setURL();
 } // End of saveValue
 
@@ -736,24 +739,40 @@ function addPromotionHandler () {
 
 	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promoDate" + id, "nodeText":"Date of promotion: "});
 	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat"});
+	newPromoDate.focus();
 	newPromoDate.addEventListener("change", saveValue, false);
 
 	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promotionLevel" + id, "nodeText":"Promoted to level: "});
-	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"actingLevel" + id});
+	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"promotionLevel" + id});
 	for (var j = 0; j < 6; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
 		if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
 	}
-	newPromoSel.addEventListener("change", saveValue, false);
+	newPromotionSel.addEventListener("change", saveValue, false);
 
+	let promoButtonsDiv = null;
+	if (id == 0) {
+		promoButtonsDiv = createHTMLElement("div", {"parentNode":newPromotionFS, "id":"promoButtonsDiv"});
+		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":"Remove", "id": "removePromotionBtn" + promotions});
+		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":"Add another promotion", "class":"promotionsBtn", "id": "addPromotionsBtn" + id});
+		newAddPromotionBtn.addEventListener("click", addPromotionHandler, false);
+		newDelPromotionBtn.addEventListener("click", removePromotionDiv, false);
+	} else {
+		promoButtonsDiv = document.getElementById("promoButtonsDiv");
+		newPromotionFS.appendChild(promoButtonsDiv);
+	}
 
+/*
 	var br = createHTMLElement("br", {"parentNode":newPromotionFS});
 
-	var newDelPromotionBtn = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"button", "value":"Remove", "id": "removePromotionBtn" + promotions});
-	var newAddPromotionBtn = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"button", "value":"Add another promotion", "class":"promotionsBtn", "id": "addPromotionsBtn" + id});
-	newAddPromotionBtn.addEventListener("click", addPromotionHandler, false);
-	newDelPromotionBtn.addEventListener("click", removePromotionDiv, false);
 
+
+	if (id > 0) {
+		let lastRemoveBtn = null;
+		lastRemoveBtn = document.getElementById("removePromotionBtn" + (id-1));
+		if (lastRemoveBtn) lastRemoveBtn.setAttribute("disabled", "disabled");
+	}
+*/
 	promotions++;
 
 
@@ -902,7 +921,13 @@ function addLumpSumHandler () {
 } // End of addLumpSum Handler
 
 function removePromotionDiv (e) {
-	var btn= e.target;
+	console.log ("promotions: " + promotions);
+	promotions--;
+	if (promotions == 0) {
+		addPromotionBtn.focus();
+	}
+	/*
+	var btn = e.target;
 	var btnID = btn.getAttribute("id")
 	btnID = btnID.replaceAll(/\D/g, "");
 	if (btnID > 0) btnID--;
@@ -921,6 +946,12 @@ function removePromotionDiv (e) {
 			if (j == 0) promotionBtns = addPromotionBtn;
 		}
 		try {
+			let removeBtn = null;
+			removeBtn = document.getElementById("removePromotionBtn" + btnID);
+			if (removeBtn) {
+				if (removeBtn.hasAttribute("disabled")) removeBtn.removeAttribute("disabled");
+			}
+
 			promotionBtns.focus();
 		}
 		catch (ex) {
@@ -928,8 +959,9 @@ function removePromotionDiv (e) {
 			addPromotionBtn.focus();
 		}
 	}
+	*/
 	resultStatus.innerHTML="Promotion section removed.";
-}
+} // End of removePromotionDiv
 
 function removeActingDiv (e) {
 	var btn= e.target;
