@@ -735,7 +735,7 @@ function addPromotionHandler () {
 	}
 
 	let newPromotionFS = createHTMLElement("fieldset", {"parentNode":promotionsDiv, "class":"fieldHolder promotions", "id" :"promo" + id});
-	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":"Promotion"});
+	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":"Promotion " + (id+1)});
 
 	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promoDate" + id, "nodeText":"Date of promotion: "});
 	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat"});
@@ -762,17 +762,6 @@ function addPromotionHandler () {
 		newPromotionFS.appendChild(promoButtonsDiv);
 	}
 
-/*
-	var br = createHTMLElement("br", {"parentNode":newPromotionFS});
-
-
-
-	if (id > 0) {
-		let lastRemoveBtn = null;
-		lastRemoveBtn = document.getElementById("removePromotionBtn" + (id-1));
-		if (lastRemoveBtn) lastRemoveBtn.setAttribute("disabled", "disabled");
-	}
-*/
 	promotions++;
 
 
@@ -792,8 +781,8 @@ function addActingHandler () {
 		}
 	}
 
-	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints"});
-	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode":"Acting Stint"});
+	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints", "id":"acting"+id});
+	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode":"Acting Stint " + (id+1)});
 
 	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "for":"actingLevel" + id, "nodeText":"Acting Level: "});
 	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, "id":"actingLevel" + id});
@@ -805,12 +794,22 @@ function addActingHandler () {
 	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat"});
 	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"To", "for":"actingTo"+id});
 	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat"});
-	var br = createHTMLElement("br", {"parentNode":newActingFS});
 
-	var newDelActingBtn = createHTMLElement("input", {"parentNode":newActingFS, "type":"button", "value":"Remove", "id": "removeActingBtn" + id});
-	var newAddActingBtn = createHTMLElement("input", {"parentNode":newActingFS, "type":"button", "value":"Add another acting period", "class":"actingBtn", "id":"addActingsBtn" + id});
-	newAddActingBtn.addEventListener("click", addActingHandler, false);
-	newDelActingBtn.addEventListener("click", removeActingDiv, false);
+	newActingSel.addEventListener("change", saveValue, false);
+
+	let actingButtonsDiv = null;
+	if (id == 0) {
+		actingButtonsDiv = createHTMLElement("div", {"parentNode":newActingFS, "id":"actingButtonsDiv"});
+		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":"Remove", "id": "removeActingBtn" + actings});
+		var newAddActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":"Add another Acting", "class":"actingBtn", "id": "addActingsBtn" + id});
+		newAddActingBtn.addEventListener("click", addActingHandler, false);
+		newDelActingBtn.addEventListener("click", removeActingDiv, false);
+	} else {
+		actingButtonsDiv = document.getElementById("actingButtonsDiv");
+		newActingFS.appendChild(actingButtonsDiv);
+	}
+
+	newActingSel.focus();
 
 	actings++;
 	resultStatus.innerHTML="New Acting section added.";
@@ -829,21 +828,29 @@ function addLWoPHandler () {
 		}
 	}
 
-	var newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints"});
-	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":"LWoP Stint"});
+	var newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints", "id":"lwop"+id});
+	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":"LWoP Stint " + (id+1)});
 
 	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":"From", "for":"lwopFrom" + id});
 	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat"});
 	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":"To", "for":"lwopTo"+id});
-	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat"});
-	var br = createHTMLElement("br", {"parentNode":newLWoPFS});
+	var newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat"});
 
-	var newDelLWoPBtn = createHTMLElement("input", {"parentNode":newLWoPFS, "type":"button", "value":"Remove", "id": "removeLwopBtn" + id});
-	var newAddLWoPBtn = createHTMLElement("input", {"parentNode":newLWoPFS, "type":"button", "value":"Add another lwop period", "class":"lwopBtn", "id":"addLwopsBtn" + id});
-	newAddLWoPBtn.addEventListener("click", addLWoPHandler, false);
-	newDelLWoPBtn.addEventListener("click", removeLWoPDiv, false);
+	let lwopButtonsDiv = null;
+	if (id == 0) {
+		lwopButtonsDiv = createHTMLElement("div", {"parentNode":newLWoPFS, "id":"lwopButtonsDiv"});
+		var newDelLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":"Remove", "id": "removeLWoPBtn" + lwops});
+		var newAddLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":"Add another LWoP", "class":"lwopBtn", "id": "addLWoPsBtn" + id});
+		newAddLWoPBtn.addEventListener("click", addLWoPHandler, false);
+		newDelLWoPBtn.addEventListener("click", removeLWoPDiv, false);
+	} else {
+		lwopButtonsDiv = document.getElementById("lwopButtonsDiv");
+		newLWoPFS.appendChild(lwopButtonsDiv);
+	}
 
+	
 	lwops++;
+	newLWoPFromDate.focus();
 	resultStatus.innerHTML="New leave without pay section added.";
 } // End of lWoPHandler
 
@@ -859,12 +866,13 @@ function addOvertimeHandler () {
 			looking = false;
 		}
 	}
-	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes"});
-	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":"Overtime or Standby"});
+	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes", "id":"ot" + id});
+	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":"Overtime or Standby " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
 	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":"Date of Overtime:", "for":"overtimeDate" + id});
 	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat"});
+
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
 	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Hours-worth of overtime", "for":"overtimeAmount" + id});
@@ -879,12 +887,21 @@ function addOvertimeHandler () {
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"1.5", "nodeText":"1.5x", "selected":"selected"});
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"2.0", "nodeText":"2.0x"});
 
-	var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Remove", "id": "removeOvertimeBtn" + id});
-	var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Add another Overtime or Standby period", "class":"overtimeBtn", "id":"addOvertimesBtn" + id});
-	newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
-	newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
 
+	let otButtonsDiv = null;
+	if (id == 0) {
+		otButtonsDiv = createHTMLElement("div", {"parentNode":newOvertimeFS, "id":"otButtonsDiv"});
+		var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":"Remove", "id": "removeOvertimeBtn" + overtimes});
+		var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":"Add another Overtime", "class":"otBtn", "id": "addOvertimesBtn" + id});
+		newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
+		newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
+	} else {
+		otButtonsDiv = document.getElementById("otButtonsDiv");
+		newOvertimeFS.appendChild(otButtonsDiv);
+	}
+	newOvertimeDate.focus();
 	overtimes++;
+
 	resultStatus.innerHTML="New overtime section added.";
 } // End of addOvertimeHandler
 
@@ -900,8 +917,8 @@ function addLumpSumHandler () {
 			looking = false;
 		}
 	}
-	var newLumpSumFS = createHTMLElement("fieldset", {"parentNode":LumpSumDiv, "class":"fieldHolder lumpSums"});
-	var newLumpSumLegend = createHTMLElement("legend", {"parentNode":newLumpSumFS, "textNode":"Lump Sums"});
+	var newLumpSumFS = createHTMLElement("fieldset", {"parentNode":LumpSumDiv, "class":"fieldHolder lumpSums", "id":"lumpSum" + id});
+	var newLumpSumLegend = createHTMLElement("legend", {"parentNode":newLumpSumFS, "textNode":"Lump Sum " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
 	var newLumpSumDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":"Date paid out:", "for":"lumpSumDate" + id});
@@ -911,121 +928,154 @@ function addLumpSumHandler () {
 	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Hours-worth of payout", "for":"lumpSumAmount" + id});
 	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"lumpSumAmount"+id, "type":"text"});
 
+
+	let lumpSumButtonsDiv = null;
+	if (id == 0) {
+		lumpSumButtonsDiv = createHTMLElement("div", {"parentNode":newLumpSumFS, "id":"lumpSumButtonsDiv"});
+		var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":"Remove", "id": "removeLumpSumBtn" + lumpSums});
+		var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":"Add another LumpSum", "class":"lumpSumBtn", "id": "addLumpSumsBtn" + id});
+		newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
+		newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
+	} else {
+		lumpSumButtonsDiv = document.getElementById("lumpSumButtonsDiv");
+		newLumpSumFS.appendChild(lumpSumButtonsDiv);
+	}
+
+	newLumpSumDate.focus();
+
+
+	/*
 	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Remove", "id": "removeLumpSumBtn" + id});
 	var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Add another Lump Sum period", "class":"lumpsumBtn", "id":"addLumpSumsBtn" + id});
 	newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 	newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
-
+	*/
 	lumpSums++;
 	resultStatus.innerHTML="New lump sum section added.";
 } // End of addLumpSum Handler
 
 function removePromotionDiv (e) {
-	console.log ("promotions: " + promotions);
+	let promoButtonsDiv = null;
+	let promoFS = null;
+	let promoDate = null;
+	let rmPromoFS = null;
+	
+	promoButtonsDiv = document.getElementById("promoButtonsDiv");
+
 	promotions--;
+	rmPromoFS = document.getElementById("promo" + promotions);
 	if (promotions == 0) {
 		addPromotionBtn.focus();
-	}
-	/*
-	var btn = e.target;
-	var btnID = btn.getAttribute("id")
-	btnID = btnID.replaceAll(/\D/g, "");
-	if (btnID > 0) btnID--;
-	var fs = btn.parentNode;
-	fs.parentNode.removeChild(fs);
-	promotions--;
-	if (promotions == 0 || btnID < 0) {
-		addPromotionBtn.focus();
 	} else {
-		let promotionBtns = null;
-		promotionBtns = document.getElementById("addPromotionsBtn" + btnID);
-		if (!promotionBtns) {
-			for (var j = btnID; promotionBtns === null && j >0; j--) {
-				promotionBtns = document.getElementById("addPromotionsBtn" + j);
-			}
-			if (j == 0) promotionBtns = addPromotionBtn;
-		}
-		try {
-			let removeBtn = null;
-			removeBtn = document.getElementById("removePromotionBtn" + btnID);
-			if (removeBtn) {
-				if (removeBtn.hasAttribute("disabled")) removeBtn.removeAttribute("disabled");
-			}
-
-			promotionBtns.focus();
-		}
-		catch (ex) {
-			console.error ("Exception: " + ex.toString());
-			addPromotionBtn.focus();
-		}
+		promoFS = document.getElementById("promo" + (promotions-1));
+		if (promoFS) promoFS.appendChild(promoButtonsDiv);
+		promoDate = document.getElementById("promoDate" + (promotions-1));
+		if (promoDate) promoDate.focus();
 	}
-	*/
+
+	rmPromoFS.parentNode.removeChild(rmPromoFS);
+	rmPromoFS = null;
+
 	resultStatus.innerHTML="Promotion section removed.";
 } // End of removePromotionDiv
 
 function removeActingDiv (e) {
-	var btn= e.target;
-	var btnID = btn.getAttribute("id")
-	btnID = btnID.replaceAll(/\D/g, "");
-	if (btnID > 0) btnID--;
-	var fs = btn.parentNode;
-	fs.parentNode.removeChild(fs);
+	let actingButtonsDiv = null;
+	let actingFS = null;
+	let actingSel = null;
+	let rmActingFS = null;
+	
+	actingButtonsDiv = document.getElementById("actingButtonsDiv");
+
 	actings--;
-	if (actings == 0 || btnID < 0) {
+	rmActingFS = document.getElementById("acting" + actings);
+	if (actings == 0) {
 		addActingBtn.focus();
 	} else {
-		let actingBtns = null;
-		actingBtns = document.getElementById("addActingsBtn" + btnID);
-		if (!actingBtns) {
-			for (var j = btnID; actingBtns === null && j >0; j--) {
-				actingBtns = document.getElementById("addActingsBtn" + j);
-			}
-			if (j == 0) actingBtns = addActingBtn;
-		}
-		
-
-		try {
-			actingBtns.focus();
-		}
-		catch (ex) {
-			console.error ("Exception: " + ex.toString());
-			addActingBtn.focus();
-		}
+		actingFS = document.getElementById("acting" + (actings-1));
+		if (actingFS) actingFS.appendChild(actingButtonsDiv);
+		actingSel = document.getElementById("actingLevel" + (actings-1));
+		if (actingSel) actingSel.focus();
 	}
+
+	rmActingFS.parentNode.removeChild(rmActingFS);
+	rmActingFS = null;
+
+
 	resultStatus.innerHTML="Acting section removed.";
-}
+} // End of removeActingDiv
 function removeLWoPDiv (e) {
-	var btn= e.target;
-	var btnID = btn.getAttribute("id")
-	btnID = btnID.replaceAll(/\D/g, "");
-	if (btnID > 0) btnID--;
-	var fs = btn.parentNode;
-	fs.parentNode.removeChild(fs);
+	let lwopButtonsDiv = null;
+	let lwopFS = null;
+	let lwopDate = null;
+	let rmLwopFS = null;
+	
+	lwopButtonsDiv = document.getElementById("lwopButtonsDiv");
+
 	lwops--;
-	if (lwops == 0 || btnID < 0) {
+	rmLwopFS = document.getElementById("lwop" + lwops);
+	if (lwops == 0) {
 		addLwopBtn.focus();
 	} else {
-		let lwopBtns = null;
-		lwopBtns = document.getElementById("addLwopsBtn" + btnID);
-		if (!lwopBtns) {
-			for (var j = btnID; lwopBtns === null && j >0; j--) {
-				lwopBtns = document.getElementById("addLwopsBtn" + j);
-			}
-			if (j == 0) lwopBtns = addLwopBtn;
-		}
-		
-
-		try {
-			lwopBtns.focus();
-		}
-		catch (ex) {
-			console.error ("Exception: " + ex.toString());
-			addLwopBtn.focus();
-		}
+		lwopFS = document.getElementById("lwop" + (lwops-1));
+		if (lwopFS) lwopFS.appendChild(lwopButtonsDiv);
+		lwopDate = document.getElementById("lwopFrom" + (lwops-1));
+		if (lwopDate) lwopDate.focus();
 	}
+
+	rmLwopFS.parentNode.removeChild(rmLwopFS);
+	rmLwopFS = null;
 	resultStatus.innerHTML="Leave Without Pay section removed.";
-}
+} // End of removeLWoPDiv
+
+function removeOvertimeDiv (e) {
+	let otButtonsDiv = null;
+	let otFS = null;
+	let otDate = null;
+	let rmOTFS = null;
+	
+	otButtonsDiv = document.getElementById("otButtonsDiv");
+
+	overtimes--;
+	rmOTFS = document.getElementById("ot" + overtimes);
+	if (overtimes == 0) {
+		addOvertimeBtn.focus();
+	} else {
+		otFS = document.getElementById("ot" + (overtimes-1));
+		if (otFS) otFS.appendChild(otButtonsDiv);
+		otDate = document.getElementById("overtimeDate" + (overtimes-1));
+		if (otDate) otDate.focus();
+	}
+
+	rmOTFS.parentNode.removeChild(rmOTFS);
+	rmOTFS = null;
+
+	resultStatus.innerHTML="Overtime section removed.";
+} // End of removeOvertimeDiv
+
 function removeLumpSumDiv (e) {
+	let lumpSumButtonsDiv = null;
+	let lumpSumFS = null;
+	let lumpSumDate = null;
+	let rmLumpSumFS = null;
+	
+	lumpSumButtonsDiv = document.getElementById("lumpSumButtonsDiv");
+
+	lumpSums--;
+	rmLumpSumFS = document.getElementById("lumpSum" + lumpSums);
+	if (lumpSums == 0) {
+		addLumpSumBtn.focus();
+	} else {
+		lumpSumFS = document.getElementById("lumpSum" + (lumpSums-1));
+		if (lumpSumFS) lumpSumFS.appendChild(lumpSumButtonsDiv);
+		lumpSumDate = document.getElementById("lumpSumDate" + (lumpSums-1));
+		if (lumpSumDate) lumpSumDate.focus();
+	}
+
+	rmLumpSumFS.parentNode.removeChild(rmLumpSumFS);
+	rmLumpSumFS = null;
+
+	/*
 	var btn= e.target;
 	var btnID = btn.getAttribute("id")
 	btnID = btnID.replaceAll(/\D/g, "");
@@ -1054,40 +1104,11 @@ function removeLumpSumDiv (e) {
 			addLumpSumBtn.focus();
 		}
 	}
+	*/
 	resultStatus.innerHTML="Lump sum section removed.";
-}
+} // End of removeLumpSumDiv
 
-function removeOvertimeDiv (e) {
-	var btn= e.target;
-	var btnID = btn.getAttribute("id")
-	btnID = btnID.replaceAll(/\D/g, "");
-	if (btnID > 0) btnID--;
-	var fs = btn.parentNode;
-	fs.parentNode.removeChild(fs);
-	overtimes--;
-	if (overtimes == 0 || btnID < 0) {
-		addOvertimeBtn.focus();
-	} else {
-		let overtimeBtns = null;
-		overtimeBtns = document.getElementById("addOvertimesBtn" + btnID);
-		if (!overtimeBtns) {
-			for (var j = btnID; overtimeBtns === null && j >0; j--) {
-				overtimeBtns = document.getElementById("addOvertimesBtn" + j);
-			}
-			if (j == 0) overtimeBtns = addOvertimeBtn;
-		}
-		
 
-		try {
-			overtimeBtns.focus();
-		}
-		catch (ex) {
-			console.error ("Exception: " + ex.toString());
-			addOvertimeBtn.focus();
-		}
-	}
-	resultStatus.innerHTML="Overtime section removed.";
-}
 function addPeriod (p) {
 	var rv = null;
 	if (dbug) console.log ("addPeriod::Gonna add period beginnging at " + p["startDate"] + " to periods (" + periods.length + ").");
