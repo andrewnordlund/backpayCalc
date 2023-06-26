@@ -12,7 +12,7 @@
  *
  */
 
-var dbug = !true;
+var dbug = true;
 var updateHash = true;
 var saveValues = null;
 var showExtraCols = true;
@@ -83,19 +83,18 @@ var hourly = [
 //var days = [31, 29, 31
 function init () {
 	console.log ("Initting");
-	saveValues = new Map();
+	//saveValues = new Map();
 	var calcBtn = document.getElementById("calcBtn");
 	levelSel = document.getElementById("levelSelect");
-	if (updateHash) levelSel.addEventListener("change", saveValue, false);
-
+	//if (updateHash) levelSel.addEventListener("change", saveValue, false);
 	stepSelect = document.getElementById("stepSelect");
-	if (updateHash) stepSelect.addEventListener("change", saveValue, false);
+	//if (updateHash) stepSelect.addEventListener("change", saveValue, false);
 	mainForm = document.getElementById("mainForm");
 	resultsDiv = document.getElementById("resultsDiv");
 	startDateTxt = document.getElementById("startDateTxt");
-	if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
+	//if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
 	endDateTxt = document.getElementById("endDateTxt");
-	if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
+	//if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
 	calcStartDate = document.getElementById("calcStartDate");
 	addPromotionBtn = document.getElementById("addPromotionBtn");
 	addActingBtn = document.getElementById("addActingBtn");
@@ -109,7 +108,7 @@ function init () {
 	lastModTime = document.getElementById("lastModTime");
 
 	console.log ("Gonna check the hash.");
-	handleHash ();
+	//handleHash ();
 
 	if (lastModTime) {
 		lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0,10));
@@ -214,11 +213,13 @@ function setURL () {
 	newURL += "?" + params.join("&");
 	*/
 	newURL += "?";
-	saveValues.forEach(function (val, key, saveValues) {
+	/*saveValues.forEach(function (val, key, saveValues) {
 		console.log ("adding " + key + "=" + val);
 		newURL += key + "=" + val + "&";
 		});
 	newURL = newURL.substring(0, newURL.length - 1);
+	*/
+	newURL = saveValues.join("&");
 	/*
 	if (params.length > 0) {
 		newURL += "?filters=" + params.join(sep) + (selectedTab != "" ? "&" + selectedTab : "") + url.hash;
@@ -313,7 +314,9 @@ function getStartDate () {
 } // End of getStartDate
 
 function startProcess () {
-	periods = resetPeriods();
+	resetPeriods();
+	console.log ("resetPeriods::periods: " + periods + ".");
+	saveValues = [];
 	lumpSumPeriods = {};
 	overtimePeriods = {};
 	if (resultsBody) {
@@ -364,6 +367,7 @@ function startProcess () {
 	// Add Lump Sums
 	getLumpSums ();
 
+	setURL();
 	calculate();
 
 } // End of startProcess
@@ -371,6 +375,8 @@ function startProcess () {
 function resetPeriods () {
 	periods = [];
 	periods = initPeriods;
+	console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
+	console.log ("resetPeriods::periods: " + periods + ".");
 } // End of resetPeriods
 
 // getSalary called during startProcess.  "guess" isn't really a good word for this, so I changed it to "get"
@@ -388,6 +394,8 @@ function getSalary () {
 		levelSelect.setAttribute("aria-describedby", "levelSelectError");
 		levelSelect.focus();
 		//return;
+	} else {
+		saveValues.push("lvl="+lvl);
 	}
 	level = ((lvl > 0 && lvl < salaries.length+1) ? lvl : null);
 
@@ -413,6 +421,10 @@ function getSalary () {
 			if (dbug) console.log ("getSalary::Your step would be " + step + ".");
 		}
 		var stp = step;
+
+		saveValues.push("step="+stp);
+		saveValues.push("startdate="+startDateTxt.value);
+		saveValues.push("enddate="+endDateTxt.value);
 
 		let parts = null;
 		parts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
@@ -740,7 +752,7 @@ function addPromotionHandler () {
 	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promoDate" + id, "nodeText":"Date of promotion: "});
 	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat"});
 	newPromoDate.focus();
-	newPromoDate.addEventListener("change", saveValue, false);
+	//newPromoDate.addEventListener("change", saveValue, false);
 
 	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promotionLevel" + id, "nodeText":"Promoted to level: "});
 	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"promotionLevel" + id});
@@ -748,7 +760,7 @@ function addPromotionHandler () {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
 		if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
 	}
-	newPromotionSel.addEventListener("change", saveValue, false);
+	//newPromotionSel.addEventListener("change", saveValue, false);
 
 	let promoButtonsDiv = null;
 	if (id == 0) {
@@ -795,7 +807,7 @@ function addActingHandler () {
 	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"To", "for":"actingTo"+id});
 	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat"});
 
-	newActingSel.addEventListener("change", saveValue, false);
+	//newActingSel.addEventListener("change", saveValue, false);
 
 	let actingButtonsDiv = null;
 	if (id == 0) {
