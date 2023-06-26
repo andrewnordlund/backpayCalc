@@ -173,6 +173,17 @@ function handleHash () {
 		let ed = params.get("enddt");
 		if (ed.match(/\d\d\d\d-\d\d-\d\d/)) endDateTxt.value = ed;
 	}
+	
+	let looking = true;
+	for (i = 0; i<5 && looking; i++) {
+		if (params.has("pdate" + i) && params.has("plvl"+i)) {
+			addPromotionHandler({"date" : params.get("pdate" + i), "level" : params.get("plvl" + i), "toFocus" : false});
+		} else {
+			looking = false;
+		}
+
+	}
+	
 
 } // End of handleHash
 
@@ -183,7 +194,7 @@ function saveValue (e) {
 	let value = (ot.toString().match(/HTMLSelect/) ? ot.selectedIndex : ot.value);
 	console.log ("Got: " + key + "=>" + value);
 	//saveValues[key] = value;
-	saveValues.set(key, value);
+	//saveValues.set(key, value);
 
 	
 
@@ -219,7 +230,7 @@ function setURL () {
 		});
 	newURL = newURL.substring(0, newURL.length - 1);
 	*/
-	newURL = saveValues.join("&");
+	newURL += saveValues.join("&");
 	/*
 	if (params.length > 0) {
 		newURL += "?filters=" + params.join(sep) + (selectedTab != "" ? "&" + selectedTab : "") + url.hash;
@@ -524,6 +535,8 @@ function addPromotions () {
 					if (dbug) console.log ("addPromotions::Adding anniversary date " + k + "-" + promoDate[2] + "-" + promoDate[3] + ".");
 					addPeriod ({"startDate": k + "-" + promoDate[2] + "-" + promoDate[3], "increase":0, "reason":"Anniversary Increase", "multiplier":1});
 				}
+				saveValues.push("pdate" + i + "=" + promoDate[0]);
+				saveValues.push("plevel" + i + "=" + promoLevel);
 
 			} else {
 				if (dbug) {
@@ -571,6 +584,9 @@ function getActings () {
 						addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1});
 					}
 				}
+				saveValues.push("afrom" + i + "=" + actingFromDate);
+				saveValues.push("ato" + i + "=" + actingToDate);
+				saveValues.push("alvl" + i + "=" + actingLvl);
 			} else {
 				if (dbug) {
 					if (actingFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingFrom is before EndDate");
@@ -618,6 +634,9 @@ function getLWoPs () {
 				for (var j = from; j < to; j++) {
 					periods[j]["multiplier"] = 0;
 				}
+
+				saveValues.push("lfrom" + i + "=" + lwopFromDate);
+				saveValues.push("lto" + i + "=" + lwopToDate);
 				//var fromParts = lwopFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				//lwopFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 			} else {
@@ -654,7 +673,10 @@ function getOvertimes () {
 				// add a period for starting
 				
 				var from = addPeriod({"startDate":overtimeDate, "increase":0, "reason":"Overtime", "multiplier":0, "hours":overtimeAmount, "rate":overtimeRate});
-				
+				saveValues.push("otdate" + i + "=" + overtimeDate);
+				saveValues.push("otamt" + i + "=" + overtimeAmount);
+				saveValues.push("otrt" + i + "=" + overtimeRate);
+
 			} else {
 				if (dbug) {
 					if (overtimeDate >= TABegin.toISOString().substr(0,10)) console.log ("overtimeDate is after startDate");
@@ -684,6 +706,9 @@ function getLumpSums () {
 				if (dbug) console.log ("And the dates are in the right range.");
 				// add a period for starting
 				var from = addPeriod({"startDate":lumpSumDate, "increase":0, "reason":"Lump Sum", "multiplier":0, "hours":lumpSumAmount});
+
+				saveValues.push("otdate" + i + "=" + lumpSumDate);
+				saveValues.push("otamt" + i + "=" + lumpSumAmount);
 				
 			} else {
 				if (dbug) {
@@ -735,6 +760,18 @@ function handlePromotions () {
 */
 
 function addPromotionHandler () {
+	let toFocus = true;
+	let pdate = null;
+	let plvl = null;
+	if (arguments.length > ) {
+		let args = arguments[0];
+		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
+		if (args.hasOwnProperty("pdate")) pdate = (args["pdate"].match(/\d\d\d\d-\d\d-\d\d/) ? args["pdate"] : null);
+		if (args.hasOwnProperty("plvl")) {
+			plvl = args["plvl"].replaceAll(/\D/, "");
+			plvl = (plvl >0 && plvl <6 ? plvl : null);
+		}
+	}
 	let promotionsDiv = document.getElementById("promotionsDiv");
 	let id = promotions;
 	let looking = true;
@@ -750,15 +787,19 @@ function addPromotionHandler () {
 	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":"Promotion " + (id+1)});
 
 	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promoDate" + id, "nodeText":"Date of promotion: "});
-	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat"});
-	newPromoDate.focus();
+	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat", "value":(pdate ? pdate : null)});
+	if (toFocus) newPromoDate.focus();
 	//newPromoDate.addEventListener("change", saveValue, false);
 
 	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promotionLevel" + id, "nodeText":"Promoted to level: "});
 	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"promotionLevel" + id});
 	for (var j = 0; j < 6; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
-		if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
+		if (plvl) {
+
+		} else {
+			if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
+		}
 	}
 	//newPromotionSel.addEventListener("change", saveValue, false);
 
@@ -796,16 +837,18 @@ function addActingHandler () {
 	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints", "id":"acting"+id});
 	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode":"Acting Stint " + (id+1)});
 
+	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"From", "for":"actingFrom" + id});
+	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat"});
+	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"To", "for":"actingTo"+id});
+	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat"});
+
 	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "for":"actingLevel" + id, "nodeText":"Acting Level: "});
 	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, "id":"actingLevel" + id});
 	for (var j = 0; j < 6; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
 		if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
 	}
-	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"From", "for":"actingFrom" + id});
-	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat"});
-	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"To", "for":"actingTo"+id});
-	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat"});
+
 
 	//newActingSel.addEventListener("change", saveValue, false);
 
@@ -821,7 +864,7 @@ function addActingHandler () {
 		newActingFS.appendChild(actingButtonsDiv);
 	}
 
-	newActingSel.focus();
+	newActingFromDate.focus();
 
 	actings++;
 	resultStatus.innerHTML="New Acting section added.";
@@ -994,7 +1037,7 @@ function removePromotionDiv (e) {
 function removeActingDiv (e) {
 	let actingButtonsDiv = null;
 	let actingFS = null;
-	let actingSel = null;
+	let actingFromDate = null;
 	let rmActingFS = null;
 	
 	actingButtonsDiv = document.getElementById("actingButtonsDiv");
@@ -1006,8 +1049,8 @@ function removeActingDiv (e) {
 	} else {
 		actingFS = document.getElementById("acting" + (actings-1));
 		if (actingFS) actingFS.appendChild(actingButtonsDiv);
-		actingSel = document.getElementById("actingLevel" + (actings-1));
-		if (actingSel) actingSel.focus();
+		actingFromDate = document.getElementById("actingFromDate" + (actings-1));
+		if (actingFromDate) actingFromDate.focus();
 	}
 
 	rmActingFS.parentNode.removeChild(rmActingFS);
