@@ -108,7 +108,6 @@ function init () {
 	lastModTime = document.getElementById("lastModTime");
 
 	console.log ("Gonna check the hash.");
-	//handleHash ();
 
 	if (lastModTime) {
 		lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0,10));
@@ -144,6 +143,7 @@ function init () {
 	} else {
 		if (dbug) console.error ("Couldn't get levelSelect.");
 	}
+	handleHash ();
 } // End of init
 
 
@@ -165,8 +165,10 @@ function handleHash () {
 		if (sd.match(/\d\d\d\d-\d\d-\d\d/)) startDateTxt.value = sd;
 	}
 	setTimeout (function () {
+		console.log ("Gonna try and set step now");
 		if (params.get("stp")) {
 			let stp = params.get("stp").replace(/\D/g, "");
+			console.log ("And gonna set it now to " + stp + ".");
 			stepSelect.selectedIndex = stp;
 		}}, 500);
 	if (params.get("enddt")) {
@@ -177,7 +179,7 @@ function handleHash () {
 	let looking = true;
 	for (i = 0; i<5 && looking; i++) {
 		if (params.has("pdate" + i) && params.has("plvl"+i)) {
-			addPromotionHandler({"date" : params.get("pdate" + i), "level" : params.get("plvl" + i), "toFocus" : false});
+			addPromotionHandler(null, {"date" : params.get("pdate" + i), "level" : params.get("plvl" + i), "toFocus" : false});
 		} else {
 			looking = false;
 		}
@@ -307,20 +309,20 @@ function selectSalary () {
 } // End of selectSalary
 
 function getStartDate () {
-	let parts = null;
+	let dparts = null;
 	startDateTxt.value = startDateTxt.value.replace(/[^-\d]/, "");
-	parts = startDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+	dparts = startDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 	if (dbug) console.log ("Got startDateTxt " + startDateTxt.value + ".");
-	if (dbug) console.log ("Got parts " + parts + ".");
+	if (dbug) console.log ("Got dparts " + dparts + ".");
 	// Leap years
-	if (parts[2] == "02" && parts[3] > "28") {
-		if (parseInt(parts[1]) % 4 === 0 && parts[3] == "29") {
+	if (dparts[2] == "02" && dparts[3] > "28") {
+		if (parseInt(dparts[1]) % 4 === 0 && dparts[3] == "29") {
 			// Do nothing right now
 		} else {
-			parts[3]=(parseInt(parts[1]) % 4 === 0? "29" : "28");
+			dparts[3]=(parseInt(dparts[1]) % 4 === 0? "29" : "28");
 		}
 	}
-	return new Date(parts[1], parts[2]-1, parts[3]);
+	return new Date(dparts[1], dparts[2]-1, dparts[3]);
 
 } // End of getStartDate
 
@@ -433,14 +435,14 @@ function getSalary () {
 		}
 		var stp = step;
 
-		saveValues.push("step="+stp);
-		saveValues.push("startdate="+startDateTxt.value);
-		saveValues.push("enddate="+endDateTxt.value);
+		saveValues.push("stp="+stp);
+		saveValues.push("strtdt="+startDateTxt.value);
+		saveValues.push("enddt="+endDateTxt.value);
 
-		let parts = null;
-		parts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-		if (parts) {
-			EndDate = new Date(parts[1], (parts[2]-1), parts[3]);
+		let dparts = null;
+		dparts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+		if (dparts) {
+			EndDate = new Date(dparts[1], (dparts[2]-1), dparts[3]);
 			EndDate.setDate(EndDate.getDate() + parseInt(1));
 			if (dbug) console.log ("getSalary::Got EndDateTxt as " + endDateTxt.value + ".");
 			//if (dbug) console.log ("Got EndDate as " + EndDate.toISOString().substr(0, 10) + ".");
@@ -536,7 +538,7 @@ function addPromotions () {
 					addPeriod ({"startDate": k + "-" + promoDate[2] + "-" + promoDate[3], "increase":0, "reason":"Anniversary Increase", "multiplier":1});
 				}
 				saveValues.push("pdate" + i + "=" + promoDate[0]);
-				saveValues.push("plevel" + i + "=" + promoLevel);
+				saveValues.push("plvl" + i + "=" + promoLevel);
 
 			} else {
 				if (dbug) {
@@ -759,18 +761,22 @@ function handlePromotions () {
 } // End of handlePromotions
 */
 
-function addPromotionHandler () {
+function addPromotionHandler (e, o) {
 	let toFocus = true;
 	let pdate = null;
 	let plvl = null;
-	if (arguments.length > ) {
-		let args = arguments[0];
+	if (arguments.length > 1) {
+		let args = arguments[1];
+		console.log ("arguments: " + arguments.length);
 		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
-		if (args.hasOwnProperty("pdate")) pdate = (args["pdate"].match(/\d\d\d\d-\d\d-\d\d/) ? args["pdate"] : null);
-		if (args.hasOwnProperty("plvl")) {
-			plvl = args["plvl"].replaceAll(/\D/, "");
+		if (args.hasOwnProperty("date")) {
+			pdate = (isValidDate(args["date"]) ? args["pdate"] : null);
+		}
+		if (args.hasOwnProperty("level")) {
+			plvl = args["level"].replaceAll(/\D/g, "");
 			plvl = (plvl >0 && plvl <6 ? plvl : null);
 		}
+		console.log (`toFocus: ${toFocus}, pdate: ${pdate}, plvl: ${plvl}.`);
 	}
 	let promotionsDiv = document.getElementById("promotionsDiv");
 	let id = promotions;
@@ -796,7 +802,7 @@ function addPromotionHandler () {
 	for (var j = 0; j < 6; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
 		if (plvl) {
-
+			if (plvl == j) newPromoOpt.setAttribute("selected", "selected");
 		} else {
 			if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
 		}
@@ -1343,10 +1349,10 @@ function calculate() {
 			}
 			var days = 0;
 			if (step >= 0) {
-				var parts = periods[i]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
-				var current = new Date(parts[1], parts[2]-1, parts[3]);
+				var dparts = periods[i]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
+				var current = new Date(dparts[1], dparts[2]-1, dparts[3]);
 				parts = periods[i+1]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
-				var future = new Date(parts[1], parts[2]-1, parts[3]);
+				var future = new Date(dparts[1], dparts[2]-1, dparts[3]);
 				//future.setDate(future.getDate() - 1);
 				var diff = (future  - current) / day;
 				if (dbug) console.log ("There were " + diff + " days between " + current.getFullYear() + "-" +  (current.getMonth()+1) +"-" + current.getDate() + " and " + future.getFullYear() + "-" + (future.getMonth()+1) + "-" + future.getDate() +".");
@@ -1489,6 +1495,21 @@ function calculate() {
 	//}
 } // End of calculate
 
+function isValidDate (d) {
+	let rv = false;
+	try {
+		if (!typeof(d) == "String") d = d.toString();
+		let dateRE = /(\d\d\d\d)-(\d\d)-(\d\d)/;
+		let dparts = d.match(dateRE);
+		d = new Date(dparts[1], dparts[2]-1, dparts[3]);
+
+		if (d >= TABegin && d<= EndDate) rv = true;
+	}
+	catch (ex) {
+		console.error ("Something went wrong: " + ex.toString());
+	}
+	return rv;
+} // End of isValidDate
 
 function addStartDateErrorMessage () {
 	if (dbug) console.log ("Error:  st is " + startDateTxt.value + ".");
