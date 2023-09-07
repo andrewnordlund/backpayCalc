@@ -159,6 +159,8 @@ function handleHash () {
 	if (params.get("lvl")) {
 		let lvl = params.get("lvl").replace(/\D/g, "");
 		levelSel.selectedIndex = lvl;
+		let changeEv = new Event("change");
+		levelSel.dispatchEvent(changeEv);
 	}
 	if (params.get("strtdt")) {
 		let sd = params.get("strtdt");
@@ -176,6 +178,7 @@ function handleHash () {
 		if (ed.match(/\d\d\d\d-\d\d-\d\d/)) endDateTxt.value = ed;
 	}
 	
+	// Promotions
 	let looking = true;
 	for (i = 0; i<5 && looking; i++) {
 		if (params.has("pdate" + i) && params.has("plvl"+i)) {
@@ -183,9 +186,22 @@ function handleHash () {
 		} else {
 			looking = false;
 		}
-
 	}
-	
+
+	// Actings
+	// Oh noes!  You can only have so many promotions.  But you can theoretically have hundreds of actings.
+	// You either need to have something like: numActings.....or grab the whole query string and do some kind of regex thing.
+	// Note that this will be the same thing for OT and Lump Sums
+	/*
+	looking = true;
+	for (i = 0; i<5 && looking; i++) {
+		if (params.has("pdate" + i) && params.has("plvl"+i)) {
+			addPromotionHandler(null, {"date" : params.get("pdate" + i), "level" : params.get("plvl" + i), "toFocus" : false});
+		} else {
+			looking = false;
+		}
+	}
+	*/
 
 } // End of handleHash
 
@@ -586,8 +602,8 @@ function getActings () {
 						addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1});
 					}
 				}
-				saveValues.push("afrom" + i + "=" + actingFromDate);
-				saveValues.push("ato" + i + "=" + actingToDate);
+				saveValues.push("afrom" + i + "=" + actingFromDate.toISOString().substr(0, 10));
+				saveValues.push("ato" + i + "=" + actingToDate.toISOString().substr(0, 10));
 				saveValues.push("alvl" + i + "=" + actingLvl);
 			} else {
 				if (dbug) {
@@ -767,16 +783,16 @@ function addPromotionHandler (e, o) {
 	let plvl = null;
 	if (arguments.length > 1) {
 		let args = arguments[1];
-		console.log ("arguments: " + arguments.length);
+		if (dbug) console.log ("addPromotionHandler::arguments: " + arguments.length);
 		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
 		if (args.hasOwnProperty("date")) {
-			pdate = (isValidDate(args["date"]) ? args["pdate"] : null);
+			pdate = (isValidDate(args["date"]) ? args["date"] : null);
 		}
 		if (args.hasOwnProperty("level")) {
 			plvl = args["level"].replaceAll(/\D/g, "");
 			plvl = (plvl >0 && plvl <6 ? plvl : null);
 		}
-		console.log (`toFocus: ${toFocus}, pdate: ${pdate}, plvl: ${plvl}.`);
+		if (dbug) console.log (`addPromotionHandler::toFocus: ${toFocus}, pdate: ${pdate}, plvl: ${plvl}.`);
 	}
 	let promotionsDiv = document.getElementById("promotionsDiv");
 	let id = promotions;
@@ -828,6 +844,27 @@ function addPromotionHandler (e, o) {
 } // End of addPromotionHandler
 
 function addActingHandler () {
+	let toFocus = true;
+	let afdate = null;
+	let atdate = null;
+	let alvl = null;
+	if (arguments.length > 1) {
+		let args = arguments[1];
+		if (dbug) console.log ("addActingHandler::arguments: " + arguments.length);
+		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
+		if (args.hasOwnProperty("fdate")) {
+			afdate = (isValidDate(args["fdate"]) ? args["fdate"] : null);
+		}
+		if (args.hasOwnProperty("tdate")) {
+			atdate = (isValidDate(args["tdate"]) ? args["tdate"] : null);
+		}
+		if (args.hasOwnProperty("level")) {
+			alvl = args["level"].replaceAll(/\D/g, "");
+			alvl = (alvl >0 && alvl <6 ? alvl : null);
+		}
+		if (dbug) console.log (`addActingHandler::toFocus: ${toFocus}, pdate: ${pdate}, plvl: ${plvl}.`);
+	}
+
 	var actingsDiv = document.getElementById("actingsDiv");
 	
 	var id = actings;
@@ -844,15 +881,19 @@ function addActingHandler () {
 	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode":"Acting Stint " + (id+1)});
 
 	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"From", "for":"actingFrom" + id});
-	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat"});
+	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(afdate ? afdate : null)});
 	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"To", "for":"actingTo"+id});
-	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat"});
+	var newActingToDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat", "value":(atdate ? atdate : null)});
 
 	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "for":"actingLevel" + id, "nodeText":"Acting Level: "});
 	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, "id":"actingLevel" + id});
 	for (var j = 0; j < 6; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
-		if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
+		if (alvl) {
+			if (alvl == j) newPromoOpt.setAttribute("selected", "selected");
+		} else {
+			if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
+		}
 	}
 
 
@@ -870,7 +911,7 @@ function addActingHandler () {
 		newActingFS.appendChild(actingButtonsDiv);
 	}
 
-	newActingFromDate.focus();
+	if (toFocus) newActingFromDate.focus();
 
 	actings++;
 	resultStatus.innerHTML="New Acting section added.";
