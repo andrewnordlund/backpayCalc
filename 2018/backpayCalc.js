@@ -192,16 +192,19 @@ function handleHash () {
 	// Oh noes!  You can only have so many promotions.  But you can theoretically have hundreds of actings.
 	// You either need to have something like: numActings.....or grab the whole query string and do some kind of regex thing.
 	// Note that this will be the same thing for OT and Lump Sums
-	/*
 	looking = true;
-	for (i = 0; i<5 && looking; i++) {
-		if (params.has("pdate" + i) && params.has("plvl"+i)) {
-			addPromotionHandler(null, {"date" : params.get("pdate" + i), "level" : params.get("plvl" + i), "toFocus" : false});
+	let acl = 0;
+	while (looking) {
+		// afrom0=2020-01-05&ato0=2020-02-06&alvl0=3&afrom1=2020-04-04&ato1=2020-05-06&alvl1=3
+		if (params.has("afrom" + acl) || params.has("ato"+acl) || params.has("alvl"+acl)) {
+			if (params.has("afrom" + acl) && params.has("ato"+acl) && params.has("alvl"+acl)) {
+				addActingHandler(null, {"from" : params.get("afrom" + acl), "to" : params.get("ato" + acl), "level" : params.get("alvl" + acl), "toFocus" : false});
+			}
 		} else {
 			looking = false;
 		}
+		acl++;
 	}
-	*/
 
 } // End of handleHash
 
@@ -852,17 +855,17 @@ function addActingHandler () {
 		let args = arguments[1];
 		if (dbug) console.log ("addActingHandler::arguments: " + arguments.length);
 		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
-		if (args.hasOwnProperty("fdate")) {
-			afdate = (isValidDate(args["fdate"]) ? args["fdate"] : null);
+		if (args.hasOwnProperty("from")) {
+			afdate = (isValidDate(args["from"]) ? args["from"] : null);
 		}
-		if (args.hasOwnProperty("tdate")) {
-			atdate = (isValidDate(args["tdate"]) ? args["tdate"] : null);
+		if (args.hasOwnProperty("to")) {
+			atdate = (isValidDate(args["to"]) ? args["to"] : null);
 		}
 		if (args.hasOwnProperty("level")) {
 			alvl = args["level"].replaceAll(/\D/g, "");
 			alvl = (alvl >0 && alvl <6 ? alvl : null);
 		}
-		if (dbug) console.log (`addActingHandler::toFocus: ${toFocus}, pdate: ${pdate}, plvl: ${plvl}.`);
+		if (dbug) console.log (`addActingHandler::toFocus: ${toFocus}, from: ${afdate} to ${atdate}, alvl: ${alvl}.`);
 	}
 
 	var actingsDiv = document.getElementById("actingsDiv");
