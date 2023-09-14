@@ -152,6 +152,7 @@ function handleHash () {
 	let thisURL = new URL(document.location);
 	let params = thisURL.searchParams;
 	let hash = thisURL.hash;
+	let toCalculate = false;
 	if (params.get("dbug")) {
 		if (params.get("dbug") == "true") dbug= true;
 	}
@@ -207,8 +208,8 @@ function handleHash () {
 	looking = true;
 	let ls = 0;
 	while (looking) {
-		if (params.has("lfrom" + ls) || params.has("lto"+ls) || params.has("alvl"+ls)) {
-			if (params.has("lfrom" + ls) && params.has("lto"+ls) && params.has("alvl"+ls)) {
+		if (params.has("lfrom" + ls) || params.has("lto"+ls)) {
+			if (params.has("lfrom" + ls) && params.has("lto"+ls)) {
 				addLWoPHandler(null, {"from" : params.get("lfrom" + ls), "to" : params.get("lto" + ls), "toFocus" : false});
 			}
 		} else {
@@ -232,6 +233,18 @@ function handleHash () {
 	}
 
 	// Lump Sum Payments
+	looking = true;
+	let lss = 0;
+	while (looking) {
+		if (params.has("lsdate" + lss) || params.has("lsamt"+lss) || params.has("lsrt"+lss)) {
+			if (params.has("lsdate" + lss) && params.has("lsamt"+lss)) {
+				addLumpSumHandler(null, {"date" : params.get("lsdate" + lss), "hours" : params.get("lsamt" + lss), "toFocus" : false});
+			}
+		} else {
+			looking = false;
+		}
+		lss++;
+	}
 
 
 } // End of handleHash
@@ -754,8 +767,8 @@ function getLumpSums () {
 				// add a period for starting
 				var from = addPeriod({"startDate":lumpSumDate, "increase":0, "reason":"Lump Sum", "multiplier":0, "hours":lumpSumAmount});
 
-				saveValues.push("otdate" + i + "=" + lumpSumDate.toISOString().substr(0, 10));
-				saveValues.push("otamt" + i + "=" + lumpSumAmount);
+				saveValues.push("lsdate" + i + "=" + lumpSumDate);
+				saveValues.push("lsamt" + i + "=" + lumpSumAmount);
 				
 			} else {
 				if (dbug) {
@@ -1012,17 +1025,17 @@ function addOvertimeHandler () {
 		let args = arguments[1];
 		if (dbug) console.log ("addOvertimeHandler::arguments: " + arguments.length);
 		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
-		if (args.hasOwnProperty("otdate")) {
+		if (args.hasOwnProperty("date")) {
 			console.log ("date: "  + args["date"] +".");
 			otdate = (isValidDate(args["date"]) ? args["date"] : null);
 		}
 		if (args.hasOwnProperty("hours")) {
 			console.log ("othours: "  + args["hours"] +".");
-			othours = (isValidDate(args["hours"]) ? args["hours"] : null);
+			othours = (args["hours"] ? args["hours"] : null);
 		}
 		if (args.hasOwnProperty("rate")) {
 			console.log ("otrate: "  + args["rate"] +".");
-			otrate = (isValidDate(args["rate"]) ? args["rate"] : null);
+			otrate = (["rate"] ? args["rate"] : null);
 		}
 		if (dbug) console.log (`addOvertimeHandler::toFocus: ${toFocus}, date: ${otdate} hours ${othours}, rate: ${otrate}.`);
 	}
@@ -1053,13 +1066,13 @@ function addOvertimeHandler () {
 	var newRateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
 	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Overtime Rate:", "for":"overtimeRate" + id});
 	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, "id":"overtimeRate"+id});
+	let rates = {"0" : "Select Overtime Rate", "0.125" : "1/8x - Standby", "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":"Select Overtime Rate"});
-
-	//what the....?!
-	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0.125", "nodeText":"1/8x - Standby", "selected":"selected"});
-	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"1.0", "nodeText":"1.0x", "selected":"selected"});
-	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"1.5", "nodeText":"1.5x", "selected":"selected"});
-	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"2.0", "nodeText":"2.0x"});
+	
+	for (let r in rates) {
+		let rt = createHTMLElement("option", {"parentNode":newOvertimeRate, "value":r, "nodeText": rates[r]});
+		if (otrate && otrate == r) rt.setAttribute("selected", "selected");
+	}
 
 
 	let otButtonsDiv = null;
@@ -1080,6 +1093,24 @@ function addOvertimeHandler () {
 } // End of addOvertimeHandler
 
 function addLumpSumHandler () {
+	let toFocus = true;
+	let lsdate = null;
+	let lshours = null;
+	if (arguments.length > 1) {
+		let args = arguments[1];
+		if (dbug) console.log ("addLumpSumHandler::arguments: " + arguments.length);
+		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
+		if (args.hasOwnProperty("date")) {
+			console.log ("lsdate: "  + args["date"] +".");
+			lsdate = (isValidDate(args["date"]) ? args["date"] : null);
+		}
+		if (args.hasOwnProperty("hours")) {
+			console.log ("lshours: "  + args["hours"] +".");
+			lshours = (args["hours"] ? args["hours"] : null);
+		}
+		if (dbug) console.log (`addLumpSumHandler::toFocus: ${toFocus}, date: ${lsdate} hours ${lshours}.`);
+	}
+
 	var LumpSumDiv = document.getElementById("lumpSumDiv");
 
 	var id = lumpSums;
@@ -1096,11 +1127,11 @@ function addLumpSumHandler () {
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
 	var newLumpSumDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":"Date paid out:", "for":"lumpSumDate" + id});
-	var newLumpSumDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"lumpSumDate"+id, "type":"date", "aria-describedby":"dateFormat"});
+	var newLumpSumDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"lumpSumDate"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lsdate ? lsdate : null)});
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
 	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Hours-worth of payout", "for":"lumpSumAmount" + id});
-	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"lumpSumAmount"+id, "type":"text"});
+	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"lumpSumAmount"+id, "type":"text", "value" : (lshours ? lshours : "")});
 
 
 	let lumpSumButtonsDiv = null;
