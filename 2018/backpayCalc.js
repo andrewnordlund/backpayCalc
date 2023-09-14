@@ -189,9 +189,6 @@ function handleHash () {
 	}
 
 	// Actings
-	// Oh noes!  You can only have so many promotions.  But you can theoretically have hundreds of actings.
-	// You either need to have something like: numActings.....or grab the whole query string and do some kind of regex thing.
-	// Note that this will be the same thing for OT and Lump Sums
 	looking = true;
 	let acl = 0;
 	while (looking) {
@@ -206,6 +203,20 @@ function handleHash () {
 		acl++;
 	}
 
+	// LWoPs
+	looking = true;
+	let ls = 0;
+	while (looking) {
+		if (params.has("lfrom" + ls) || params.has("lto"+ls) || params.has("alvl"+ls)) {
+			if (params.has("lfrom" + ls) && params.has("lto"+ls) && params.has("alvl"+ls)) {
+				addLWoPHandler(null, {"from" : params.get("lfrom" + ls), "to" : params.get("lto" + ls), "toFocus" : false});
+			}
+		} else {
+			looking = false;
+		}
+		ls++;
+		
+	}
 } // End of handleHash
 
 function saveValue (e) {
@@ -656,8 +667,8 @@ function getLWoPs () {
 					periods[j]["multiplier"] = 0;
 				}
 
-				saveValues.push("lfrom" + i + "=" + lwopFromDate);
-				saveValues.push("lto" + i + "=" + lwopToDate);
+				saveValues.push("lfrom" + i + "=" + lwopFromDate); //.toISOString().substr(0, 10));
+				saveValues.push("lto" + i + "=" + lwopToDate.toISOString().substr(0, 10));
 				//var fromParts = lwopFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				//lwopFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 			} else {
@@ -669,8 +680,6 @@ function getLWoPs () {
 			}
 		} else {
 			if (dbug) {
-				if (lwopLvl >=0) console.log ("getLWoPs::lwopLvl >= 0");
-				if (lwopLvl <5) console.log ("getLWoPs::lwopLvl < 5");
 				if (lwopFromDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getLWoPs::lwopFrom is right format.");
 				if (lwopToDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getLWoPs::lwopTo is right format.");
 			}
@@ -694,7 +703,7 @@ function getOvertimes () {
 				// add a period for starting
 				
 				var from = addPeriod({"startDate":overtimeDate, "increase":0, "reason":"Overtime", "multiplier":0, "hours":overtimeAmount, "rate":overtimeRate});
-				saveValues.push("otdate" + i + "=" + overtimeDate);
+				saveValues.push("otdate" + i + "=" + overtimeDate.toISOString().substr(0, 10));
 				saveValues.push("otamt" + i + "=" + overtimeAmount);
 				saveValues.push("otrt" + i + "=" + overtimeRate);
 
@@ -728,7 +737,7 @@ function getLumpSums () {
 				// add a period for starting
 				var from = addPeriod({"startDate":lumpSumDate, "increase":0, "reason":"Lump Sum", "multiplier":0, "hours":lumpSumAmount});
 
-				saveValues.push("otdate" + i + "=" + lumpSumDate);
+				saveValues.push("otdate" + i + "=" + lumpSumDate.toISOString().substr(0, 10));
 				saveValues.push("otamt" + i + "=" + lumpSumAmount);
 				
 			} else {
@@ -921,6 +930,24 @@ function addActingHandler () {
 } // End of addActingHandler
 
 function addLWoPHandler () {
+	let toFocus = true;
+	let lfrom = null;
+	let lto = null;
+	if (arguments.length > 1) {
+		let args = arguments[1];
+		if (dbug) console.log ("addLWoPHandler::arguments: " + arguments.length);
+		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
+		if (args.hasOwnProperty("from")) {
+			console.log ("lfrom: "  + args["from"] +".");
+			lfrom = (isValidDate(args["from"]) ? args["from"] : null);
+		}
+		if (args.hasOwnProperty("to")) {
+			console.log ("lto: "  + args["from"] +".");
+			lto = (isValidDate(args["to"]) ? args["to"] : null);
+		}
+		if (dbug) console.log (`addLWoPHandler::toFocus: ${toFocus}, from: ${lfrom} to ${lto}.`);
+	}
+
 	var LWoPDiv = document.getElementById("LWoPDiv");
 
 	var id = lwops;
@@ -937,9 +964,9 @@ function addLWoPHandler () {
 	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":"LWoP Stint " + (id+1)});
 
 	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":"From", "for":"lwopFrom" + id});
-	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat"});
+	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(lfrom ? lfrom : null)});
 	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":"To", "for":"lwopTo"+id});
-	var newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat"});
+	var newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lto ? lto : null)});
 
 	let lwopButtonsDiv = null;
 	if (id == 0) {
