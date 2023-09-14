@@ -215,8 +215,25 @@ function handleHash () {
 			looking = false;
 		}
 		ls++;
-		
 	}
+
+	// Overtimes/Standbys
+	looking = true;
+	let ots = 0;
+	while (looking) {
+		if (params.has("otdate" + ots) || params.has("otamt"+ots) || params.has("otrt"+ots)) {
+			if (params.has("otdate" + ots) && params.has("otamt"+ots) && params.has("otrt"+ots)) {
+				addOvertimeHandler(null, {"date" : params.get("otdate" + ots), "hours" : params.get("otamt" + ots), "rate" : params.get("otrt" + ots), "toFocus" : false});
+			}
+		} else {
+			looking = false;
+		}
+		ots++;
+	}
+
+	// Lump Sum Payments
+
+
 } // End of handleHash
 
 function saveValue (e) {
@@ -703,7 +720,7 @@ function getOvertimes () {
 				// add a period for starting
 				
 				var from = addPeriod({"startDate":overtimeDate, "increase":0, "reason":"Overtime", "multiplier":0, "hours":overtimeAmount, "rate":overtimeRate});
-				saveValues.push("otdate" + i + "=" + overtimeDate.toISOString().substr(0, 10));
+				saveValues.push("otdate" + i + "=" + overtimeDate);
 				saveValues.push("otamt" + i + "=" + overtimeAmount);
 				saveValues.push("otrt" + i + "=" + overtimeRate);
 
@@ -987,6 +1004,29 @@ function addLWoPHandler () {
 } // End of lWoPHandler
 
 function addOvertimeHandler () {
+	let toFocus = true;
+	let otdate = null;
+	let othours = null;
+	let otrate = null;
+	if (arguments.length > 1) {
+		let args = arguments[1];
+		if (dbug) console.log ("addOvertimeHandler::arguments: " + arguments.length);
+		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
+		if (args.hasOwnProperty("otdate")) {
+			console.log ("date: "  + args["date"] +".");
+			otdate = (isValidDate(args["date"]) ? args["date"] : null);
+		}
+		if (args.hasOwnProperty("hours")) {
+			console.log ("othours: "  + args["hours"] +".");
+			othours = (isValidDate(args["hours"]) ? args["hours"] : null);
+		}
+		if (args.hasOwnProperty("rate")) {
+			console.log ("otrate: "  + args["rate"] +".");
+			otrate = (isValidDate(args["rate"]) ? args["rate"] : null);
+		}
+		if (dbug) console.log (`addOvertimeHandler::toFocus: ${toFocus}, date: ${otdate} hours ${othours}, rate: ${otrate}.`);
+	}
+
 	var OvertimeDiv = document.getElementById("overtimeDiv");
 
 	var id = overtimes;
@@ -1003,17 +1043,19 @@ function addOvertimeHandler () {
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
 	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":"Date of Overtime:", "for":"overtimeDate" + id});
-	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat"});
+	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat", "value":(otdate ? otdate : null)});
 
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
 	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Hours-worth of overtime", "for":"overtimeAmount" + id});
-	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"overtimeAmount"+id, "type":"text"});
+	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
 
 	var newRateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
 	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Overtime Rate:", "for":"overtimeRate" + id});
 	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, "id":"overtimeRate"+id});
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":"Select Overtime Rate"});
+
+	//what the....?!
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0.125", "nodeText":"1/8x - Standby", "selected":"selected"});
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"1.0", "nodeText":"1.0x", "selected":"selected"});
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"1.5", "nodeText":"1.5x", "selected":"selected"});
