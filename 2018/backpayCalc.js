@@ -12,7 +12,8 @@
  *
  */
 
-var dbug = true;
+var dbug = false;
+var version = "3.0";
 var updateHash = true;
 var saveValues = null;
 var showExtraCols = true;
@@ -82,7 +83,7 @@ var hourly = [
 //var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 //var days = [31, 29, 31
 function init () {
-	console.log ("Initting");
+	if (dbug) console.log ("Initting");
 	//saveValues = new Map();
 	var calcBtn = document.getElementById("calcBtn");
 	levelSel = document.getElementById("levelSelect");
@@ -106,8 +107,6 @@ function init () {
 	resultsTheadTR = document.getElementById("resultsTheadTR");
 	resultStatus = document.getElementById("resultStatus");
 	lastModTime = document.getElementById("lastModTime");
-
-	console.log ("Gonna check the hash.");
 
 	if (lastModTime) {
 		lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0,10));
@@ -149,34 +148,54 @@ function init () {
 
 // Check the document location for saved things
 function handleHash () {
+	let hasHash = false;
 	let thisURL = new URL(document.location);
 	let params = thisURL.searchParams;
-	let hash = thisURL.hash;
-	let toCalculate = false;
-	if (params.get("dbug")) {
+
+	//let hash = thisURL.hash;
+	let toCalculate = 0;
+	if (params.has("dbug")) {
 		if (params.get("dbug") == "true") dbug= true;
 	}
 
-	if (params.get("lvl")) {
+	if (params.has("lvl")) {
 		let lvl = params.get("lvl").replace(/\D/g, "");
 		levelSel.selectedIndex = lvl;
-		let changeEv = new Event("change");
-		levelSel.dispatchEvent(changeEv);
+		toCalculate = toCalculate + 1;
+		populateSalary();
+		hasHash = true;
 	}
-	if (params.get("strtdt")) {
+	if (params.has("strtdt")) {
 		let sd = params.get("strtdt");
-		if (sd.match(/\d\d\d\d-\d\d-\d\d/)) startDateTxt.value = sd;
+		if (sd.match(/\d\d\d\d-\d\d-\d\d/)) {
+			startDateTxt.value = sd;
+			toCalculate = toCalculate | 2;
+		}
+		hasHash = true;
 	}
+	if (params.has("stp")) {
+		let stp = params.get("stp").replace(/\D/g, "");
+		stepSelect.selectedIndex = stp;
+		toCalculate = toCalculate | 4;
+		hasHash = true;
+	}
+	/*
 	setTimeout (function () {
 		console.log ("Gonna try and set step now");
 		if (params.get("stp")) {
 			let stp = params.get("stp").replace(/\D/g, "");
 			console.log ("And gonna set it now to " + stp + ".");
 			stepSelect.selectedIndex = stp;
-		}}, 500);
+			toCalculate = toCalculate | 4;
+		}}, 0);
+	*/
 	if (params.get("enddt")) {
 		let ed = params.get("enddt");
-		if (ed.match(/\d\d\d\d-\d\d-\d\d/)) endDateTxt.value = ed;
+		if (ed.match(/\d\d\d\d-\d\d-\d\d/)) {
+			endDateTxt.value = ed;
+			toCalculate = toCalculate | 8;
+		}
+		hasHash = true;
 	}
 	
 	// Promotions
@@ -184,6 +203,7 @@ function handleHash () {
 	for (i = 0; i<5 && looking; i++) {
 		if (params.has("pdate" + i) && params.has("plvl"+i)) {
 			addPromotionHandler(null, {"date" : params.get("pdate" + i), "level" : params.get("plvl" + i), "toFocus" : false});
+			hasHash = true;
 		} else {
 			looking = false;
 		}
@@ -197,6 +217,7 @@ function handleHash () {
 		if (params.has("afrom" + acl) || params.has("ato"+acl) || params.has("alvl"+acl)) {
 			if (params.has("afrom" + acl) && params.has("ato"+acl) && params.has("alvl"+acl)) {
 				addActingHandler(null, {"from" : params.get("afrom" + acl), "to" : params.get("ato" + acl), "level" : params.get("alvl" + acl), "toFocus" : false});
+				hasHash = true;
 			}
 		} else {
 			looking = false;
@@ -211,6 +232,7 @@ function handleHash () {
 		if (params.has("lfrom" + ls) || params.has("lto"+ls)) {
 			if (params.has("lfrom" + ls) && params.has("lto"+ls)) {
 				addLWoPHandler(null, {"from" : params.get("lfrom" + ls), "to" : params.get("lto" + ls), "toFocus" : false});
+				hasHash = true;
 			}
 		} else {
 			looking = false;
@@ -225,6 +247,7 @@ function handleHash () {
 		if (params.has("otdate" + ots) || params.has("otamt"+ots) || params.has("otrt"+ots)) {
 			if (params.has("otdate" + ots) && params.has("otamt"+ots) && params.has("otrt"+ots)) {
 				addOvertimeHandler(null, {"date" : params.get("otdate" + ots), "hours" : params.get("otamt" + ots), "rate" : params.get("otrt" + ots), "toFocus" : false});
+				hasHash = true;
 			}
 		} else {
 			looking = false;
@@ -239,11 +262,20 @@ function handleHash () {
 		if (params.has("lsdate" + lss) || params.has("lsamt"+lss) || params.has("lsrt"+lss)) {
 			if (params.has("lsdate" + lss) && params.has("lsamt"+lss)) {
 				addLumpSumHandler(null, {"date" : params.get("lsdate" + lss), "hours" : params.get("lsamt" + lss), "toFocus" : false});
+				hasHash = true;
 			}
 		} else {
 			looking = false;
 		}
 		lss++;
+	}
+
+	if (dbug) console.log ("toCalculate: " + toCalculate + ": " + toCalculate.toString(2) + ".");
+	if (hasHash) {
+		//calcBtn.focus();
+		let clickEv = new Event("click");
+		calcBtn.dispatchEvent(clickEv);
+
 	}
 
 
@@ -252,9 +284,7 @@ function handleHash () {
 function saveValue (e) {
 	let ot = e.originalTarget;
 	let key = ot.id;
-	console.log ("ot: " + typeof(ot) + ".");
 	let value = (ot.toString().match(/HTMLSelect/) ? ot.selectedIndex : ot.value);
-	console.log ("Got: " + key + "=>" + value);
 	//saveValues[key] = value;
 	//saveValues.set(key, value);
 
@@ -388,7 +418,6 @@ function getStartDate () {
 
 function startProcess () {
 	resetPeriods();
-	console.log ("resetPeriods::periods: " + periods + ".");
 	saveValues = [];
 	lumpSumPeriods = {};
 	overtimePeriods = {};
@@ -448,8 +477,8 @@ function startProcess () {
 function resetPeriods () {
 	periods = [];
 	periods = initPeriods;
-	console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
-	console.log ("resetPeriods::periods: " + periods + ".");
+	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
+	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 } // End of resetPeriods
 
 // getSalary called during startProcess.  "guess" isn't really a good word for this, so I changed it to "get"
@@ -968,11 +997,9 @@ function addLWoPHandler () {
 		if (dbug) console.log ("addLWoPHandler::arguments: " + arguments.length);
 		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
 		if (args.hasOwnProperty("from")) {
-			console.log ("lfrom: "  + args["from"] +".");
 			lfrom = (isValidDate(args["from"]) ? args["from"] : null);
 		}
 		if (args.hasOwnProperty("to")) {
-			console.log ("lto: "  + args["from"] +".");
 			lto = (isValidDate(args["to"]) ? args["to"] : null);
 		}
 		if (dbug) console.log (`addLWoPHandler::toFocus: ${toFocus}, from: ${lfrom} to ${lto}.`);
@@ -1026,15 +1053,12 @@ function addOvertimeHandler () {
 		if (dbug) console.log ("addOvertimeHandler::arguments: " + arguments.length);
 		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
 		if (args.hasOwnProperty("date")) {
-			console.log ("date: "  + args["date"] +".");
 			otdate = (isValidDate(args["date"]) ? args["date"] : null);
 		}
 		if (args.hasOwnProperty("hours")) {
-			console.log ("othours: "  + args["hours"] +".");
 			othours = (args["hours"] ? args["hours"] : null);
 		}
 		if (args.hasOwnProperty("rate")) {
-			console.log ("otrate: "  + args["rate"] +".");
 			otrate = (["rate"] ? args["rate"] : null);
 		}
 		if (dbug) console.log (`addOvertimeHandler::toFocus: ${toFocus}, date: ${otdate} hours ${othours}, rate: ${otrate}.`);
@@ -1101,11 +1125,9 @@ function addLumpSumHandler () {
 		if (dbug) console.log ("addLumpSumHandler::arguments: " + arguments.length);
 		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
 		if (args.hasOwnProperty("date")) {
-			console.log ("lsdate: "  + args["date"] +".");
 			lsdate = (isValidDate(args["date"]) ? args["date"] : null);
 		}
 		if (args.hasOwnProperty("hours")) {
-			console.log ("lshours: "  + args["hours"] +".");
 			lshours = (args["hours"] ? args["hours"] : null);
 		}
 		if (dbug) console.log (`addLumpSumHandler::toFocus: ${toFocus}, date: ${lsdate} hours ${lshours}.`);
@@ -1724,7 +1746,7 @@ async function getData () {
 	if (response.ok) { // if HTTP-status is 200-299
 		// get the response body (the method explained below)
 		let json = await response.json();
-		if (dbug || true) console.log ("Got json: "  + JSON.stringify(json) + ".");
+		if (dbug) console.log ("Got json: "  + JSON.stringify(json) + ".");
 		salaries = json["IT"]["2018-2021"]["salaries"]["annual"];
 		daily = json["IT"]["2018-2021"]["salaries"]["daily"];
 		hourly = json["IT"]["2018-2021"]["salaries"]["hourly"];

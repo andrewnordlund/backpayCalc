@@ -11,6 +11,10 @@
 		<link rel="Stylesheet" type="text/css" href="../backpayCalc.css" >
 	</head>
 	<body>
+		<ul id="skipLinks">
+			<li><a href="#mainForm">Skip to Main Form</a></li>
+			<li><a href="#resultsDiv">Skip to Results</a></li>
+		</ul>
 		<header>
 			<h1>Backpay Calculator for 2018 CS CA</h1>
 		</header>
@@ -32,7 +36,17 @@
 		<dt>Part time work</dt><dd>If you work only 3 days a week, or 5 hours a day, this won't help you.  Maybe one day.</dd>
 		</dl>
 		</details>
-		<form id="mainForm">
+		<details>
+			<summary><h2 class="summary">What's New</h2></summary>
+			<h3><time datetime="2023-09-17">2023-09-17</time></h3>
+			<ul>
+				<li><strong>What's New</strong>:  There is now a list of new features near the top of the page.</li>
+				<li><strong>Bookmarkable Results</strong>:  When you click the the "Calculate" button, the URL in the address bar gets updated with the information you've entered.  This allows you to bookmark, or share results.</li>
+			</ul>
+			</dl>
+		</details>
+		<form id="mainForm" tabindex="-1">
+			<h2>Your Information</h2>
 			<p><strong>Note:</strong> All dates should be formatted as <span id="dateFormat">YYYY-MM-DD</span>.</p>
 			<div class="fieldHolder">
 				<label for="levelSelect">Select your Level on December 22, 2018 (of your substantive position)</label>
@@ -94,7 +108,7 @@
 				<input type="button" id="calcBtn" value="Calculate">
 			</div>
 		</form>
-		<div id="resultsDiv">
+		<div id="resultsDiv" tabindex="-1">
 			<h2>Results</h2>
 			<p>All amounts are gross.  You'll have to figure out your own taxes. (And sometimes your taxes are pretty gross!  Nyuk nyuk nyuk)</p>
 			<table id="resultsTable">
