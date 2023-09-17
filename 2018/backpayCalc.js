@@ -1423,7 +1423,6 @@ function addPeriod (p) {
 } // End of addPeriod
 
 function calculate() {
-	dbug = true;
 	resultStatus.innerHTML="";
 	//if (step == salaries[level].length -1) {
 		//if (dbug) console.log ("Top of your level.  This should be easy.");
