@@ -84,3 +84,35 @@ dl dd:after{
 	display: block;
 	content: '';
 }
+
+#skipLinks {
+	display: block;
+	margin: 0;
+	padding: 0;
+	list-style-type: none;
+}
+#skipLinks > li {
+	left: 0;
+	position: absolute;
+	text-align: center;
+	top: 10px;
+	width: 100%;
+	z-index: 3;
+}
+
+#skipLinks > li > a {
+	clip: rect(1px,1px,1px,1px);
+	height: 1px;
+	margin: 0;
+	overflow: hidden;
+	position: absolute;
+	width: 1px;
+}
+#skipLinks > li > a:focus {
+	clip: rect(auto,auto,auto,auto);
+	height: inherit;
+	margin: inherit;
+	overflow: inherit;
+	position: static;
+	width: inherit;
+}

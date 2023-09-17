@@ -12,7 +12,10 @@
  *
  */
 
-var dbug = !true;
+var dbug = false;
+var version = "3.0";
+var updateHash = true;
+var saveValues = null;
 var showExtraCols = true;
 var level = -1;
 var step = -1;
@@ -80,13 +83,19 @@ var hourly = [
 //var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 //var days = [31, 29, 31
 function init () {
+	if (dbug) console.log ("Initting");
+	//saveValues = new Map();
 	var calcBtn = document.getElementById("calcBtn");
 	levelSel = document.getElementById("levelSelect");
+	//if (updateHash) levelSel.addEventListener("change", saveValue, false);
 	stepSelect = document.getElementById("stepSelect");
+	//if (updateHash) stepSelect.addEventListener("change", saveValue, false);
 	mainForm = document.getElementById("mainForm");
 	resultsDiv = document.getElementById("resultsDiv");
 	startDateTxt = document.getElementById("startDateTxt");
+	//if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
 	endDateTxt = document.getElementById("endDateTxt");
+	//if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
 	calcStartDate = document.getElementById("calcStartDate");
 	addPromotionBtn = document.getElementById("addPromotionBtn");
 	addActingBtn = document.getElementById("addActingBtn");
@@ -133,7 +142,201 @@ function init () {
 	} else {
 		if (dbug) console.error ("Couldn't get levelSelect.");
 	}
+	handleHash ();
 } // End of init
+
+
+// Check the document location for saved things
+function handleHash () {
+	let hasHash = false;
+	let thisURL = new URL(document.location);
+	let params = thisURL.searchParams;
+
+	//let hash = thisURL.hash;
+	let toCalculate = 0;
+	if (params.has("dbug")) {
+		if (params.get("dbug") == "true") dbug= true;
+	}
+
+	if (params.has("lvl")) {
+		let lvl = params.get("lvl").replace(/\D/g, "");
+		levelSel.selectedIndex = lvl;
+		toCalculate = toCalculate + 1;
+		populateSalary();
+		hasHash = true;
+	}
+	if (params.has("strtdt")) {
+		let sd = params.get("strtdt");
+		if (sd.match(/\d\d\d\d-\d\d-\d\d/)) {
+			startDateTxt.value = sd;
+			toCalculate = toCalculate | 2;
+		}
+		hasHash = true;
+	}
+	if (params.has("stp")) {
+		let stp = params.get("stp").replace(/\D/g, "");
+		stepSelect.selectedIndex = stp;
+		toCalculate = toCalculate | 4;
+		hasHash = true;
+	}
+	/*
+	setTimeout (function () {
+		console.log ("Gonna try and set step now");
+		if (params.get("stp")) {
+			let stp = params.get("stp").replace(/\D/g, "");
+			console.log ("And gonna set it now to " + stp + ".");
+			stepSelect.selectedIndex = stp;
+			toCalculate = toCalculate | 4;
+		}}, 0);
+	*/
+	if (params.get("enddt")) {
+		let ed = params.get("enddt");
+		if (ed.match(/\d\d\d\d-\d\d-\d\d/)) {
+			endDateTxt.value = ed;
+			toCalculate = toCalculate | 8;
+		}
+		hasHash = true;
+	}
+	
+	// Promotions
+	let looking = true;
+	for (i = 0; i<5 && looking; i++) {
+		if (params.has("pdate" + i) && params.has("plvl"+i)) {
+			addPromotionHandler(null, {"date" : params.get("pdate" + i), "level" : params.get("plvl" + i), "toFocus" : false});
+			hasHash = true;
+		} else {
+			looking = false;
+		}
+	}
+
+	// Actings
+	looking = true;
+	let acl = 0;
+	while (looking) {
+		// afrom0=2020-01-05&ato0=2020-02-06&alvl0=3&afrom1=2020-04-04&ato1=2020-05-06&alvl1=3
+		if (params.has("afrom" + acl) || params.has("ato"+acl) || params.has("alvl"+acl)) {
+			if (params.has("afrom" + acl) && params.has("ato"+acl) && params.has("alvl"+acl)) {
+				addActingHandler(null, {"from" : params.get("afrom" + acl), "to" : params.get("ato" + acl), "level" : params.get("alvl" + acl), "toFocus" : false});
+				hasHash = true;
+			}
+		} else {
+			looking = false;
+		}
+		acl++;
+	}
+
+	// LWoPs
+	looking = true;
+	let ls = 0;
+	while (looking) {
+		if (params.has("lfrom" + ls) || params.has("lto"+ls)) {
+			if (params.has("lfrom" + ls) && params.has("lto"+ls)) {
+				addLWoPHandler(null, {"from" : params.get("lfrom" + ls), "to" : params.get("lto" + ls), "toFocus" : false});
+				hasHash = true;
+			}
+		} else {
+			looking = false;
+		}
+		ls++;
+	}
+
+	// Overtimes/Standbys
+	looking = true;
+	let ots = 0;
+	while (looking) {
+		if (params.has("otdate" + ots) || params.has("otamt"+ots) || params.has("otrt"+ots)) {
+			if (params.has("otdate" + ots) && params.has("otamt"+ots) && params.has("otrt"+ots)) {
+				addOvertimeHandler(null, {"date" : params.get("otdate" + ots), "hours" : params.get("otamt" + ots), "rate" : params.get("otrt" + ots), "toFocus" : false});
+				hasHash = true;
+			}
+		} else {
+			looking = false;
+		}
+		ots++;
+	}
+
+	// Lump Sum Payments
+	looking = true;
+	let lss = 0;
+	while (looking) {
+		if (params.has("lsdate" + lss) || params.has("lsamt"+lss) || params.has("lsrt"+lss)) {
+			if (params.has("lsdate" + lss) && params.has("lsamt"+lss)) {
+				addLumpSumHandler(null, {"date" : params.get("lsdate" + lss), "hours" : params.get("lsamt" + lss), "toFocus" : false});
+				hasHash = true;
+			}
+		} else {
+			looking = false;
+		}
+		lss++;
+	}
+
+	if (dbug) console.log ("toCalculate: " + toCalculate + ": " + toCalculate.toString(2) + ".");
+	if (hasHash) {
+		//calcBtn.focus();
+		let clickEv = new Event("click");
+		calcBtn.dispatchEvent(clickEv);
+
+	}
+
+
+} // End of handleHash
+
+function saveValue (e) {
+	let ot = e.originalTarget;
+	let key = ot.id;
+	let value = (ot.toString().match(/HTMLSelect/) ? ot.selectedIndex : ot.value);
+	//saveValues[key] = value;
+	//saveValues.set(key, value);
+
+	
+
+	if (updateHash) setURL();
+} // End of saveValue
+
+// set the URL
+function setURL () {
+	let url = new URL(document.location);
+	let newURL = url.toString().replace(/#.*$/, "");
+	newURL = newURL.replace(/\?.*$/, "");
+	//let params = [];
+	/*for (let id in filters) {
+		if (!filters[id].checked) {
+			params.push(id.replace("Chk", ""));
+			if (id.match(/levelA/)) {
+				params[params.length-1] += "$";
+			}
+		}
+	}*/
+	/*
+	if (levelSel) saveValues["lvl"] = levelSel.selectedIndex);
+	if (startDateTxt.value) ("strtdt=" +  startDateTxt.value);
+	if (stepSelect) params.push("stp=" +  stepSelect.selectedIndex);
+	if (endDateTxt.value) params.push("enddt=" +  endDateTxt.value);
+
+	newURL += "?" + params.join("&");
+	*/
+	newURL += "?";
+	/*saveValues.forEach(function (val, key, saveValues) {
+		console.log ("adding " + key + "=" + val);
+		newURL += key + "=" + val + "&";
+		});
+	newURL = newURL.substring(0, newURL.length - 1);
+	*/
+	newURL += saveValues.join("&");
+	/*
+	if (params.length > 0) {
+		newURL += "?filters=" + params.join(sep) + (selectedTab != "" ? "&" + selectedTab : "") + url.hash;
+	} else {
+		newURL += (selectedTab != "" ? "?" + selectedTab : "") + url.hash;
+	}
+	*/
+	history.pushState({}, document.title, newURL);
+	
+
+} // End of setURL
+
+
+
 
 /*
    Populates the Salary Select basedon the CS-0x level selected
@@ -196,25 +399,26 @@ function selectSalary () {
 } // End of selectSalary
 
 function getStartDate () {
-	let parts = null;
+	let dparts = null;
 	startDateTxt.value = startDateTxt.value.replace(/[^-\d]/, "");
-	parts = startDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+	dparts = startDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 	if (dbug) console.log ("Got startDateTxt " + startDateTxt.value + ".");
-	if (dbug) console.log ("Got parts " + parts + ".");
+	if (dbug) console.log ("Got dparts " + dparts + ".");
 	// Leap years
-	if (parts[2] == "02" && parts[3] > "28") {
-		if (parseInt(parts[1]) % 4 === 0 && parts[3] == "29") {
+	if (dparts[2] == "02" && dparts[3] > "28") {
+		if (parseInt(dparts[1]) % 4 === 0 && dparts[3] == "29") {
 			// Do nothing right now
 		} else {
-			parts[3]=(parseInt(parts[1]) % 4 === 0? "29" : "28");
+			dparts[3]=(parseInt(dparts[1]) % 4 === 0? "29" : "28");
 		}
 	}
-	return new Date(parts[1], parts[2]-1, parts[3]);
+	return new Date(dparts[1], dparts[2]-1, dparts[3]);
 
 } // End of getStartDate
 
 function startProcess () {
-	periods = resetPeriods();
+	resetPeriods();
+	saveValues = [];
 	lumpSumPeriods = {};
 	overtimePeriods = {};
 	if (resultsBody) {
@@ -265,6 +469,7 @@ function startProcess () {
 	// Add Lump Sums
 	getLumpSums ();
 
+	setURL();
 	calculate();
 
 } // End of startProcess
@@ -272,6 +477,8 @@ function startProcess () {
 function resetPeriods () {
 	periods = [];
 	periods = initPeriods;
+	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
+	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 } // End of resetPeriods
 
 // getSalary called during startProcess.  "guess" isn't really a good word for this, so I changed it to "get"
@@ -289,6 +496,8 @@ function getSalary () {
 		levelSelect.setAttribute("aria-describedby", "levelSelectError");
 		levelSelect.focus();
 		//return;
+	} else {
+		saveValues.push("lvl="+lvl);
 	}
 	level = ((lvl > 0 && lvl < salaries.length+1) ? lvl : null);
 
@@ -315,10 +524,14 @@ function getSalary () {
 		}
 		var stp = step;
 
-		let parts = null;
-		parts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-		if (parts) {
-			EndDate = new Date(parts[1], (parts[2]-1), parts[3]);
+		saveValues.push("stp="+stp);
+		saveValues.push("strtdt="+startDateTxt.value);
+		saveValues.push("enddt="+endDateTxt.value);
+
+		let dparts = null;
+		dparts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+		if (dparts) {
+			EndDate = new Date(dparts[1], (dparts[2]-1), dparts[3]);
 			EndDate.setDate(EndDate.getDate() + parseInt(1));
 			if (dbug) console.log ("getSalary::Got EndDateTxt as " + endDateTxt.value + ".");
 			//if (dbug) console.log ("Got EndDate as " + EndDate.toISOString().substr(0, 10) + ".");
@@ -413,6 +626,8 @@ function addPromotions () {
 					if (dbug) console.log ("addPromotions::Adding anniversary date " + k + "-" + promoDate[2] + "-" + promoDate[3] + ".");
 					addPeriod ({"startDate": k + "-" + promoDate[2] + "-" + promoDate[3], "increase":0, "reason":"Anniversary Increase", "multiplier":1});
 				}
+				saveValues.push("pdate" + i + "=" + promoDate[0]);
+				saveValues.push("plvl" + i + "=" + promoLevel);
 
 			} else {
 				if (dbug) {
@@ -460,6 +675,9 @@ function getActings () {
 						addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1});
 					}
 				}
+				saveValues.push("afrom" + i + "=" + actingFromDate.toISOString().substr(0, 10));
+				saveValues.push("ato" + i + "=" + actingToDate.toISOString().substr(0, 10));
+				saveValues.push("alvl" + i + "=" + actingLvl);
 			} else {
 				if (dbug) {
 					if (actingFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingFrom is before EndDate");
@@ -507,6 +725,9 @@ function getLWoPs () {
 				for (var j = from; j < to; j++) {
 					periods[j]["multiplier"] = 0;
 				}
+
+				saveValues.push("lfrom" + i + "=" + lwopFromDate); //.toISOString().substr(0, 10));
+				saveValues.push("lto" + i + "=" + lwopToDate.toISOString().substr(0, 10));
 				//var fromParts = lwopFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				//lwopFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 			} else {
@@ -518,8 +739,6 @@ function getLWoPs () {
 			}
 		} else {
 			if (dbug) {
-				if (lwopLvl >=0) console.log ("getLWoPs::lwopLvl >= 0");
-				if (lwopLvl <5) console.log ("getLWoPs::lwopLvl < 5");
 				if (lwopFromDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getLWoPs::lwopFrom is right format.");
 				if (lwopToDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getLWoPs::lwopTo is right format.");
 			}
@@ -543,7 +762,10 @@ function getOvertimes () {
 				// add a period for starting
 				
 				var from = addPeriod({"startDate":overtimeDate, "increase":0, "reason":"Overtime", "multiplier":0, "hours":overtimeAmount, "rate":overtimeRate});
-				
+				saveValues.push("otdate" + i + "=" + overtimeDate);
+				saveValues.push("otamt" + i + "=" + overtimeAmount);
+				saveValues.push("otrt" + i + "=" + overtimeRate);
+
 			} else {
 				if (dbug) {
 					if (overtimeDate >= TABegin.toISOString().substr(0,10)) console.log ("overtimeDate is after startDate");
@@ -573,6 +795,9 @@ function getLumpSums () {
 				if (dbug) console.log ("And the dates are in the right range.");
 				// add a period for starting
 				var from = addPeriod({"startDate":lumpSumDate, "increase":0, "reason":"Lump Sum", "multiplier":0, "hours":lumpSumAmount});
+
+				saveValues.push("lsdate" + i + "=" + lumpSumDate);
+				saveValues.push("lsamt" + i + "=" + lumpSumAmount);
 				
 			} else {
 				if (dbug) {
@@ -623,7 +848,23 @@ function handlePromotions () {
 } // End of handlePromotions
 */
 
-function addPromotionHandler () {
+function addPromotionHandler (e, o) {
+	let toFocus = true;
+	let pdate = null;
+	let plvl = null;
+	if (arguments.length > 1) {
+		let args = arguments[1];
+		if (dbug) console.log ("addPromotionHandler::arguments: " + arguments.length);
+		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
+		if (args.hasOwnProperty("date")) {
+			pdate = (isValidDate(args["date"]) ? args["date"] : null);
+		}
+		if (args.hasOwnProperty("level")) {
+			plvl = args["level"].replaceAll(/\D/g, "");
+			plvl = (plvl >0 && plvl <6 ? plvl : null);
+		}
+		if (dbug) console.log (`addPromotionHandler::toFocus: ${toFocus}, pdate: ${pdate}, plvl: ${plvl}.`);
+	}
 	let promotionsDiv = document.getElementById("promotionsDiv");
 	let id = promotions;
 	let looking = true;
@@ -636,25 +877,36 @@ function addPromotionHandler () {
 	}
 
 	let newPromotionFS = createHTMLElement("fieldset", {"parentNode":promotionsDiv, "class":"fieldHolder promotions", "id" :"promo" + id});
-	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":"Promotion"});
+	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":"Promotion " + (id+1)});
 
 	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promoDate" + id, "nodeText":"Date of promotion: "});
-	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat"});
+	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat", "value":(pdate ? pdate : null)});
+	if (toFocus) newPromoDate.focus();
+	//newPromoDate.addEventListener("change", saveValue, false);
 
 	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promotionLevel" + id, "nodeText":"Promoted to level: "});
-	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"actingLevel" + id});
+	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"promotionLevel" + id});
 	for (var j = 0; j < 6; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
-		if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
+		if (plvl) {
+			if (plvl == j) newPromoOpt.setAttribute("selected", "selected");
+		} else {
+			if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
+		}
 	}
+	//newPromotionSel.addEventListener("change", saveValue, false);
 
-
-	var br = createHTMLElement("br", {"parentNode":newPromotionFS});
-
-	var newDelPromotionBtn = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"button", "value":"Remove", "id": "removePromotionBtn" + promotions});
-	var newAddPromotionBtn = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"button", "value":"Add another promotion", "class":"promotionsBtn", "id": "addPromotionsBtn" + id});
-	newAddPromotionBtn.addEventListener("click", addPromotionHandler, false);
-	newDelPromotionBtn.addEventListener("click", removePromotionDiv, false);
+	let promoButtonsDiv = null;
+	if (id == 0) {
+		promoButtonsDiv = createHTMLElement("div", {"parentNode":newPromotionFS, "id":"promoButtonsDiv"});
+		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":"Remove", "id": "removePromotionBtn" + promotions});
+		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":"Add another promotion", "class":"promotionsBtn", "id": "addPromotionsBtn" + id});
+		newAddPromotionBtn.addEventListener("click", addPromotionHandler, false);
+		newDelPromotionBtn.addEventListener("click", removePromotionDiv, false);
+	} else {
+		promoButtonsDiv = document.getElementById("promoButtonsDiv");
+		newPromotionFS.appendChild(promoButtonsDiv);
+	}
 
 	promotions++;
 
@@ -663,6 +915,27 @@ function addPromotionHandler () {
 } // End of addPromotionHandler
 
 function addActingHandler () {
+	let toFocus = true;
+	let afdate = null;
+	let atdate = null;
+	let alvl = null;
+	if (arguments.length > 1) {
+		let args = arguments[1];
+		if (dbug) console.log ("addActingHandler::arguments: " + arguments.length);
+		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
+		if (args.hasOwnProperty("from")) {
+			afdate = (isValidDate(args["from"]) ? args["from"] : null);
+		}
+		if (args.hasOwnProperty("to")) {
+			atdate = (isValidDate(args["to"]) ? args["to"] : null);
+		}
+		if (args.hasOwnProperty("level")) {
+			alvl = args["level"].replaceAll(/\D/g, "");
+			alvl = (alvl >0 && alvl <6 ? alvl : null);
+		}
+		if (dbug) console.log (`addActingHandler::toFocus: ${toFocus}, from: ${afdate} to ${atdate}, alvl: ${alvl}.`);
+	}
+
 	var actingsDiv = document.getElementById("actingsDiv");
 	
 	var id = actings;
@@ -675,31 +948,63 @@ function addActingHandler () {
 		}
 	}
 
-	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints"});
-	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode":"Acting Stint"});
+	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints", "id":"acting"+id});
+	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode":"Acting Stint " + (id+1)});
+
+	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"From", "for":"actingFrom" + id});
+	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(afdate ? afdate : null)});
+	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"To", "for":"actingTo"+id});
+	var newActingToDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat", "value":(atdate ? atdate : null)});
 
 	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "for":"actingLevel" + id, "nodeText":"Acting Level: "});
 	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, "id":"actingLevel" + id});
 	for (var j = 0; j < 6; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
-		if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
+		if (alvl) {
+			if (alvl == j) newPromoOpt.setAttribute("selected", "selected");
+		} else {
+			if (parseInt(levelSel.value)+1 == j) newPromoOpt.setAttribute("selected", "selected");
+		}
 	}
-	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"From", "for":"actingFrom" + id});
-	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat"});
-	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"To", "for":"actingTo"+id});
-	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat"});
-	var br = createHTMLElement("br", {"parentNode":newActingFS});
 
-	var newDelActingBtn = createHTMLElement("input", {"parentNode":newActingFS, "type":"button", "value":"Remove", "id": "removeActingBtn" + id});
-	var newAddActingBtn = createHTMLElement("input", {"parentNode":newActingFS, "type":"button", "value":"Add another acting period", "class":"actingBtn", "id":"addActingsBtn" + id});
-	newAddActingBtn.addEventListener("click", addActingHandler, false);
-	newDelActingBtn.addEventListener("click", removeActingDiv, false);
+
+	//newActingSel.addEventListener("change", saveValue, false);
+
+	let actingButtonsDiv = null;
+	if (id == 0) {
+		actingButtonsDiv = createHTMLElement("div", {"parentNode":newActingFS, "id":"actingButtonsDiv"});
+		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":"Remove", "id": "removeActingBtn" + actings});
+		var newAddActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":"Add another Acting", "class":"actingBtn", "id": "addActingsBtn" + id});
+		newAddActingBtn.addEventListener("click", addActingHandler, false);
+		newDelActingBtn.addEventListener("click", removeActingDiv, false);
+	} else {
+		actingButtonsDiv = document.getElementById("actingButtonsDiv");
+		newActingFS.appendChild(actingButtonsDiv);
+	}
+
+	if (toFocus) newActingFromDate.focus();
 
 	actings++;
 	resultStatus.innerHTML="New Acting section added.";
 } // End of addActingHandler
 
 function addLWoPHandler () {
+	let toFocus = true;
+	let lfrom = null;
+	let lto = null;
+	if (arguments.length > 1) {
+		let args = arguments[1];
+		if (dbug) console.log ("addLWoPHandler::arguments: " + arguments.length);
+		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
+		if (args.hasOwnProperty("from")) {
+			lfrom = (isValidDate(args["from"]) ? args["from"] : null);
+		}
+		if (args.hasOwnProperty("to")) {
+			lto = (isValidDate(args["to"]) ? args["to"] : null);
+		}
+		if (dbug) console.log (`addLWoPHandler::toFocus: ${toFocus}, from: ${lfrom} to ${lto}.`);
+	}
+
 	var LWoPDiv = document.getElementById("LWoPDiv");
 
 	var id = lwops;
@@ -712,25 +1017,53 @@ function addLWoPHandler () {
 		}
 	}
 
-	var newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints"});
-	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":"LWoP Stint"});
+	var newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints", "id":"lwop"+id});
+	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":"LWoP Stint " + (id+1)});
 
 	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":"From", "for":"lwopFrom" + id});
-	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat"});
+	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(lfrom ? lfrom : null)});
 	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":"To", "for":"lwopTo"+id});
-	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat"});
-	var br = createHTMLElement("br", {"parentNode":newLWoPFS});
+	var newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lto ? lto : null)});
 
-	var newDelLWoPBtn = createHTMLElement("input", {"parentNode":newLWoPFS, "type":"button", "value":"Remove", "id": "removeLwopBtn" + id});
-	var newAddLWoPBtn = createHTMLElement("input", {"parentNode":newLWoPFS, "type":"button", "value":"Add another lwop period", "class":"lwopBtn", "id":"addLwopsBtn" + id});
-	newAddLWoPBtn.addEventListener("click", addLWoPHandler, false);
-	newDelLWoPBtn.addEventListener("click", removeLWoPDiv, false);
+	let lwopButtonsDiv = null;
+	if (id == 0) {
+		lwopButtonsDiv = createHTMLElement("div", {"parentNode":newLWoPFS, "id":"lwopButtonsDiv"});
+		var newDelLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":"Remove", "id": "removeLWoPBtn" + lwops});
+		var newAddLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":"Add another LWoP", "class":"lwopBtn", "id": "addLWoPsBtn" + id});
+		newAddLWoPBtn.addEventListener("click", addLWoPHandler, false);
+		newDelLWoPBtn.addEventListener("click", removeLWoPDiv, false);
+	} else {
+		lwopButtonsDiv = document.getElementById("lwopButtonsDiv");
+		newLWoPFS.appendChild(lwopButtonsDiv);
+	}
 
+	
 	lwops++;
+	if (toFocus) newLWoPFromDate.focus();
 	resultStatus.innerHTML="New leave without pay section added.";
 } // End of lWoPHandler
 
 function addOvertimeHandler () {
+	let toFocus = true;
+	let otdate = null;
+	let othours = null;
+	let otrate = null;
+	if (arguments.length > 1) {
+		let args = arguments[1];
+		if (dbug) console.log ("addOvertimeHandler::arguments: " + arguments.length);
+		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
+		if (args.hasOwnProperty("date")) {
+			otdate = (isValidDate(args["date"]) ? args["date"] : null);
+		}
+		if (args.hasOwnProperty("hours")) {
+			othours = (args["hours"] ? args["hours"] : null);
+		}
+		if (args.hasOwnProperty("rate")) {
+			otrate = (["rate"] ? args["rate"] : null);
+		}
+		if (dbug) console.log (`addOvertimeHandler::toFocus: ${toFocus}, date: ${otdate} hours ${othours}, rate: ${otrate}.`);
+	}
+
 	var OvertimeDiv = document.getElementById("overtimeDiv");
 
 	var id = overtimes;
@@ -742,36 +1075,64 @@ function addOvertimeHandler () {
 			looking = false;
 		}
 	}
-	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes"});
-	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":"Overtime or Standby"});
+	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes", "id":"ot" + id});
+	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":"Overtime or Standby " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
 	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":"Date of Overtime:", "for":"overtimeDate" + id});
-	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat"});
+	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat", "value":(otdate ? otdate : null)});
+
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
 	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Hours-worth of overtime", "for":"overtimeAmount" + id});
-	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"overtimeAmount"+id, "type":"text"});
+	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
 
 	var newRateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
 	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Overtime Rate:", "for":"overtimeRate" + id});
 	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, "id":"overtimeRate"+id});
+	let rates = {"0" : "Select Overtime Rate", "0.125" : "1/8x - Standby", "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":"Select Overtime Rate"});
-	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0.125", "nodeText":"1/8x - Standby", "selected":"selected"});
-	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"1.0", "nodeText":"1.0x", "selected":"selected"});
-	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"1.5", "nodeText":"1.5x", "selected":"selected"});
-	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"2.0", "nodeText":"2.0x"});
+	
+	for (let r in rates) {
+		let rt = createHTMLElement("option", {"parentNode":newOvertimeRate, "value":r, "nodeText": rates[r]});
+		if (otrate && otrate == r) rt.setAttribute("selected", "selected");
+	}
 
-	var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Remove", "id": "removeOvertimeBtn" + id});
-	var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":newOvertimeFS, "type":"button", "value":"Add another Overtime or Standby period", "class":"overtimeBtn", "id":"addOvertimesBtn" + id});
-	newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
-	newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
 
+	let otButtonsDiv = null;
+	if (id == 0) {
+		otButtonsDiv = createHTMLElement("div", {"parentNode":newOvertimeFS, "id":"otButtonsDiv"});
+		var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":"Remove", "id": "removeOvertimeBtn" + overtimes});
+		var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":"Add another Overtime", "class":"otBtn", "id": "addOvertimesBtn" + id});
+		newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
+		newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
+	} else {
+		otButtonsDiv = document.getElementById("otButtonsDiv");
+		newOvertimeFS.appendChild(otButtonsDiv);
+	}
+	if (toFocus) newOvertimeDate.focus();
 	overtimes++;
+
 	resultStatus.innerHTML="New overtime section added.";
 } // End of addOvertimeHandler
 
 function addLumpSumHandler () {
+	let toFocus = true;
+	let lsdate = null;
+	let lshours = null;
+	if (arguments.length > 1) {
+		let args = arguments[1];
+		if (dbug) console.log ("addLumpSumHandler::arguments: " + arguments.length);
+		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
+		if (args.hasOwnProperty("date")) {
+			lsdate = (isValidDate(args["date"]) ? args["date"] : null);
+		}
+		if (args.hasOwnProperty("hours")) {
+			lshours = (args["hours"] ? args["hours"] : null);
+		}
+		if (dbug) console.log (`addLumpSumHandler::toFocus: ${toFocus}, date: ${lsdate} hours ${lshours}.`);
+	}
+
 	var LumpSumDiv = document.getElementById("lumpSumDiv");
 
 	var id = lumpSums;
@@ -783,119 +1144,165 @@ function addLumpSumHandler () {
 			looking = false;
 		}
 	}
-	var newLumpSumFS = createHTMLElement("fieldset", {"parentNode":LumpSumDiv, "class":"fieldHolder lumpSums"});
-	var newLumpSumLegend = createHTMLElement("legend", {"parentNode":newLumpSumFS, "textNode":"Lump Sums"});
+	var newLumpSumFS = createHTMLElement("fieldset", {"parentNode":LumpSumDiv, "class":"fieldHolder lumpSums", "id":"lumpSum" + id});
+	var newLumpSumLegend = createHTMLElement("legend", {"parentNode":newLumpSumFS, "textNode":"Lump Sum " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
 	var newLumpSumDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":"Date paid out:", "for":"lumpSumDate" + id});
-	var newLumpSumDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"lumpSumDate"+id, "type":"date", "aria-describedby":"dateFormat"});
+	var newLumpSumDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"lumpSumDate"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lsdate ? lsdate : null)});
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
 	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Hours-worth of payout", "for":"lumpSumAmount" + id});
-	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"lumpSumAmount"+id, "type":"text"});
+	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"lumpSumAmount"+id, "type":"text", "value" : (lshours ? lshours : "")});
 
+
+	let lumpSumButtonsDiv = null;
+	if (id == 0) {
+		lumpSumButtonsDiv = createHTMLElement("div", {"parentNode":newLumpSumFS, "id":"lumpSumButtonsDiv"});
+		var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":"Remove", "id": "removeLumpSumBtn" + lumpSums});
+		var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":"Add another LumpSum", "class":"lumpSumBtn", "id": "addLumpSumsBtn" + id});
+		newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
+		newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
+	} else {
+		lumpSumButtonsDiv = document.getElementById("lumpSumButtonsDiv");
+		newLumpSumFS.appendChild(lumpSumButtonsDiv);
+	}
+
+	if (toFocus) newLumpSumDate.focus();
+
+
+	/*
 	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Remove", "id": "removeLumpSumBtn" + id});
 	var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Add another Lump Sum period", "class":"lumpsumBtn", "id":"addLumpSumsBtn" + id});
 	newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 	newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
-
+	*/
 	lumpSums++;
 	resultStatus.innerHTML="New lump sum section added.";
 } // End of addLumpSum Handler
 
 function removePromotionDiv (e) {
-	var btn= e.target;
-	var btnID = btn.getAttribute("id")
-	btnID = btnID.replaceAll(/\D/g, "");
-	if (btnID > 0) btnID--;
-	var fs = btn.parentNode;
-	fs.parentNode.removeChild(fs);
+	let promoButtonsDiv = null;
+	let promoFS = null;
+	let promoDate = null;
+	let rmPromoFS = null;
+	
+	promoButtonsDiv = document.getElementById("promoButtonsDiv");
+
 	promotions--;
-	if (promotions == 0 || btnID < 0) {
+	rmPromoFS = document.getElementById("promo" + promotions);
+	if (promotions == 0) {
 		addPromotionBtn.focus();
 	} else {
-		let promotionBtns = null;
-		promotionBtns = document.getElementById("addPromotionsBtn" + btnID);
-		if (!promotionBtns) {
-			for (var j = btnID; promotionBtns === null && j >0; j--) {
-				promotionBtns = document.getElementById("addPromotionsBtn" + j);
-			}
-			if (j == 0) promotionBtns = addPromotionBtn;
-		}
-		try {
-			promotionBtns.focus();
-		}
-		catch (ex) {
-			console.error ("Exception: " + ex.toString());
-			addPromotionBtn.focus();
-		}
+		promoFS = document.getElementById("promo" + (promotions-1));
+		if (promoFS) promoFS.appendChild(promoButtonsDiv);
+		promoDate = document.getElementById("promoDate" + (promotions-1));
+		if (promoDate) promoDate.focus();
 	}
+
+	rmPromoFS.parentNode.removeChild(rmPromoFS);
+	rmPromoFS = null;
+
 	resultStatus.innerHTML="Promotion section removed.";
-}
+} // End of removePromotionDiv
 
 function removeActingDiv (e) {
-	var btn= e.target;
-	var btnID = btn.getAttribute("id")
-	btnID = btnID.replaceAll(/\D/g, "");
-	if (btnID > 0) btnID--;
-	var fs = btn.parentNode;
-	fs.parentNode.removeChild(fs);
+	let actingButtonsDiv = null;
+	let actingFS = null;
+	let actingFromDate = null;
+	let rmActingFS = null;
+	
+	actingButtonsDiv = document.getElementById("actingButtonsDiv");
+
 	actings--;
-	if (actings == 0 || btnID < 0) {
+	rmActingFS = document.getElementById("acting" + actings);
+	if (actings == 0) {
 		addActingBtn.focus();
 	} else {
-		let actingBtns = null;
-		actingBtns = document.getElementById("addActingsBtn" + btnID);
-		if (!actingBtns) {
-			for (var j = btnID; actingBtns === null && j >0; j--) {
-				actingBtns = document.getElementById("addActingsBtn" + j);
-			}
-			if (j == 0) actingBtns = addActingBtn;
-		}
-		
-
-		try {
-			actingBtns.focus();
-		}
-		catch (ex) {
-			console.error ("Exception: " + ex.toString());
-			addActingBtn.focus();
-		}
+		actingFS = document.getElementById("acting" + (actings-1));
+		if (actingFS) actingFS.appendChild(actingButtonsDiv);
+		actingFromDate = document.getElementById("actingFromDate" + (actings-1));
+		if (actingFromDate) actingFromDate.focus();
 	}
+
+	rmActingFS.parentNode.removeChild(rmActingFS);
+	rmActingFS = null;
+
+
 	resultStatus.innerHTML="Acting section removed.";
-}
+} // End of removeActingDiv
 function removeLWoPDiv (e) {
-	var btn= e.target;
-	var btnID = btn.getAttribute("id")
-	btnID = btnID.replaceAll(/\D/g, "");
-	if (btnID > 0) btnID--;
-	var fs = btn.parentNode;
-	fs.parentNode.removeChild(fs);
+	let lwopButtonsDiv = null;
+	let lwopFS = null;
+	let lwopDate = null;
+	let rmLwopFS = null;
+	
+	lwopButtonsDiv = document.getElementById("lwopButtonsDiv");
+
 	lwops--;
-	if (lwops == 0 || btnID < 0) {
+	rmLwopFS = document.getElementById("lwop" + lwops);
+	if (lwops == 0) {
 		addLwopBtn.focus();
 	} else {
-		let lwopBtns = null;
-		lwopBtns = document.getElementById("addLwopsBtn" + btnID);
-		if (!lwopBtns) {
-			for (var j = btnID; lwopBtns === null && j >0; j--) {
-				lwopBtns = document.getElementById("addLwopsBtn" + j);
-			}
-			if (j == 0) lwopBtns = addLwopBtn;
-		}
-		
-
-		try {
-			lwopBtns.focus();
-		}
-		catch (ex) {
-			console.error ("Exception: " + ex.toString());
-			addLwopBtn.focus();
-		}
+		lwopFS = document.getElementById("lwop" + (lwops-1));
+		if (lwopFS) lwopFS.appendChild(lwopButtonsDiv);
+		lwopDate = document.getElementById("lwopFrom" + (lwops-1));
+		if (lwopDate) lwopDate.focus();
 	}
+
+	rmLwopFS.parentNode.removeChild(rmLwopFS);
+	rmLwopFS = null;
 	resultStatus.innerHTML="Leave Without Pay section removed.";
-}
+} // End of removeLWoPDiv
+
+function removeOvertimeDiv (e) {
+	let otButtonsDiv = null;
+	let otFS = null;
+	let otDate = null;
+	let rmOTFS = null;
+	
+	otButtonsDiv = document.getElementById("otButtonsDiv");
+
+	overtimes--;
+	rmOTFS = document.getElementById("ot" + overtimes);
+	if (overtimes == 0) {
+		addOvertimeBtn.focus();
+	} else {
+		otFS = document.getElementById("ot" + (overtimes-1));
+		if (otFS) otFS.appendChild(otButtonsDiv);
+		otDate = document.getElementById("overtimeDate" + (overtimes-1));
+		if (otDate) otDate.focus();
+	}
+
+	rmOTFS.parentNode.removeChild(rmOTFS);
+	rmOTFS = null;
+
+	resultStatus.innerHTML="Overtime section removed.";
+} // End of removeOvertimeDiv
+
 function removeLumpSumDiv (e) {
+	let lumpSumButtonsDiv = null;
+	let lumpSumFS = null;
+	let lumpSumDate = null;
+	let rmLumpSumFS = null;
+	
+	lumpSumButtonsDiv = document.getElementById("lumpSumButtonsDiv");
+
+	lumpSums--;
+	rmLumpSumFS = document.getElementById("lumpSum" + lumpSums);
+	if (lumpSums == 0) {
+		addLumpSumBtn.focus();
+	} else {
+		lumpSumFS = document.getElementById("lumpSum" + (lumpSums-1));
+		if (lumpSumFS) lumpSumFS.appendChild(lumpSumButtonsDiv);
+		lumpSumDate = document.getElementById("lumpSumDate" + (lumpSums-1));
+		if (lumpSumDate) lumpSumDate.focus();
+	}
+
+	rmLumpSumFS.parentNode.removeChild(rmLumpSumFS);
+	rmLumpSumFS = null;
+
+	/*
 	var btn= e.target;
 	var btnID = btn.getAttribute("id")
 	btnID = btnID.replaceAll(/\D/g, "");
@@ -924,40 +1331,11 @@ function removeLumpSumDiv (e) {
 			addLumpSumBtn.focus();
 		}
 	}
+	*/
 	resultStatus.innerHTML="Lump sum section removed.";
-}
+} // End of removeLumpSumDiv
 
-function removeOvertimeDiv (e) {
-	var btn= e.target;
-	var btnID = btn.getAttribute("id")
-	btnID = btnID.replaceAll(/\D/g, "");
-	if (btnID > 0) btnID--;
-	var fs = btn.parentNode;
-	fs.parentNode.removeChild(fs);
-	overtimes--;
-	if (overtimes == 0 || btnID < 0) {
-		addOvertimeBtn.focus();
-	} else {
-		let overtimeBtns = null;
-		overtimeBtns = document.getElementById("addOvertimesBtn" + btnID);
-		if (!overtimeBtns) {
-			for (var j = btnID; overtimeBtns === null && j >0; j--) {
-				overtimeBtns = document.getElementById("addOvertimesBtn" + j);
-			}
-			if (j == 0) overtimeBtns = addOvertimeBtn;
-		}
-		
 
-		try {
-			overtimeBtns.focus();
-		}
-		catch (ex) {
-			console.error ("Exception: " + ex.toString());
-			addOvertimeBtn.focus();
-		}
-	}
-	resultStatus.innerHTML="Overtime section removed.";
-}
 function addPeriod (p) {
 	var rv = null;
 	if (dbug) console.log ("addPeriod::Gonna add period beginnging at " + p["startDate"] + " to periods (" + periods.length + ").");
@@ -1048,8 +1426,10 @@ function calculate() {
 	resultStatus.innerHTML="";
 	//if (step == salaries[level].length -1) {
 		//if (dbug) console.log ("Top of your level.  This should be easy.");
-		if (dbug) console.log ("\n\nCalculating:  There are " + periods.length + " periods to be concerned with.");
-		
+		if (dbug) {
+			console.log ("\n\nCalculating:  There are " + periods.length + " periods to be concerned with.");
+			console.log ("With salary: " + salaries[level][step] + ".");
+		}
 		var actingStack = [];
 		var multiplier = 1;
 		var newSalaries = JSON.parse(JSON.stringify(salaries));
@@ -1126,19 +1506,21 @@ function calculate() {
 				// Calculate new salaries, dailys, and hourlys
 				for (var l = 0; l < newSalaries.length; l++) {
 					for (var s = 0; s < newSalaries[l].length; s++) {
-						if (dbug && l == level) console.log ("Multiplying " + newSalaries[l][s] + " * " + multiplier + ".");
+						//if (dbug && l == level) console.log ("Multiplying " + newSalaries[l][s] + " * " + multiplier + ".");
 						newSalaries[l][s] = (newSalaries[l][s] * multiplier).toFixed(2);
 						newDaily[l][s] = (newSalaries[l][s] / 260.88); //.toFixed(2);
 						newHourly[l][s] = (newSalaries[l][s] / 1956.6); //.toFixed(2);
-						if (dbug && l == level) console.log ("And it came to " + newSalaries[l][s] + ".");
+						//if (dbug && l == level) console.log ("And it came to " + newSalaries[l][s] + ".");
 					}
 				}
 				if (dbug) console.log ("Your annual salary went from " + salaries[level][step] + " to " + newSalaries[level][step] + ".");
 			}
 			var days = 0;
 			if (step >= 0) {
-				var parts = periods[i]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
-				var current = new Date(parts[1], parts[2]-1, parts[3]);
+				if (dbug) console.log ("current period: periods[" + i + "][startDate]: " + periods[i]["startDate"] + ".");
+				if (dbug) console.log ("future period: periods[" + (i+1) + "][startDate]: " + periods[(i+1)]["startDate"] + ".");
+				var dparts = periods[i]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
+				var current = new Date(dparts[1], dparts[2]-1, dparts[3]);
 				parts = periods[i+1]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
 				var future = new Date(parts[1], parts[2]-1, parts[3]);
 				//future.setDate(future.getDate() - 1);
@@ -1283,6 +1665,21 @@ function calculate() {
 	//}
 } // End of calculate
 
+function isValidDate (d) {
+	let rv = false;
+	try {
+		if (!typeof(d) == "String") d = d.toString();
+		let dateRE = /(\d\d\d\d)-(\d\d)-(\d\d)/;
+		let dparts = d.match(dateRE);
+		d = new Date(dparts[1], dparts[2]-1, dparts[3]);
+
+		if (d >= TABegin && d<= EndDate) rv = true;
+	}
+	catch (ex) {
+		console.error ("Something went wrong: " + ex.toString());
+	}
+	return rv;
+} // End of isValidDate
 
 function addStartDateErrorMessage () {
 	if (dbug) console.log ("Error:  st is " + startDateTxt.value + ".");
