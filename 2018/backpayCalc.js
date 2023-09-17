@@ -1039,7 +1039,7 @@ function addLWoPHandler () {
 
 	
 	lwops++;
-	newLWoPFromDate.focus();
+	if (toFocus) newLWoPFromDate.focus();
 	resultStatus.innerHTML="New leave without pay section added.";
 } // End of lWoPHandler
 
@@ -1110,7 +1110,7 @@ function addOvertimeHandler () {
 		otButtonsDiv = document.getElementById("otButtonsDiv");
 		newOvertimeFS.appendChild(otButtonsDiv);
 	}
-	newOvertimeDate.focus();
+	if (toFocus) newOvertimeDate.focus();
 	overtimes++;
 
 	resultStatus.innerHTML="New overtime section added.";
@@ -1168,7 +1168,7 @@ function addLumpSumHandler () {
 		newLumpSumFS.appendChild(lumpSumButtonsDiv);
 	}
 
-	newLumpSumDate.focus();
+	if (toFocus) newLumpSumDate.focus();
 
 
 	/*
