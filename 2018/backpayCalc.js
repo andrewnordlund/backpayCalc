@@ -1423,11 +1423,14 @@ function addPeriod (p) {
 } // End of addPeriod
 
 function calculate() {
+	dbug = true;
 	resultStatus.innerHTML="";
 	//if (step == salaries[level].length -1) {
 		//if (dbug) console.log ("Top of your level.  This should be easy.");
-		if (dbug) console.log ("\n\nCalculating:  There are " + periods.length + " periods to be concerned with.");
-		
+		if (dbug) {
+			console.log ("\n\nCalculating:  There are " + periods.length + " periods to be concerned with.");
+			console.log ("With salary: " + salaries[level][step] + ".");
+		}
 		var actingStack = [];
 		var multiplier = 1;
 		var newSalaries = JSON.parse(JSON.stringify(salaries));
@@ -1504,21 +1507,23 @@ function calculate() {
 				// Calculate new salaries, dailys, and hourlys
 				for (var l = 0; l < newSalaries.length; l++) {
 					for (var s = 0; s < newSalaries[l].length; s++) {
-						if (dbug && l == level) console.log ("Multiplying " + newSalaries[l][s] + " * " + multiplier + ".");
+						//if (dbug && l == level) console.log ("Multiplying " + newSalaries[l][s] + " * " + multiplier + ".");
 						newSalaries[l][s] = (newSalaries[l][s] * multiplier).toFixed(2);
 						newDaily[l][s] = (newSalaries[l][s] / 260.88); //.toFixed(2);
 						newHourly[l][s] = (newSalaries[l][s] / 1956.6); //.toFixed(2);
-						if (dbug && l == level) console.log ("And it came to " + newSalaries[l][s] + ".");
+						//if (dbug && l == level) console.log ("And it came to " + newSalaries[l][s] + ".");
 					}
 				}
 				if (dbug) console.log ("Your annual salary went from " + salaries[level][step] + " to " + newSalaries[level][step] + ".");
 			}
 			var days = 0;
 			if (step >= 0) {
+				if (dbug) console.log ("current period: periods[" + i + "][startDate]: " + periods[i]["startDate"] + ".");
+				if (dbug) console.log ("future period: periods[" + (i+1) + "][startDate]: " + periods[(i+1)]["startDate"] + ".");
 				var dparts = periods[i]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
 				var current = new Date(dparts[1], dparts[2]-1, dparts[3]);
 				parts = periods[i+1]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
-				var future = new Date(dparts[1], dparts[2]-1, dparts[3]);
+				var future = new Date(parts[1], parts[2]-1, parts[3]);
 				//future.setDate(future.getDate() - 1);
 				var diff = (future  - current) / day;
 				if (dbug) console.log ("There were " + diff + " days between " + current.getFullYear() + "-" +  (current.getMonth()+1) +"-" + current.getDate() + " and " + future.getFullYear() + "-" + (future.getMonth()+1) + "-" + future.getDate() +".");
