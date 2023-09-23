@@ -14,6 +14,7 @@
 
 var dbug = false;
 let data = {};
+let i18n = {};
 var version = "3.0";
 var updateHash = true;
 var saveValues = null;
@@ -1769,18 +1770,30 @@ function removeChildren (el) {
 	}
 }
 
+function isReady () {
+	if (i18n != {} && data != {}) init();
+} // End of isReader
+
 async function getData () {
 	let response = await fetch("raiseInfo.json");
 	if (response.ok) { // if HTTP-status is 200-299
 		// get the response body (the method explained below)
 		data = await response.json();
-		if (dbug) console.log ("Got json: "  + JSON.stringify(json) + ".");
+		if (dbug) console.log ("Got json: "  + JSON.stringify(data) + ".");
 		//salaries = json["IT"]["2018-2021"]["salaries"]["annual"];
 		//daily = json["IT"]["2018-2021"]["salaries"]["daily"];
 		//hourly = json["IT"]["2018-2021"]["salaries"]["hourly"];
 		//initPeriods = json["IT"]["2018-2021"]["periods"];
 		
-		init();
+		isReady();
+	} else {
+		console.error ("HTTP-Error: " + response.status);
+	}
+	response = await fetch("i18n.json");
+	if (response.ok) { // if HTTP-status is 200-299
+		i18n = await response.json();
+		if (dbug) console.log ("Got json: "  + JSON.stringify(i18n) + ".");
+		isReady();
 	} else {
 		console.error ("HTTP-Error: " + response.status);
 	}
