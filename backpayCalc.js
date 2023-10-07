@@ -12,9 +12,10 @@
  *
  */
 
-var dbug = false;
+var dbug = true;
 let data = {};
 let i18n = {};
+let lang = "en";
 var version = "3.0";
 var updateHash = true;
 var saveValues = null;
@@ -25,7 +26,9 @@ var mainForm = null;
 var startingSalary = 0;
 var resultsDiv = null;
 var startDateTxt = null;
+var classification = null;
 var classSel = null;
+var CASel = null;
 var levelSel = null;
 var stepSelect = null;
 var numPromotions = null;
@@ -87,6 +90,8 @@ var hourly = [
 //var days = [31, 29, 31
 
 function init() {
+	lang = document.documentElement.lang;
+	console.log ("Got lang " + lang + ".");
 	mainForm = document.getElementById("mainForm");
 
 	createClassificationSelect ();
@@ -158,17 +163,42 @@ function oldinit () {
 
 function createClassificationSelect () {
 	let div = createHTMLElement ("div", {"parentNode":mainForm, "class":"fieldHolder"});
-	let lbl = createHTMLElement ("label", {"parentNode":div, "for":"classSel", "textNode":"Select Your Classification"});
+	let lbl = createHTMLElement ("label", {"parentNode":div, "for":"classSel", "textNode":i18n["selectClass"][lang]});
 	classSel = createHTMLElement ("select", {"parentNode":div, "id":"classSel"});
-	let opt1 = createHTMLElement ("option", {"parentNode":classSel, "textNode":" -- Select a Classification --"});
+	let opt1 = createHTMLElement ("option", {"parentNode":classSel, "textNode":" -- " + i18n["selectClass"][lang] + " --"});
 
-	for (var classification in data) {
-		let opt = createHTMLElement("option", {"parentNode":classSel, "textNode" : classification});
+	for (var classifications in data) {
+		let opt = createHTMLElement("option", {"parentNode":classSel, "textNode" : classifications});
 		// Add something for the bookmarks
 	}
 
 	// Add a change handler for this to add the next thing
+	classSel.addEventListener("change", function () {
+		classification = classSel.value;
+		createCASelect();
+	}, false);
+
 } // End of createClassificationSelect
+
+function createCASelect () {
+	let div = createHTMLElement ("div", {"parentNode":mainForm, "class":"fieldHolder"});
+	let lbl = createHTMLElement ("label", {"parentNode":div, "for":"CASel", "textNode":i18n["selectCALbl"][lang]});
+	CASel = createHTMLElement ("select", {"parentNode":div, "id":"CASel"});
+
+	console.log ("Dealing with classification: " + classification + ".");
+	let opt = null;
+	for (var CA in data[classification]) {
+		console.log ("Dealing with CA: " + CA + ".");
+		 opt = createHTMLElement("option", {"parentNode":CASel, "textNode" : CA});
+		// Add something for the bookmarks
+	}
+	opt.setAttribute("selected", "selected");
+
+	// Add a change handler for this to add the next thing
+	// What's next?
+	// Now we know what CA, we now need to determine a Start Date
+	CASel.addEventListener("change", createCASelect, false);
+} // End of createCASelect
 
 
 // Check the document location for saved things
@@ -1771,7 +1801,22 @@ function removeChildren (el) {
 }
 
 function isReady () {
-	if (i18n != {} && data != {}) init();
+	if (JSON.stringify(i18n) != "{}" && JSON.stringify(data) != "{}") {
+		if (dbug) {
+			console.log ("Got both");
+			console.log ("Got json: "  + JSON.stringify(data) + ".");
+			console.log ("Got json: "  + JSON.stringify(i18n) + ".");
+		}
+		init();
+	} else {
+		if (JSON.stringify(i18n) == "{}") {
+			console.log ("Didn't get i18n, so must have gotten data.");
+		}
+		if (JSON.stringify(data) === "{}") {
+			console.log ("Didn't get data, so must have gotten i18n.");
+		}
+		
+	}
 } // End of isReader
 
 async function getData () {
@@ -1784,8 +1829,8 @@ async function getData () {
 		//daily = json["IT"]["2018-2021"]["salaries"]["daily"];
 		//hourly = json["IT"]["2018-2021"]["salaries"]["hourly"];
 		//initPeriods = json["IT"]["2018-2021"]["periods"];
-		
-		isReady();
+		console.log ("getData::calling isReady");
+		//isReady();
 	} else {
 		console.error ("HTTP-Error: " + response.status);
 	}
@@ -1793,10 +1838,13 @@ async function getData () {
 	if (response.ok) { // if HTTP-status is 200-299
 		i18n = await response.json();
 		if (dbug) console.log ("Got json: "  + JSON.stringify(i18n) + ".");
-		isReady();
+		console.log ("getI18n::calling isReady");
+		//isReady();
 	} else {
 		console.error ("HTTP-Error: " + response.status);
 	}
+	if (dbug) console.log ("getData::calling init.");
+	init();
 } // End of getData
 
 if (dbug) console.log ("Finished loading backpayCalc.js.");
