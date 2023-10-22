@@ -39,9 +39,9 @@ var addLwopBtn = null;
 var addLumpSumBtn = null;
 var resultStatus = null;
 var calcStartDate = null;
-var endDateTxt = "2021-04-15";
-var TABegin = new Date("2018", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
-var EndDate = new Date("2021", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+var endDateTxt = "2024-04-15";
+var TABegin = new Date("2021", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var EndDate = new Date("2024", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var day = (1000 * 60 * 60 * 24);
 var parts = [];
 var resultsBody = null;
@@ -56,7 +56,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2021", "04", "15");
+var lastModified = new Date("2023", "09", "22");
 var lastModTime = null;
 var salaries = [];
 var daily = [];
@@ -162,42 +162,44 @@ function oldinit () {
 
 
 function createClassificationSelect () {
-	let div = createHTMLElement ("div", {"parentNode":mainForm, "class":"fieldHolder"});
-	let lbl = createHTMLElement ("label", {"parentNode":div, "for":"classSel", "textNode":i18n["selectClass"][lang]});
-	classSel = createHTMLElement ("select", {"parentNode":div, "id":"classSel"});
-	let opt1 = createHTMLElement ("option", {"parentNode":classSel, "textNode":" -- " + i18n["selectClass"][lang] + " --"});
+	if (!document.getElementById("classSel")) {
+		let div = createHTMLElement ("div", {"parentNode":mainForm, "class":"fieldHolder"});
+		let lbl = createHTMLElement ("label", {"parentNode":div, "for":"classSel", "textNode":i18n["selectClass"][lang]});
+		classSel = createHTMLElement ("select", {"parentNode":div, "id":"classSel"});
+		let opt1 = createHTMLElement ("option", {"parentNode":classSel, "textNode":" -- " + i18n["selectClass"][lang] + " --"});
 
-	for (var classifications in data) {
-		let opt = createHTMLElement("option", {"parentNode":classSel, "textNode" : classifications});
-		// Add something for the bookmarks
+		for (var classifications in data) {
+			let opt = createHTMLElement("option", {"parentNode":classSel, "textNode" : classifications});
+			// Add something for the bookmarks
+		}
+
+		// Add a change handler for this to add the next thing
+		classSel.addEventListener("change", function () {
+			classification = classSel.value;
+			createCASelect();
+		}, false);
 	}
-
-	// Add a change handler for this to add the next thing
-	classSel.addEventListener("change", function () {
-		classification = classSel.value;
-		createCASelect();
-	}, false);
 
 } // End of createClassificationSelect
 
 function createCASelect () {
-	let div = createHTMLElement ("div", {"parentNode":mainForm, "class":"fieldHolder"});
-	let lbl = createHTMLElement ("label", {"parentNode":div, "for":"CASel", "textNode":i18n["selectCALbl"][lang]});
-	CASel = createHTMLElement ("select", {"parentNode":div, "id":"CASel"});
+	if (!document.getElementById("CASel")) {
+		let div = createHTMLElement ("div", {"parentNode":mainForm, "class":"fieldHolder"});
+		let lbl = createHTMLElement ("label", {"parentNode":div, "for":"CASel", "textNode":i18n["selectCALbl"][lang]});
+		CASel = createHTMLElement ("select", {"parentNode":div, "id":"CASel"});
 
-	console.log ("Dealing with classification: " + classification + ".");
-	let opt = null;
-	for (var CA in data[classification]) {
-		console.log ("Dealing with CA: " + CA + ".");
-		 opt = createHTMLElement("option", {"parentNode":CASel, "textNode" : CA});
-		// Add something for the bookmarks
+		console.log ("Dealing with classification: " + classification + ".");
+		let opt = createHTMLElement("option", {"parentNode":CASel, "textNode" : i18n["selectCALbl"][lang]});
+		for (var CA in data[classification]) {
+			opt = createHTMLElement("option", {"parentNode":CASel, "textNode" : CA});
+			// Add something for the bookmarks
+		}
+
+		// Add a change handler for this to add the next thing
+		// What's next?
+		// Now we know what CA, we now need to determine a Start Date
+		CASel.addEventListener("change", createCASelect, false);
 	}
-	opt.setAttribute("selected", "selected");
-
-	// Add a change handler for this to add the next thing
-	// What's next?
-	// Now we know what CA, we now need to determine a Start Date
-	CASel.addEventListener("change", createCASelect, false);
 } // End of createCASelect
 
 
