@@ -27,6 +27,7 @@ var startingSalary = 0;
 var resultsDiv = null;
 var startDateTxt = null;
 var classification = null;
+var chosenCA = null;
 var classSel = null;
 var CASel = null;
 var levelSel = null;
@@ -198,9 +199,26 @@ function createCASelect () {
 		// Add a change handler for this to add the next thing
 		// What's next?
 		// Now we know what CA, we now need to determine a Start Date
-		CASel.addEventListener("change", createCASelect, false);
+		CASel.addEventListener("change", function () {
+			chosenCA = CASel.value;
+			askStartDate();
+		}, false);
 	}
 } // End of createCASelect
+
+function askStartDate () {
+	if (!document.getElementById("askStartDateFS")) {
+		let askStartDateFS = createHTMLElement("fieldset", {"parentNode": mainForm, "id":"askStartDateFS"});
+		let askStartDateLgndTxt = i18n["startDateLgnd"][lang].replace("{{classification}}", classification).replace("{{startDate}}", data[classification][chosenCA]["TABegin"]);
+		let askStartDateLgnd = createHTMLElement("legend", {"parentNode": askStartDateFS, "textNode" : askStartDateLgndTxt});
+		let yesHolderDiv = createHTMLElement("div", {"parentNode" : askStartDateFS});
+		let noHolderDiv = createHTMLElement("div", {"parentNode" : askStartDateFS});
+		let yesRB = createHTMLElement("input", {"parentNode" : yesHolderDiv, "id" : "yesRB", "type" : "radio", "name" : "startDateRBs"});
+		let yesRBLbl = createHTMLElement("label", {"parentNode" : yesHolderDiv, "for" : "yesRB", "textNode" : i18n["yesTxt"][lang]});
+		let noRB = createHTMLElement("input", {"parentNode" : noHolderDiv, "id" : "noRB", "type" : "radio", "name" : "startDateRBs"});
+		let noRBLbl = createHTMLElement("label", {"parentNode" : noHolderDiv, "for" : "noRB", "textNode" : i18n["noTxt"][lang]});
+	}
+} // End of askStartDate
 
 
 // Check the document location for saved things

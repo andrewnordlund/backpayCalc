@@ -4,5 +4,14 @@
 	},
 	"selectCALbl" : {"en" : "Select the Collective Agreement",
 			"fr" : ""
+	},
+	"startDateLgnd" : {"en" : "Were you in classification {{classification}} on {{startDate}}?",
+			"fr" : ""
+	},
+	"yesTxt" : {"en" : "Yes",
+			"fr" : "Oui"
+	},
+	"noTxt" : {"en" : "No",
+			"fr" : "Non"
 	}
 }
