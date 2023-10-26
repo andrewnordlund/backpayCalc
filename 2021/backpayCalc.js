@@ -175,7 +175,7 @@ function handleHash () {
 	}
 	if (params.has("stp")) {
 		let stp = params.get("stp").replace(/\D/g, "");
-		stepSelect.selectedIndex = stp;
+		stepSelect.selectedIndex = (parseInt(stp) + parseInt(1));
 		toCalculate = toCalculate | 4;
 		hasHash = true;
 	}
