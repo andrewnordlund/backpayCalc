@@ -35,7 +35,7 @@ var resultStatus = null;
 var calcStartDate = null;
 var endDateTxt = "2021-04-15";
 var TABegin = new Date("2021", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
-var EndDate = new Date("2021", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+var EndDate = new Date("2024", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var day = (1000 * 60 * 60 * 24);
 var parts = [];
 var resultsBody = null;
