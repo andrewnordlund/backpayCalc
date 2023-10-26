@@ -218,7 +218,7 @@ function askStartDate () {
 		let noRB = createHTMLElement("input", {"parentNode" : noHolderDiv, "id" : "noRB", "type" : "radio", "name" : "startDateRBs"});
 		let noRBLbl = createHTMLElement("label", {"parentNode" : noHolderDiv, "for" : "noRB", "textNode" : i18n["noTxt"][lang]});
 
-		yesRB.addEventListener("change", 
+		yesRB.addEventListener("change", function () {}, false);
 	}
 } // End of askStartDate
 
