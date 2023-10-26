@@ -676,6 +676,7 @@ function getActings () {
 					}
 				}
 				saveValues.push("afrom" + i + "=" + actingFromDate.toISOString().substr(0, 10));
+				actingToDate.setDate(actingToDate.getDate() - parseInt(1));
 				saveValues.push("ato" + i + "=" + actingToDate.toISOString().substr(0, 10));
 				saveValues.push("alvl" + i + "=" + actingLvl);
 			} else {
@@ -727,6 +728,7 @@ function getLWoPs () {
 				}
 
 				saveValues.push("lfrom" + i + "=" + lwopFromDate); //.toISOString().substr(0, 10));
+				lwopToDate.setDate(lwopToDate.getDate() - parseInt(1));
 				saveValues.push("lto" + i + "=" + lwopToDate.toISOString().substr(0, 10));
 				//var fromParts = lwopFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				//lwopFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
