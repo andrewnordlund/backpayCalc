@@ -475,8 +475,11 @@ function startProcess () {
 } // End of startProcess
 
 function resetPeriods () {
+	console.log ("resetting periods....");
+	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
+	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 	periods = [];
-	periods = initPeriods;
+	periods = Object.assign([], initPeriods);
 	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
 	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 } // End of resetPeriods

@@ -417,6 +417,7 @@ function getStartDate () {
 } // End of getStartDate
 
 function startProcess () {
+	console.log ("Starting process....");
 	resetPeriods();
 	saveValues = [];
 	lumpSumPeriods = {};
@@ -475,8 +476,11 @@ function startProcess () {
 } // End of startProcess
 
 function resetPeriods () {
+	console.log ("resetting periods....");
+	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
+	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 	periods = [];
-	periods = initPeriods;
+	periods = Object.assign([], initPeriods);
 	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
 	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 } // End of resetPeriods
@@ -671,6 +675,7 @@ function getActings () {
 				actingFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 				
 				for (var j = parseInt(fromParts[1])+1; j < toParts[1]; j++) {
+					console.log ("getActings::j: " + j +".");
 					if (j + "-" + fromParts[2] + "-" + fromParts[3] < actingToDate.toISOString().substr(0, 10)) {
 						addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1});
 					}
