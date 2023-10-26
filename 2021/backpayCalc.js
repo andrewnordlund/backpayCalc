@@ -417,7 +417,6 @@ function getStartDate () {
 } // End of getStartDate
 
 function startProcess () {
-	console.log ("Starting process....");
 	resetPeriods();
 	saveValues = [];
 	lumpSumPeriods = {};
@@ -476,7 +475,6 @@ function startProcess () {
 } // End of startProcess
 
 function resetPeriods () {
-	console.log ("resetting periods....");
 	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
 	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 	periods = [];
