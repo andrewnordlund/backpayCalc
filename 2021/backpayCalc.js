@@ -646,6 +646,7 @@ function addPromotions () {
 } // End of addPromotions
 
 function getActings () {
+	dbug = true;
 	// Add actings
 	var actingStints = document.querySelectorAll(".actingStints");
 	if (dbug) console.log ("getActings::Dealing with " + actingStints.length + " acting stints.");
@@ -653,51 +654,116 @@ function getActings () {
 	for (var i =0; i < actings; i++) {
 		var actingLvl = actingStints[i].getElementsByTagName("select")[0].value;
 		var dates = actingStints[i].getElementsByTagName("input");
-		var actingFromDate = dates[0].value;
+		var enteredActingFromDate = dates[0].value;
+		var effectiveActingStart = dates[0].value;
 		var actingToDate = dates[1].value;
-		if (dbug) console.log("getActings::Checking acting at " + actingLvl + " from " + actingFromDate + " to " + actingToDate + ".");
-		if (actingLvl >=0 && actingLvl <5 && actingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
-			if (dbug) console.log ("getActings::Passed the initial tests.");
-			if (actingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= TABegin.toISOString().substr(0,10) && actingToDate > actingFromDate) {
-				if (actingFromDate < TABegin.toISOString().substr(0,10) && actingToDate >= TABegin.toISOString().substr(0,10)) actingFromDate = TABegin.toISOString().substr(0,10);
+		if (dbug) console.log("getActings::Checking acting at  level " + actingLvl + " from " + enteredActingFromDate + " to " + actingToDate + ".");
+		// Check if the acting level actually exists, and if the dates are in the right format.
+		if (actingLvl >=0 && actingLvl <5 && enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
+			if (dbug) console.log ("getActings::Passed the initial tests.  the Acting level exists and the dates are in the correct format.");
+			// Check if the from date is before the TA End Date, and the To Date is after the beginning of the TA period, and that to the Do date is after the From date.
+			if (enteredActingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= TABegin.toISOString().substr(0,10) && actingToDate > enteredActingFromDate) {
+				//var to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
+
+				var fromParts = enteredActingFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+				enteredActingFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
+
+				var toParts = actingToDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+				actingToDate = new Date(toParts[1], (toParts[2]-1), toParts[3]);
+
+				// Is the Acting for more than 1 year?  If so, add Acting Anniversarys
+				if (actingToDate >= +enteredActingFromDate + (1000*60*60*24)) {
+					if (dbug) console.log ("getActings::" + actingToDate.toISOString().substr(0,10) + " is at least 1 year past " + enteredActingFromDate.toISOString().substr(0,10) + ".  So, gotta add Acting Anniversaries.");
+					// From: the year after the acting start to the acting end.
+					for (var j = parseInt(fromParts[1])+1; j <= toParts[1]; j++) {
+						if (dbug) console.log ("getActings::j: " + j +".");
+						if ((j + "-" + fromParts[2] + "-" + fromParts[3] < actingToDate.toISOString().substr(0, 10)) && (j + "-" + fromParts[2] + "-" + fromParts[3] >= TABegin.toISOString().substr(0,10)) && (j + "-" + fromParts[2] + "-" + fromParts[3] <= EndDate.toISOString().substr(0,10))) {
+							addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1});
+						}
+					}
+				} else {
+					if (dbug) console.log ("getActings::Acting " + i + " is less than 1 year: from: " + enteredActingFromDate.toISOString().substr(0,10) + ", to: " + actingToDate.toISOString().substr(0,10) + ", and enteredActingFromDate + (1000*60*60*24): " + (+enteredActingFromDate + (1000*60*60*24))  +".");
+				}
+
+				// If the from-date starts before the TA begin, then re-set the from date to the start of the TA.
+				if (enteredActingFromDate < TABegin && actingToDate >= TABegin) {
+					// Problem is here, is that you need to account for an Acting Anniversary.  Actually, those were just added above.
+					effectiveActingStart = new Date(TABegin.getFullYear(), TABegin.getMonth(), TABegin.getDate());//.toISOString().substr(0,10);
+					if (dbug) console.log ("getActings::effectiveActingStart was before the TA, so gonna save " + enteredActingFromDate.toISOString().substr(0,10) + ", but gonna add period for " + effectiveActingStart.toISOString().substr(0,10) + ".");
+				} else {
+					effectiveActingStart = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
+
+				}
+
+				if (dbug) console.log ("getActings::Gonna add the period for the effectiveActingStart: " + effectiveActingStart.toISOString().substr(0,10) + ".");
+				// Now add the period for start acting
+				var from = addPeriod({"startDate":effectiveActingStart.toISOString().substr(0,10), "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
+
+				// Add a period to end the acting.
+				actingToDate.setDate(actingToDate.getDate() + parseInt(1));	// Add 1 because this will be the start date of post-acting
+				var to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
+
+				saveValues.push("afrom" + i + "=" + enteredActingFromDate.toISOString().substr(0, 10));
+				actingToDate.setDate(actingToDate.getDate() - parseInt(1));
+				saveValues.push("ato" + i + "=" + actingToDate.toISOString().substr(0, 10));
+				saveValues.push("alvl" + i + "=" + actingLvl);
+
+				
+
+				/*
+				// If the from-date starts before the TA begin, then re-set the from date to the start of the TA.
+				if (enteredActingFromDate < TABegin.toISOString().substr(0,10) && actingToDate >= TABegin.toISOString().substr(0,10)) {
+					// Problem is here, is that you need to account for an Acting Anniversary
+					enteredActingFromDate = TABegin.toISOString().substr(0,10);
+				}
 				if (dbug) console.log ("getActings::And the dates are in the right range.");
 				// add a period for starting
-				var from = addPeriod({"startDate":actingFromDate, "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
+				var from = addPeriod({"startDate":enteredActingFromDate, "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
 
 				// add a period for returning
 				var toParts = actingToDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				actingToDate = new Date(toParts[1], (toParts[2]-1), toParts[3]);
 				actingToDate.setDate(actingToDate.getDate() + parseInt(1));
 				var to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
-				var fromParts = actingFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-				actingFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
+				var fromParts = enteredActingFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+				enteredActingFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 				
-				for (var j = parseInt(fromParts[1])+1; j < toParts[1]; j++) {
+				// Check for Acting Anniversary
+				// From: the year after the acting start to the acting end.
+				for (var j = parseInt(fromParts[1])+1; j <= toParts[1]; j++) {
 					console.log ("getActings::j: " + j +".");
 					if (j + "-" + fromParts[2] + "-" + fromParts[3] < actingToDate.toISOString().substr(0, 10)) {
 						addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1});
 					}
 				}
-				saveValues.push("afrom" + i + "=" + actingFromDate.toISOString().substr(0, 10));
+				saveValues.push("afrom" + i + "=" + enteredActingFromDate.toISOString().substr(0, 10));
 				actingToDate.setDate(actingToDate.getDate() - parseInt(1));
 				saveValues.push("ato" + i + "=" + actingToDate.toISOString().substr(0, 10));
 				saveValues.push("alvl" + i + "=" + actingLvl);
+				*/
 			} else {
 				if (dbug) {
-					if (actingFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingFrom is before EndDate");
+					if (enteredActingFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingFrom is before EndDate");
 					if (actingToDate >= TABegin.toISOString().substr(0,10)) console.log ("getActings::actingTo is after startDate");
 					if (actingToDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingTo is before EndDate");
-					if (actingToDate > actingFromDate) console.log ("getActings::actingTo is after actingFrom");
+					if (actingToDate > enteredActingFromDate) console.log ("getActings::actingTo is after actingFrom");
 				}
 			}
 		} else {
+			if (acingLvl < 0 || actingLvl > 5) {
+				if (dbug) {
+					if (actingLvl >=0) console.log ("getActings::actingLvl >= 0");
+					if (actingLvl <5) console.log ("getActings::actingLvl < 5");
+				}
+				// Add Error Message
+
+			}
 			if (dbug) {
-				if (actingLvl >=0) console.log ("getActings::actingLvl >= 0");
-				if (actingLvl <5) console.log ("getActings::actingLvl < 5");
-				if (actingFromDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getActings::actingFrom is right format.");
+				if (enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getActings::actingFrom is right format.");
 				if (actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getActings::actingTo is right format.");
 			}
 		}
+		dbug = false;
 	}
 } // End of getActings
 
@@ -929,7 +995,8 @@ function addActingHandler () {
 		if (dbug) console.log ("addActingHandler::arguments: " + arguments.length);
 		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
 		if (args.hasOwnProperty("from")) {
-			afdate = (isValidDate(args["from"]) ? args["from"] : null);
+			// Not doing isValidDate because that will check if it's in the range.  But starting actings are allowed to start before the TA start date.
+			afdate = (args["from"].match(/(\d\d\d\d)-(\d\d)-(\d\d)/) ? args["from"] : null);
 		}
 		if (args.hasOwnProperty("to")) {
 			atdate = (isValidDate(args["to"]) ? args["to"] : null);
@@ -1364,7 +1431,7 @@ function addPeriod (p) {
 	for (var i = 1; i < periods.length && looking; i++) {
 		//if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]Is p[startDate](" + p["startDate"] + ") before periods["+i+"][startDate](" + periods[i]["startDate"] + ")?");
 		if (p["startDate"] < periods[i]["startDate"]) {
-			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It is!");
+			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It is before the periods["+i+"][\"startDate\"]!");
 			if (p["reason"] == "Lump Sum") {
 				if (lumpSumPeriods.hasOwnProperty(periods["startDate"])) {
 					lumpSumPeriods[periods[i-1]["startDate"]] += p["hours"];
@@ -1400,14 +1467,17 @@ function addPeriod (p) {
 				looking = false;
 				//dbug = false;
 			} else {
-				if (p["reason"] == "Anniversary Increase" && dbug) console.log ("addPeriod::Adding anniversary increase.");
+				//if (p["reason"] == "Anniversary Increase" && dbug) console.log ("addPeriod::Adding anniversary increase.");
+				dbug = true;
+				if (dbug) console.log ("addPeriod:: Adding period for reason " + p["reason"] + ", from: " + p["startDate"] + ".");
 				periods.splice(i, 0, p);
 				rv = i;
 				looking = false;
 				if (p["reason"]=="end") {
-					periods.splice(i+1); 
+					periods.splice(i+1);
 					rv = periods.length-1;
 				}
+				//dbug = false;
 			}
 		} else if (p["startDate"] == periods[i]["startDate"]) {
 			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It's the same date!");
@@ -1469,10 +1539,12 @@ function calculate() {
 				}
 				if (dbug) console.log (output);
 			} else if (periods[i]["reason"] == "Acting Anniversary") {
+				dbug = true;
 				var output = "Increasing step from " + step + " to ";
 				step = Math.min(step + 1, salaries[level].length-1);
 				output += step + "."
 				if (dbug) console.log (output);
+				dbug = false;
 			} else if (periods[i]["reason"] == "promotion") {
 				var currentSal = salaries[level][step];
 				var minNewSal = currentSal * 1.04;
