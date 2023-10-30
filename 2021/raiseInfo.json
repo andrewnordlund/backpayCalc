@@ -25,11 +25,11 @@
 				]
 			},
 			"periods" : [
-				{"startDate" : "2021-12-22", "increase":3.00, "reason":"Contractual Increase", "multiplier" : 1},
+				{"startDate" : "2021-12-22", "increase":3.0225, "reason":"Contractual Increase", "multiplier" : 1},
 				{"startDate" : "2022-04-01", "increase":0.00, "reason":"Fiscal New Year", "multiplier" : 1},
-				{"startDate" : "2022-12-22", "increase":4.75, "reason":"Contractual Increase", "multiplier" : 1}, 
+				{"startDate" : "2022-12-22", "increase":4.79375, "reason":"Contractual Increase", "multiplier" : 1}, 
 				{"startDate" : "2023-04-01", "increase":0.00, "reason":"Fiscal New Year", "multiplier" : 1},
-				{"startDate" : "2023-12-22", "increase":3.50, "reason":"Contractual Increase", "multiplier" : 1},
+				{"startDate" : "2023-12-22", "increase":3.515, "reason":"Contractual Increase", "multiplier" : 1},
 				{"startDate" : "2024-02-26", "increase":0.00, "reason":"Contract Signed", "multiplier" : 1}
 			],
 			"TABegin" : "2021-12-22",

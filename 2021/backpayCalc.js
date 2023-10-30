@@ -646,7 +646,7 @@ function addPromotions () {
 } // End of addPromotions
 
 function getActings () {
-	dbug = true;
+	//dbug = true;
 	// Add actings
 	var actingStints = document.querySelectorAll(".actingStints");
 	if (dbug) console.log ("getActings::Dealing with " + actingStints.length + " acting stints.");
@@ -763,7 +763,7 @@ function getActings () {
 				if (actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getActings::actingTo is right format.");
 			}
 		}
-		dbug = false;
+		//dbug = false;
 	}
 } // End of getActings
 
@@ -1468,7 +1468,7 @@ function addPeriod (p) {
 				//dbug = false;
 			} else {
 				//if (p["reason"] == "Anniversary Increase" && dbug) console.log ("addPeriod::Adding anniversary increase.");
-				dbug = true;
+				//dbug = true;
 				if (dbug) console.log ("addPeriod:: Adding period for reason " + p["reason"] + ", from: " + p["startDate"] + ".");
 				periods.splice(i, 0, p);
 				rv = i;
@@ -1539,12 +1539,12 @@ function calculate() {
 				}
 				if (dbug) console.log (output);
 			} else if (periods[i]["reason"] == "Acting Anniversary") {
-				dbug = true;
+				//dbug = true;
 				var output = "Increasing step from " + step + " to ";
 				step = Math.min(step + 1, salaries[level].length-1);
 				output += step + "."
 				if (dbug) console.log (output);
-				dbug = false;
+				//dbug = false;
 			} else if (periods[i]["reason"] == "promotion") {
 				var currentSal = salaries[level][step];
 				var minNewSal = currentSal * 1.04;
