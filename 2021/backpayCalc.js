@@ -212,6 +212,7 @@ function handleHash () {
 	// Actings
 	looking = true;
 	let acl = 0;
+	//dbug = true;
 	while (looking) {
 		// afrom0=2020-01-05&ato0=2020-02-06&alvl0=3&afrom1=2020-04-04&ato1=2020-05-06&alvl1=3
 		if (params.has("afrom" + acl) || params.has("ato"+acl) || params.has("alvl"+acl)) {
@@ -224,6 +225,7 @@ function handleHash () {
 		}
 		acl++;
 	}
+	//dbug = false;
 
 	// LWoPs
 	looking = true;
@@ -469,7 +471,7 @@ function startProcess () {
 	// Add Lump Sums
 	getLumpSums ();
 
-	setURL();
+	//setURL();
 	calculate();
 
 } // End of startProcess
@@ -659,7 +661,7 @@ function getActings () {
 		var actingToDate = dates[1].value;
 		if (dbug) console.log("getActings::Checking acting at  level " + actingLvl + " from " + enteredActingFromDate + " to " + actingToDate + ".");
 		// Check if the acting level actually exists, and if the dates are in the right format.
-		if (actingLvl >=0 && actingLvl <5 && enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
+		if (actingLvl >=0 && actingLvl <=5 && enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("getActings::Passed the initial tests.  the Acting level exists and the dates are in the correct format.");
 			// Check if the from date is before the TA End Date, and the To Date is after the beginning of the TA period, and that to the Do date is after the From date.
 			if (enteredActingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= TABegin.toISOString().substr(0,10) && actingToDate > enteredActingFromDate) {
