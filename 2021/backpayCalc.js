@@ -750,7 +750,7 @@ function getActings () {
 				}
 			}
 		} else {
-			if (acingLvl < 0 || actingLvl > 5) {
+			if (actingLvl < 0 || actingLvl > 5) {
 				if (dbug) {
 					if (actingLvl >=0) console.log ("getActings::actingLvl >= 0");
 					if (actingLvl <5) console.log ("getActings::actingLvl < 5");
