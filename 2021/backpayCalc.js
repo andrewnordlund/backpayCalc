@@ -471,7 +471,7 @@ function startProcess () {
 	// Add Lump Sums
 	getLumpSums ();
 
-	//setURL();
+	setURL();
 	calculate();
 
 } // End of startProcess
