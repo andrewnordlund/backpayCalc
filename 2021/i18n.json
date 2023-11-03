@@ -1,0 +1,203 @@
+{
+	"selectClass" : {"en" : "Select your classification",
+			"fr" : "Sélectionnez votre classification"
+	},
+	"selectSalaryLbl" : {"en" : "Select Salary",
+			"fr" : ""
+	},
+	"selectCALbl" : {"en" : "Select the collective agreement",
+			"fr" : "Sélectionnez votre convention collective"
+	},
+	"startDateLgnd" : {"en" : "Were you in classification {{classification}} on {{startDate}}?",
+			"fr" : "Étiez-vous dans la {{classification}} le {{startDate}}"
+	},
+	"yes" : {"en" : "Yes",
+			"fr" : "Oui"
+	},
+	"no" : {"en" : "No",
+			"fr" : "Non"
+	},
+	"day" : {"en" : "day",
+		"fr" : ""
+	},
+	"IT" : {"en" : "IT",
+			"fr" : "TI"
+	},
+	"level" : {"en" : "Level",
+			"fr" : ""
+	},
+	"step" : {"en" : "Step",
+		"fr" : ""
+	},
+	"there" : {"en" : "There",
+			"fr" : ""
+	},
+	"salary" : {"en" : "Salary",
+			"fr" : ""
+	},
+	"workingDays" : {"en" : "Working Days",
+			"fr" : ""
+	},
+	"yourinfoTxt" : {"en" : "Your Information",
+			"fr" : "Votre information"
+	},
+	"datesTxt" : {"en" : "Note: All dates should be formatted as YYYY-MM-DD.",
+			"fr" : "Remarque : Toutes les dates doivent être dans le format AAAA-MM-JJ."
+	},
+	"levelSelectError" : {"en" : "Please select a level",
+				"fr" : ""
+	},
+	"promotion" : {"en" : "Promotion",
+			"fr" : ""
+	},
+	"dateOfPromotion" : {"en" : "Date of promotion:",
+		"fr" : ""
+	},
+	"promotedToLevel"  : {"en" : "Promoted to level:",
+			"fr" : ""
+	},
+	"selectLevel" : {"en" : "Select Level",
+			"fr" : ""
+	},
+	"newPromoAdded" : {"en" : "New promotion section added.",
+			"fr" : ""
+	},
+	"newActingAdded" : {"en" : "New Acting section added.",
+			"fr" : ""
+	},
+	"actingStint" : {"en" : "Acting Stint",
+			"fr" : ""
+	},
+	"from" : {"en" : "From",
+		"fr" : ""
+	},
+	"to" : {"en" : "To",
+		"fr"  : ""
+	},
+	"actingLevel" : {"en" : "Acting Level:",
+			"fr" : ""
+	},
+	"remove" : {"en" : "Remove",
+			"fr" : ""
+	},
+	"addAnotherActing" : {"en" : "Add Another Acting",
+				"fr" : ""
+	},
+	"lwopStint" : {"en" : "LWoP Stint",
+			"fr" : ""
+	},
+	"addAnotherLwop" : {"en" : "Add another LWoP",
+				"fr" : ""
+	},
+	"newLwopSection" : {"en" : "New leave without pay section added.",
+				"fr" : ""
+	},
+	"otOrStby" : {"en" : "Overtime or Standby",
+		"fr" : ""
+	},
+	"dtOfOT" : {"en" : "Date of Overtime:",
+		"fr" : ""
+	},
+	"hrsOT" : {"en" : "Hours-worth of overtime",
+		"fr" : ""
+	},
+	"OTRate" : {"en" : "Overtime Rate:",
+			"fr" : ""
+	},
+	"selectOTRate" : {"en" : "Select Overtime Rate",
+		"fr" : ""
+	},
+	"standby" : {"en" : "Standby",
+		"fr" : ""
+	},
+	"addAnotherOvertime" : {"en" : "Add Another Overtime",
+				"fr" : ""
+	},
+	"newOTSection" : {"en" :"New overtime section added.",
+			"fr" : ""
+	},
+	"Lump Sum" : {"en" : "Lump Sum",
+			"fr" : ""
+	},
+	"dtPdOut" : {"en" : "Date paid out:",
+			"fr" : ""
+	},
+	"hrsLumpSum" : {"en" : "Hours-worth of payout",
+		"fr" : ""
+	},
+	"addAnotherLumpSum" : {"en" : "Add another LumpSum",
+		"fr" : ""
+	},
+	"newLumpSumSection" : {"en" : "New lump sum section added.",
+				"fr" : ""
+	},
+	"promoSectionRemoved" : {"en" :"Promotion section removed.",
+				"fr" : ""
+	},
+	"actingSectionRemoved" : {"en" : "Acting section removed.",
+				"fr" : ""
+	},
+	"lwopSectionRemoved" : {"en" : "Leave Without Pay section removed.",
+				"fr" : ""
+	},
+	"OTSectionRemoved" : {"en" : "Overtime section removed.",
+			"fr" : ""
+	},
+	"lumpSumSectionRemoved" : {"en" : "Lump sum section removed.",
+					"fr" : ""
+	},
+	"resultsShownBelow" : {"en" : "Results shown below.",
+		"fr" : ""
+	},
+	"startDateErrorMsg" : {"en" : "Please enter the date at which you started at the level you were at on December 22, 2021. If you weren't an IT at that time, enter the date you started as an IT.  All dates must be in the format of YYYY-MM-DD.",
+				"fr" : ""
+	},
+	"hourly" : {"en" : "Hourly",
+		"fr" : ""
+	},
+	"OTPayment" : {"en" : "Overtime Payment x",
+		"fr" : ""
+	},
+	"total" : {"en" : "Total",
+		"fr" : ""
+	},
+	"Contractual Increase" : {"en" : "Contractual Increase",
+			"fr" : ""
+	},
+	"Fiscal New Year" : {"en" : "Fiscal New Year",
+			"fr" : ""
+	},
+	"Contract Signed" : {"en" : "Contract Signed",
+			"fr" : ""
+	},
+	"end" : {"en" : "end",
+		"fr" : ""
+	},
+	"Anniversary Increase" : {"en" : "Anniversary Increase",
+				"fr" : ""
+	},
+	"Starting" : {"en" : "Starting",
+			"fr" : ""
+	},
+	"Acting Anniversary" : {"en" : "Acting Anniversary",
+			"fr" : ""
+	},
+	"Acting Start" : {"en" : "Acting Start",
+			"fr" : ""
+	},
+	"Acting Finished" : {"en" : "Acting Finished",
+			"fr" : ""
+	},
+	"LWoP Start" : {"en" : "LWoP Start",
+			"fr" : ""
+	},
+	"LWoP Finished" : {"en" :"LWoP Finished",
+			"fr" : ""
+	},
+	"Overtime" : {"en" : "Overtime",
+			"fr" : ""
+	},
+	"lumpSumPayment" : {"en" : "Lump Sum Payment",
+			"fr" : ""
+	}
+}
