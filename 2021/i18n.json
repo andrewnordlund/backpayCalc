@@ -2,8 +2,8 @@
 	"selectClass" : {"en" : "Select your classification",
 			"fr" : "Sélectionnez votre classification"
 	},
-	"selectSalaryLbl" : {"en" : "Select Salary",
-			"fr" : ""
+	"selectSalaryLbl" : {"en" : "Select salary",
+			"fr" : "Sélectionnez votre salaire"
 	},
 	"selectCALbl" : {"en" : "Select the collective agreement",
 			"fr" : "Sélectionnez votre convention collective"
@@ -18,25 +18,25 @@
 			"fr" : "Non"
 	},
 	"day" : {"en" : "day",
-		"fr" : ""
+		"fr" : "jour"
 	},
 	"IT" : {"en" : "IT",
 			"fr" : "TI"
 	},
 	"level" : {"en" : "Level",
-			"fr" : ""
+			"fr" : "Niveau"
 	},
 	"step" : {"en" : "Step",
-		"fr" : ""
+		"fr" : "Échelon"
 	},
 	"there" : {"en" : "There",
-			"fr" : ""
+			"fr" : "Là"
 	},
 	"salary" : {"en" : "Salary",
-			"fr" : ""
+			"fr" : "Salaire"
 	},
 	"workingDays" : {"en" : "Working Days",
-			"fr" : ""
+			"fr" : "jours ouvrables"
 	},
 	"yourinfoTxt" : {"en" : "Your Information",
 			"fr" : "Votre information"
@@ -45,159 +45,159 @@
 			"fr" : "Remarque : Toutes les dates doivent être dans le format AAAA-MM-JJ."
 	},
 	"levelSelectError" : {"en" : "Please select a level",
-				"fr" : ""
+				"fr" : "Veuillez sélectionner un niveau"
 	},
 	"promotion" : {"en" : "Promotion",
-			"fr" : ""
+			"fr" : "Promotion"
 	},
 	"dateOfPromotion" : {"en" : "Date of promotion:",
-		"fr" : ""
+		"fr" : "Date de la promotion"
 	},
 	"promotedToLevel"  : {"en" : "Promoted to level:",
-			"fr" : ""
+			"fr" : "Promu au niveau :"
 	},
 	"selectLevel" : {"en" : "Select Level",
-			"fr" : ""
+			"fr" : "Choisir le niveau"
 	},
 	"newPromoAdded" : {"en" : "New promotion section added.",
-			"fr" : ""
+			"fr" : "Nouvelle section de promotion ajoutée."
 	},
 	"newActingAdded" : {"en" : "New Acting section added.",
-			"fr" : ""
+			"fr" : "Nouvelle section d'intérim ajoutée."
 	},
 	"actingStint" : {"en" : "Acting Stint",
-			"fr" : ""
+			"fr" : "Période d'intérim"
 	},
 	"from" : {"en" : "From",
-		"fr" : ""
+		"fr" : "De"
 	},
 	"to" : {"en" : "To",
-		"fr"  : ""
+		"fr"  : "À"
 	},
 	"actingLevel" : {"en" : "Acting Level:",
-			"fr" : ""
+			"fr" : "Niveau d'intérim :"
 	},
 	"remove" : {"en" : "Remove",
-			"fr" : ""
+			"fr" : "Supprimer"
 	},
 	"addAnotherActing" : {"en" : "Add Another Acting",
-				"fr" : ""
+				"fr" : "Ajouter un autre intérim"
 	},
 	"lwopStint" : {"en" : "LWoP Stint",
-			"fr" : ""
+			"fr" : "Période de congé non payé"
 	},
 	"addAnotherLwop" : {"en" : "Add another LWoP",
-				"fr" : ""
+				"fr" : "Ajouter un autre congé non payé"
 	},
 	"newLwopSection" : {"en" : "New leave without pay section added.",
-				"fr" : ""
+				"fr" : "Nouvelle section de congé non payé ajoutée."
 	},
 	"otOrStby" : {"en" : "Overtime or Standby",
-		"fr" : ""
+		"fr" : "Heures supplémentaires ou disponibilité"
 	},
 	"dtOfOT" : {"en" : "Date of Overtime:",
-		"fr" : ""
+		"fr" : "Date de l'heure supplémentaire"
 	},
 	"hrsOT" : {"en" : "Hours-worth of overtime",
-		"fr" : ""
+		"fr" : "Combien d'heures supplémentaires"
 	},
 	"OTRate" : {"en" : "Overtime Rate:",
-			"fr" : ""
+			"fr" : "Taux d'heure supplémentaire:"
 	},
 	"selectOTRate" : {"en" : "Select Overtime Rate",
-		"fr" : ""
+		"fr" : "Sélectionnez le taux des heures supplémentaires"
 	},
 	"standby" : {"en" : "Standby",
-		"fr" : ""
+		"fr" : "Disponibilité"
 	},
 	"addAnotherOvertime" : {"en" : "Add Another Overtime",
-				"fr" : ""
+				"fr" : "Ajouter une autre heure supplémentaire"
 	},
 	"newOTSection" : {"en" :"New overtime section added.",
-			"fr" : ""
+			"fr" : "Nouvelle section d'heures supplémentaires ajoutée."
 	},
 	"Lump Sum" : {"en" : "Lump Sum",
-			"fr" : ""
+			"fr" : "Paiement forfaitaire"
 	},
 	"dtPdOut" : {"en" : "Date paid out:",
-			"fr" : ""
+			"fr" : "Date de paiement :"
 	},
 	"hrsLumpSum" : {"en" : "Hours-worth of payout",
-		"fr" : ""
+		"fr" : "Nombre d'heures en paiement"
 	},
 	"addAnotherLumpSum" : {"en" : "Add another LumpSum",
-		"fr" : ""
+		"fr" : "Ajouter une autre paiement forfaitaire"
 	},
 	"newLumpSumSection" : {"en" : "New lump sum section added.",
-				"fr" : ""
+				"fr" : "Nouvelle section de paiement forfaitaire ajoutée."
 	},
 	"promoSectionRemoved" : {"en" :"Promotion section removed.",
-				"fr" : ""
+				"fr" : "Section promotion supprimée."
 	},
 	"actingSectionRemoved" : {"en" : "Acting section removed.",
-				"fr" : ""
+				"fr" : "Section intérimaire supprimée."
 	},
 	"lwopSectionRemoved" : {"en" : "Leave Without Pay section removed.",
-				"fr" : ""
+				"fr" : "Section congé non payé supprimée."
 	},
 	"OTSectionRemoved" : {"en" : "Overtime section removed.",
-			"fr" : ""
+			"fr" : "Section des heures supplémentaires supprimée."
 	},
 	"lumpSumSectionRemoved" : {"en" : "Lump sum section removed.",
-					"fr" : ""
+					"fr" : "Section paiement forfaitaire supprimée."
 	},
 	"resultsShownBelow" : {"en" : "Results shown below.",
-		"fr" : ""
+		"fr" : "Résultats présentés ci-dessous."
 	},
-	"startDateErrorMsg" : {"en" : "Please enter the date at which you started at the level you were at on December 22, 2021. If you weren't an IT at that time, enter the date you started as an IT.  All dates must be in the format of YYYY-MM-DD.",
-				"fr" : ""
+	"startDateErrorMsg" : {"en" : "Please enter the date at which you started at the level you were at on December 22, 2021. If you weren't an IT at that time, enter the date you started as an IT. All dates must be in the format of YYYY-MM-DD.",
+				"fr" : "Veuillez saisir la date à laquelle vous avez commencé au niveau auquel vous étiez le 22 décembre 2021. Si vous n'étiez pas TI à cette date, saisissez la date à laquelle vous avez commencé en tant que TI. Toutes les dates doivent être dans le format AAAA-MM-JJ."
 	},
 	"hourly" : {"en" : "Hourly",
-		"fr" : ""
+		"fr" : "Horaire"
 	},
 	"OTPayment" : {"en" : "Overtime Payment x",
-		"fr" : ""
+		"fr" : "Paiement des heures supplémentaires x"
 	},
 	"total" : {"en" : "Total",
-		"fr" : ""
+		"fr" : "Total"
 	},
 	"Contractual Increase" : {"en" : "Contractual Increase",
-			"fr" : ""
+			"fr" : "Augmentation contractuelle"
 	},
 	"Fiscal New Year" : {"en" : "Fiscal New Year",
-			"fr" : ""
+			"fr" : "Nouvel an fiscal"
 	},
 	"Contract Signed" : {"en" : "Contract Signed",
-			"fr" : ""
+			"fr" : "Contrat signé"
 	},
 	"end" : {"en" : "end",
-		"fr" : ""
+		"fr" : "fin"
 	},
 	"Anniversary Increase" : {"en" : "Anniversary Increase",
-				"fr" : ""
+				"fr" : "Augmentation d'anniversaire"
 	},
 	"Starting" : {"en" : "Starting",
-			"fr" : ""
+			"fr" : "Débutant"
 	},
 	"Acting Anniversary" : {"en" : "Acting Anniversary",
-			"fr" : ""
+			"fr" : "Anniversaire d'intérimaire"
 	},
 	"Acting Start" : {"en" : "Acting Start",
-			"fr" : ""
+			"fr" : "Début de l'intérimaire"
 	},
 	"Acting Finished" : {"en" : "Acting Finished",
-			"fr" : ""
+			"fr" : "Fin de l'intérimaire"
 	},
 	"LWoP Start" : {"en" : "LWoP Start",
-			"fr" : ""
+			"fr" : "Début du congé non payé"
 	},
 	"LWoP Finished" : {"en" :"LWoP Finished",
-			"fr" : ""
+			"fr" : "Fin du congé non payé"
 	},
 	"Overtime" : {"en" : "Overtime",
-			"fr" : ""
+			"fr" : "Heures supplémentaires"
 	},
 	"lumpSumPayment" : {"en" : "Lump Sum Payment",
-			"fr" : ""
+			"fr" : "Paiement forfaitaire"
 	}
 }
