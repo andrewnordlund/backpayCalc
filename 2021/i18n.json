@@ -125,7 +125,7 @@
 	"hrsLumpSum" : {"en" : "Hours-worth of payout",
 		"fr" : "Nombre d'heures en paiement"
 	},
-	"addAnotherPrmotoion" : {"en" : "Add another promotion",
+	"addAnotherPromotion" : {"en" : "Add another promotion",
 		"fr" : "Ajouter une autre promotion"
 	},
 	"addAnotherLumpSum" : {"en" : "Add another LumpSum",
