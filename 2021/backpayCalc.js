@@ -55,6 +55,7 @@ var lastModTime = null;
 var salaries = [];
 var daily = [];
 var hourly = [];
+var newRates = {};
 // taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
 /*
 var salaries = [
@@ -481,6 +482,8 @@ function resetPeriods () {
 	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 	periods = [];
 	periods = Object.assign([], initPeriods);
+	// newRates = {};		Sound I reset newRates here?
+
 	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
 	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 } // End of resetPeriods
@@ -1162,8 +1165,8 @@ function addOvertimeHandler () {
 	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
 
 	var newRateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Overtime Rate:", "for":"overtimeRate" + id});
-	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, "id":"overtimeRate"+id});
+	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newRateFieldHolder, "textNode":"Overtime Rate:", "for":"overtimeRate" + id});
+	var newOvertimeRate = createHTMLElement("select", {"parentNode":newRateFieldHolder, "id":"overtimeRate"+id});
 	let rates = {"0" : "Select Overtime Rate", "0.125" : "1/8x - Standby", "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
 	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":"Select Overtime Rate"});
 	
@@ -1824,6 +1827,32 @@ function removeChildren (el) {
 	}
 }
 
+function genRates () {
+	for (let i = 0; i < periods.length; i++) {
+		if (periods[i]["reason"] == "Contractual Increase") {
+			let startDate = periods[i]["startDate"];
+			let multiplier = ((periods[i]["multiplier"]/100) +1);
+			if !(newRates.hasOwnProperty(startDate)) newRates[startDate] = []; //{"annual" : [], "daily" : [], "hourly" : []};
+			for (let j = 0; j < salaries; j++) {	// levels
+				if (periods[i].hasOwnProperty("exceptions")) {
+					for (let k = 0; k < periods[i]["exceptions"].length; k++) {
+						if (periods[i]["exceptions"][k]["level"] == (j-1)) {
+							if (periods[i]["exceptions"][k].hasOwnProperty("increase")) {
+								multiplier  = ((periods[i]["exceptions"][k]["increase"]/100) +1);
+							}
+						}
+					}
+				}
+				for (let k = 0; k < salaries[j].length; k++) {	// steps
+
+					newRates[startDate]["annual"]
+				}
+			}
+		}
+	}
+} // End of genRates
+
+
 async function getData () {
 	let response = await fetch("raiseInfo.json");
 	if (response.ok) { // if HTTP-status is 200-299
@@ -1834,6 +1863,8 @@ async function getData () {
 		daily = json["IT"]["2021-2025"]["salaries"]["daily"];
 		hourly = json["IT"]["2021-2025"]["salaries"]["hourly"];
 		initPeriods = json["IT"]["2021-2025"]["periods"];
+
+		genRates ();
 		
 		init();
 	} else {
