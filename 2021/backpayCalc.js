@@ -12,9 +12,10 @@
  *
  */
 
-var dbug = true;
-var version = "3.1.0";
+var dbug = false;
+var version = "3.2.0";
 var lang = "en";
+var langFormat = "en-CA";
 var updateHash = true;
 var saveValues = null;
 var showExtraCols = true;
@@ -86,7 +87,8 @@ var hourly = [
 //var days = [31, 29, 31
 function init () {
 	if (dbug) console.log ("Initting");
-	lang = document.documentElement.lang;
+	//lang = document.documentElement.lang;
+	//if (lang == "fr") langFormat = "fr-CA";
 	//saveValues = new Map();
 	var calcBtn = document.getElementById("calcBtn");
 	levelSel = document.getElementById("levelSelect");
@@ -111,9 +113,16 @@ function init () {
 	resultStatus = document.getElementById("resultStatus");
 	lastModTime = document.getElementById("lastModTime");
 
+	let langSwitchA = null;
+	langSwitchA = document.getElementById("langSwitchA");
+	if (langSwitchA) {
+		if (dbug) console.log ("init::lang link thingy: lang: " + lang + "; href: " + window.location.href + ".");
+		langSwitchA.href = (lang == "en" ? window.location.href.replace("backpayCalc.html", "arrDeSalCalc.html") : window.location.href.replace("arrDeSalCalc.html", "backpayCalc.html"));
+	}
+
 	if (lastModTime) {
 		lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0,10));
-		lastModTime.innerHTML = lastModified.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });	
+		lastModTime.innerHTML = lastModified.toLocaleString(lang + "-CA", { year: 'numeric', month: 'long', day: 'numeric' });	
 	}
 	if (dbug || showExtraCols) {
 		var ths = resultsTheadTR.getElementsByTagName("th");
@@ -351,7 +360,7 @@ function populateSalary () {
 	if (levelSel.value >0 && levelSel.value <= 5) {
 		createHTMLElement("option", {"parentNode":stepSelect, "value":"-1", "textNode":i18n["selectSalaryLbl"][lang]});
 		for (var i = 0; i < salaries[(levelSel.value-1)].length; i++) {
-			createHTMLElement("option", {"parentNode":stepSelect, "value":i, "textNode": i18n["step"][lang] + " " + (+i+1) + " - $" + salaries[levelSel.value-1][i].toLocaleString()});
+			createHTMLElement("option", {"parentNode":stepSelect, "value":i, "textNode": i18n["step"][lang] + " " + (+i+1) + " - " + formatter.format(salaries[levelSel.value-1][i])});
 		}
 	}
 	if (startDateTxt.value.replace(/[^-\d]/, "").match(/(\d\d\d\d)-(\d\d)-(\d\d)/)) selectSalary();
@@ -1770,8 +1779,11 @@ function addStartDateErrorMessage () {
 	levelSel.setAttribute("aria-describedby", "startDateError");
 	return;
 }
+	
+lang = document.documentElement.lang;
+if (lang == "fr") langFormat = "fr-CA";
 
-var formatter = new Intl.NumberFormat(lang + '-CA', {
+var formatter = new Intl.NumberFormat(langFormat, {
   style: 'currency',
   currency: 'CAD',
 

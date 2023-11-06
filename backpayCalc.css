@@ -116,3 +116,8 @@ dl dd:after{
 	position: static;
 	width: inherit;
 }
+
+#LangSwitcher {
+	margin: 0.8em 5%;
+	text-align: right;
+}

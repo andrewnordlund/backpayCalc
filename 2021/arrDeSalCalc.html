@@ -16,13 +16,18 @@
 			<!-- <li><a href="#resultsDiv">Skip to Results</a></li> -->
 		</ul>
 		<header>
+		<div id="LangSwitcher">
+			<h2 class="invisibleStuff">Language Selection</h2>
+			<a id="langSwitchA" href="backpayCalc.html" lang="en">English</a>
+		</div>
+
 			<h1>Calculateur d’ajustement salarial rétroactif pour les conventions collectives du SCT</h1>
 		</header>
 		<main>
 		<details>
 		<summary><h2 class="summary">Comment fonctionne ce calculateur</h2></summary>
 		<p>Après avoir saisi toutes vos détails, ce calculateur décompose en <dfn>périodes</dfn> composées de plages de dates avec le même taux de rémunération annuel, horaire et/ou journalier.</p>
-		<p><p>Par exemple, disons que vous êtes devenu IT-02 (échelon 1) le 1er août 2019. Cet accord de principe entrerait en vigueur le <time datetime="2021-12-22">22 décembre 2021</time>. Aucun ajustement salarialsalarial ne sera calculé avant la date de début de l’entente de principe. Ainsi, du <time datetime="2021-12-22">22 décembre 2021</time> au <time datetime="2022-07-31">31 juillet 2022</time>, votre taux de rémunération annuel sera soit 75&nbsp;129&nbsp;$. C'est la première période. Ensuite, le <time datetime="2022-08-01">1er août 2022</time>, vous fêtez votre premier anniversaire en tant qu'IT-02 et vous passez à l'étape 2. À partir du <time datetime="2022-08 -01">1er août 2022</time> au <time datetime="2022-12-21">21 décembre 2022</time>, vous bénéficierez d'un taux de rémunération annuel de 77&nbsp;535&nbsp;$. C'est la deuxième période.</p>
+		<p><p>Par exemple, disons que vous êtes devenu TI-02 (échelon 1) le 1er août 2019. Cet accord de principe entrerait en vigueur le <time datetime="2021-12-22">22 décembre 2021</time>. Aucun ajustement salarialsalarial ne sera calculé avant la date de début de l’entente de principe. Ainsi, du <time datetime="2021-12-22">22 décembre 2021</time> au <time datetime="2022-07-31">31 juillet 2022</time>, votre taux de rémunération annuel sera soit 79&nbsp;937&nbsp;$. C'est la première période. Ensuite, le <time datetime="2022-08-01">1er août 2022</time>, vous fêtez votre troisiem anniversaire en tant que TI-02 et vous passez à l'étape 2. À partir du <time datetime="2022-08-01">1er août 2022</time> au <time datetime="2022-12-21">21 décembre 2022</time>, vous bénéficierez d'un taux de rémunération annuel de 82&nbsp;340&nbsp;$. C'est la deuxième période.</p>
 		<p>Si vous commencez une période d'intérimaire, cela démarre une nouvelle période qui s'étend jusqu'à ce que votre salaire change à nouveau, soit par une augmentation dans l'accord de principe, soit par la fin de votre période d'intérimaire, soit par une augmentation d'anniversaire.</p>
 		<p>Tout ce qui entraîne une modification de votre taux de rémunération fait démarrer une nouvelle période. Et la période dure aussi longtemps que vous êtes à ce taux de rémunération.</p>
 		<p>Lorsque vous cliquez sur « Calculer », le calculateur prend en compte votre taux de rémunération annuel pour déterminer l'échelon auquel vous vous trouvez et la date de votre anniversaire (si vous n'êtes pas encore à l'échelon le plus élevé). Il prend toutes vos périodes d'intérimaire et de congés non payé et crée une succession de périodes ayant chacune son propre taux de rémunération. Ensuite, pour chacune de ces périodes, il calcule ce que vous avez gagné (sur la base des taux les plus élevés de la dernière convention collective) et ce que vous auriez gagné si l’entente de principe actuel avait été signé à la date d'entrée en vigueur de cet accord. Le tableau des résultats, qui apparaît sous le bouton Calculer après avoir cliqué dessus, affiche les montants ainsi que la différence, votre niveau, votre échelon, votre taux de rémunération et le nombre utilisé pour calculer ce taux de rémunération.</p>
