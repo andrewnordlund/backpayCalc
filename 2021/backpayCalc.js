@@ -984,8 +984,8 @@ function addPromotionHandler (e, o) {
 	let promoButtonsDiv = null;
 	if (id == 0) {
 		promoButtonsDiv = createHTMLElement("div", {"parentNode":newPromotionFS, "id":"promoButtonsDiv"});
-		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":"Remove", "id": "removePromotionBtn" + promotions});
-		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":"Add another promotion", "class":"promotionsBtn", "id": "addPromotionsBtn" + id});
+		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removePromotionBtn" + promotions});
+		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":i18n["addAnotherPromotion"][lang], "class":"promotionsBtn", "id": "addPromotionsBtn" + id});
 		newAddPromotionBtn.addEventListener("click", addPromotionHandler, false);
 		newDelPromotionBtn.addEventListener("click", removePromotionDiv, false);
 	} else {
@@ -1059,7 +1059,7 @@ function addActingHandler () {
 	let actingButtonsDiv = null;
 	if (id == 0) {
 		actingButtonsDiv = createHTMLElement("div", {"parentNode":newActingFS, "id":"actingButtonsDiv"});
-		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":"Remove", "id": "removeActingBtn" + actings});
+		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removeActingBtn" + actings});
 		var newAddActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":i18n["addAnotherActing"][lang], "class":"actingBtn", "id": "addActingsBtn" + id});
 		newAddActingBtn.addEventListener("click", addActingHandler, false);
 		newDelActingBtn.addEventListener("click", removeActingDiv, false);
@@ -1258,7 +1258,7 @@ function addLumpSumHandler () {
 
 
 	/*
-	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Remove", "id": "removeLumpSumBtn" + id});
+	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":i18n["remove"][lang], "id": "removeLumpSumBtn" + id});
 	var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Add another Lump Sum period", "class":"lumpsumBtn", "id":"addLumpSumsBtn" + id});
 	newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 	newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
