@@ -1670,7 +1670,7 @@ function calculate() {
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["yes"][lang] : i18n["no"][lang])});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + " * " + rate + "/hr"});
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18["hourly"][lang] + " " + overtimePeriods[periods[i]["startDate"]][rate]});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n["hourly"][lang] + " " + overtimePeriods[periods[i]["startDate"]][rate]});
 					}
 	
 					periods[i]["made"] += made;
@@ -1700,7 +1700,7 @@ function calculate() {
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["yes"][lang] : i18n["no"][lang])});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + "/hr"});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18["hourly"][lang] + lumpSumPeriods[periods[i]["startDate"]]});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n["hourly"][lang] + lumpSumPeriods[periods[i]["startDate"]]});
 				}
 
 				periods[i]["made"] += made;
