@@ -13,7 +13,9 @@
  */
 
 var dbug = false;
-var version = "3.0";
+var version = "3.2.0";
+var lang = "en";
+var langFormat = "en-CA";
 var updateHash = true;
 var saveValues = null;
 var showExtraCols = true;
@@ -56,6 +58,7 @@ var salaries = [];
 var daily = [];
 var hourly = [];
 var newRates = {};
+var i18n = {};
 // taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
 /*
 var salaries = [
@@ -85,6 +88,8 @@ var hourly = [
 //var days = [31, 29, 31
 function init () {
 	if (dbug) console.log ("Initting");
+	//lang = document.documentElement.lang;
+	//if (lang == "fr") langFormat = "fr-CA";
 	//saveValues = new Map();
 	var calcBtn = document.getElementById("calcBtn");
 	levelSel = document.getElementById("levelSelect");
@@ -109,18 +114,25 @@ function init () {
 	resultStatus = document.getElementById("resultStatus");
 	lastModTime = document.getElementById("lastModTime");
 
+	let langSwitchA = null;
+	langSwitchA = document.getElementById("langSwitchA");
+	if (langSwitchA) {
+		if (dbug) console.log ("init::lang link thingy: lang: " + lang + "; href: " + window.location.href + ".");
+		langSwitchA.href = (lang == "en" ? window.location.href.replace("backpayCalc.html", "arrDeSalCalc.html") : window.location.href.replace("arrDeSalCalc.html", "backpayCalc.html"));
+	}
+
 	if (lastModTime) {
 		lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0,10));
-		lastModTime.innerHTML = lastModified.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });	
+		lastModTime.innerHTML = lastModified.toLocaleString(lang + "-CA", { year: 'numeric', month: 'long', day: 'numeric' });	
 	}
 	if (dbug || showExtraCols) {
 		var ths = resultsTheadTR.getElementsByTagName("th");
 		if (ths.length == 4) {
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":"Level"});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":"Step"});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":"There?"});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":"Salary"});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":"Working Days"});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["level"][lang]});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["step"][lang]});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["there"][lang] + "?"});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["salary"][lang]});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["workingDays"][lang]});
 		}
 	}
 	/*for (var r in results) {
@@ -347,9 +359,9 @@ function setURL () {
 function populateSalary () {
 	removeChildren(stepSelect);
 	if (levelSel.value >0 && levelSel.value <= 5) {
-		createHTMLElement("option", {"parentNode":stepSelect, "value":"-1", "textNode":"Select Salary"});
+		createHTMLElement("option", {"parentNode":stepSelect, "value":"-1", "textNode":i18n["selectSalaryLbl"][lang]});
 		for (var i = 0; i < salaries[(levelSel.value-1)].length; i++) {
-			createHTMLElement("option", {"parentNode":stepSelect, "value":i, "textNode":"$" + salaries[levelSel.value-1][i].toLocaleString()});
+			createHTMLElement("option", {"parentNode":stepSelect, "value":i, "textNode": i18n["step"][lang] + " " + (+i+1) + " - " + formatter.format(salaries[levelSel.value-1][i])});
 		}
 	}
 	if (startDateTxt.value.replace(/[^-\d]/, "").match(/(\d\d\d\d)-(\d\d)-(\d\d)/)) selectSalary();
@@ -499,7 +511,7 @@ function getSalary () {
 	if (lvl < 1 || lvl > 5) {	// Should only happen if someone messes with the querystring
 		if (dbug) console.log ("getSalary::Error:  lvl is -1.");
 		var errDiv = createHTMLElement("div", {"parentNode":levelSelect.parentNode, "id":"levelSelectError", "class":"error"});
-		createHTMLElement("span", {"parentNode":errDiv, "nodeText":"Please select a level"});
+		createHTMLElement("span", {"parentNode":errDiv, "nodeText":i18n["levelSelectError"][lang]});
 		levelSelect.setAttribute("aria-describedby", "levelSelectError");
 		levelSelect.focus();
 		//return;
@@ -953,17 +965,17 @@ function addPromotionHandler (e, o) {
 	}
 
 	let newPromotionFS = createHTMLElement("fieldset", {"parentNode":promotionsDiv, "class":"fieldHolder promotions", "id" :"promo" + id});
-	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":"Promotion " + (id+1)});
+	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":i18n["promotion"][lang] + " " + (id+1)});
 
-	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promoDate" + id, "nodeText":"Date of promotion: "});
+	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promoDate" + id, "nodeText": i18n["dateOfPromotion"][lang] + " "});
 	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat", "value":(pdate ? pdate : null)});
 	if (toFocus) newPromoDate.focus();
 	//newPromoDate.addEventListener("change", saveValue, false);
 
-	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promotionLevel" + id, "nodeText":"Promoted to level: "});
+	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promotionLevel" + id, "nodeText":i18n["promotedToLevel"][lang] + " "});
 	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"promotionLevel" + id});
 	for (var j = 0; j < 6; j++) {
-		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "IT-0" + j)});
+		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n["IT"][lang] + "-0" + j)});
 		if (plvl) {
 			if (plvl == j) newPromoOpt.setAttribute("selected", "selected");
 		} else {
@@ -975,8 +987,8 @@ function addPromotionHandler (e, o) {
 	let promoButtonsDiv = null;
 	if (id == 0) {
 		promoButtonsDiv = createHTMLElement("div", {"parentNode":newPromotionFS, "id":"promoButtonsDiv"});
-		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":"Remove", "id": "removePromotionBtn" + promotions});
-		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":"Add another promotion", "class":"promotionsBtn", "id": "addPromotionsBtn" + id});
+		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removePromotionBtn" + promotions});
+		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":i18n["addAnotherPromotion"][lang], "class":"promotionsBtn", "id": "addPromotionsBtn" + id});
 		newAddPromotionBtn.addEventListener("click", addPromotionHandler, false);
 		newDelPromotionBtn.addEventListener("click", removePromotionDiv, false);
 	} else {
@@ -987,7 +999,7 @@ function addPromotionHandler (e, o) {
 	promotions++;
 
 
-	resultStatus.innerHTML="New Acting section added.";
+	resultStatus.innerHTML=i18n["newPromoAdded"][lang];
 } // End of addPromotionHandler
 
 function addActingHandler () {
@@ -1026,17 +1038,17 @@ function addActingHandler () {
 	}
 
 	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints", "id":"acting"+id});
-	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode":"Acting Stint " + (id+1)});
+	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode": i18n["actingStint"][lang] + " " + (id+1)});
 
-	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"From", "for":"actingFrom" + id});
+	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":i18n["from"][lang], "for":"actingFrom" + id});
 	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(afdate ? afdate : null)});
-	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"To", "for":"actingTo"+id});
+	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":i18n["to"][lang], "for":"actingTo"+id});
 	var newActingToDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat", "value":(atdate ? atdate : null)});
 
-	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "for":"actingLevel" + id, "nodeText":"Acting Level: "});
+	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "for":"actingLevel" + id, "nodeText":i18n["actingLevel"][lang] + " "});
 	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, "id":"actingLevel" + id});
 	for (var j = 0; j < 6; j++) {
-		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "IT-0" + j)});
+		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n["IT"][lang] + "-0" + j)});
 		if (alvl) {
 			if (alvl == j) newPromoOpt.setAttribute("selected", "selected");
 		} else {
@@ -1050,8 +1062,8 @@ function addActingHandler () {
 	let actingButtonsDiv = null;
 	if (id == 0) {
 		actingButtonsDiv = createHTMLElement("div", {"parentNode":newActingFS, "id":"actingButtonsDiv"});
-		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":"Remove", "id": "removeActingBtn" + actings});
-		var newAddActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":"Add another Acting", "class":"actingBtn", "id": "addActingsBtn" + id});
+		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removeActingBtn" + actings});
+		var newAddActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":i18n["addAnotherActing"][lang], "class":"actingBtn", "id": "addActingsBtn" + id});
 		newAddActingBtn.addEventListener("click", addActingHandler, false);
 		newDelActingBtn.addEventListener("click", removeActingDiv, false);
 	} else {
@@ -1062,7 +1074,7 @@ function addActingHandler () {
 	if (toFocus) newActingFromDate.focus();
 
 	actings++;
-	resultStatus.innerHTML="New Acting section added.";
+	resultStatus.innerHTML=i18n["newActingAdded"][lang];
 } // End of addActingHandler
 
 function addLWoPHandler () {
@@ -1095,18 +1107,18 @@ function addLWoPHandler () {
 	}
 
 	var newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints", "id":"lwop"+id});
-	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":"LWoP Stint " + (id+1)});
+	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":i18n["lwopStint"][lang] + " " + (id+1)});
 
-	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":"From", "for":"lwopFrom" + id});
+	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":i18n["from"][lang], "for":"lwopFrom" + id});
 	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(lfrom ? lfrom : null)});
-	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":"To", "for":"lwopTo"+id});
+	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":i18n["to"][lang], "for":"lwopTo"+id});
 	var newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lto ? lto : null)});
 
 	let lwopButtonsDiv = null;
 	if (id == 0) {
 		lwopButtonsDiv = createHTMLElement("div", {"parentNode":newLWoPFS, "id":"lwopButtonsDiv"});
-		var newDelLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":"Remove", "id": "removeLWoPBtn" + lwops});
-		var newAddLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":"Add another LWoP", "class":"lwopBtn", "id": "addLWoPsBtn" + id});
+		var newDelLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removeLWoPBtn" + lwops});
+		var newAddLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":i18n["addAnotherLwop"][lang], "class":"lwopBtn", "id": "addLWoPsBtn" + id});
 		newAddLWoPBtn.addEventListener("click", addLWoPHandler, false);
 		newDelLWoPBtn.addEventListener("click", removeLWoPDiv, false);
 	} else {
@@ -1117,7 +1129,7 @@ function addLWoPHandler () {
 	
 	lwops++;
 	if (toFocus) newLWoPFromDate.focus();
-	resultStatus.innerHTML="New leave without pay section added.";
+	resultStatus.innerHTML=i18n["newLwopSection"][lang];
 } // End of lWoPHandler
 
 function addOvertimeHandler () {
@@ -1153,22 +1165,22 @@ function addOvertimeHandler () {
 		}
 	}
 	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes", "id":"ot" + id});
-	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":"Overtime or Standby " + (id+1)});
+	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":i18n["otOrStby"][lang] + " " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":"Date of Overtime:", "for":"overtimeDate" + id});
+	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":i18n["dtOfOT"][lang], "for":"overtimeDate" + id});
 	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat", "value":(otdate ? otdate : null)});
 
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Hours-worth of overtime", "for":"overtimeAmount" + id});
+	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":i18n["hrsOT"][lang], "for":"overtimeAmount" + id});
 	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
 
 	var newRateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newRateFieldHolder, "textNode":"Overtime Rate:", "for":"overtimeRate" + id});
-	var newOvertimeRate = createHTMLElement("select", {"parentNode":newRateFieldHolder, "id":"overtimeRate"+id});
-	let rates = {"0" : "Select Overtime Rate", "0.125" : "1/8x - Standby", "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
-	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":"Select Overtime Rate"});
+	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":i18n["OTRate"][lang], "for":"overtimeRate" + id});
+	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, "id":"overtimeRate"+id});
+	let rates = {"0" : i18n["selectOTRate"][lang], "0.125" : "1/8x - " + i18n["standby"][lang], "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
+	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":i18n["selectOTRate"][lang]});
 	
 	for (let r in rates) {
 		let rt = createHTMLElement("option", {"parentNode":newOvertimeRate, "value":r, "nodeText": rates[r]});
@@ -1179,8 +1191,8 @@ function addOvertimeHandler () {
 	let otButtonsDiv = null;
 	if (id == 0) {
 		otButtonsDiv = createHTMLElement("div", {"parentNode":newOvertimeFS, "id":"otButtonsDiv"});
-		var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":"Remove", "id": "removeOvertimeBtn" + overtimes});
-		var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":"Add another Overtime", "class":"otBtn", "id": "addOvertimesBtn" + id});
+		var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removeOvertimeBtn" + overtimes});
+		var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":i18n["addAnotherOvertime"][lang], "class":"otBtn", "id": "addOvertimesBtn" + id});
 		newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
 		newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
 	} else {
@@ -1190,7 +1202,7 @@ function addOvertimeHandler () {
 	if (toFocus) newOvertimeDate.focus();
 	overtimes++;
 
-	resultStatus.innerHTML="New overtime section added.";
+	resultStatus.innerHTML= i18n["newOTSection"][lang];
 } // End of addOvertimeHandler
 
 function addLumpSumHandler () {
@@ -1222,22 +1234,22 @@ function addLumpSumHandler () {
 		}
 	}
 	var newLumpSumFS = createHTMLElement("fieldset", {"parentNode":LumpSumDiv, "class":"fieldHolder lumpSums", "id":"lumpSum" + id});
-	var newLumpSumLegend = createHTMLElement("legend", {"parentNode":newLumpSumFS, "textNode":"Lump Sum " + (id+1)});
+	var newLumpSumLegend = createHTMLElement("legend", {"parentNode":newLumpSumFS, "textNode": i18n["Lump Sum"][lang] + " " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
-	var newLumpSumDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":"Date paid out:", "for":"lumpSumDate" + id});
+	var newLumpSumDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode": i18n["dtPdOut"][lang], "for":"lumpSumDate" + id});
 	var newLumpSumDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"lumpSumDate"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lsdate ? lsdate : null)});
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
-	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Hours-worth of payout", "for":"lumpSumAmount" + id});
+	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode": i18n["hrsLumpSum"][lang], "for":"lumpSumAmount" + id});
 	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"lumpSumAmount"+id, "type":"text", "value" : (lshours ? lshours : "")});
 
 
 	let lumpSumButtonsDiv = null;
 	if (id == 0) {
 		lumpSumButtonsDiv = createHTMLElement("div", {"parentNode":newLumpSumFS, "id":"lumpSumButtonsDiv"});
-		var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":"Remove", "id": "removeLumpSumBtn" + lumpSums});
-		var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":"Add another LumpSum", "class":"lumpSumBtn", "id": "addLumpSumsBtn" + id});
+		var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removeLumpSumBtn" + lumpSums});
+		var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":i18n["addAnotherLumpSum"][lang], "class":"lumpSumBtn", "id": "addLumpSumsBtn" + id});
 		newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 		newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 	} else {
@@ -1249,13 +1261,13 @@ function addLumpSumHandler () {
 
 
 	/*
-	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Remove", "id": "removeLumpSumBtn" + id});
+	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":i18n["remove"][lang], "id": "removeLumpSumBtn" + id});
 	var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Add another Lump Sum period", "class":"lumpsumBtn", "id":"addLumpSumsBtn" + id});
 	newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 	newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 	*/
 	lumpSums++;
-	resultStatus.innerHTML="New lump sum section added.";
+	resultStatus.innerHTML=i18n["newLumpSumSection"][lang];
 } // End of addLumpSum Handler
 
 function removePromotionDiv (e) {
@@ -1280,7 +1292,7 @@ function removePromotionDiv (e) {
 	rmPromoFS.parentNode.removeChild(rmPromoFS);
 	rmPromoFS = null;
 
-	resultStatus.innerHTML="Promotion section removed.";
+	resultStatus.innerHTML= i18n["promoSectionRemoved"][lang];
 } // End of removePromotionDiv
 
 function removeActingDiv (e) {
@@ -1306,7 +1318,7 @@ function removeActingDiv (e) {
 	rmActingFS = null;
 
 
-	resultStatus.innerHTML="Acting section removed.";
+	resultStatus.innerHTML= i18n["actingSectionRemoved"][lang];
 } // End of removeActingDiv
 function removeLWoPDiv (e) {
 	let lwopButtonsDiv = null;
@@ -1329,7 +1341,7 @@ function removeLWoPDiv (e) {
 
 	rmLwopFS.parentNode.removeChild(rmLwopFS);
 	rmLwopFS = null;
-	resultStatus.innerHTML="Leave Without Pay section removed.";
+	resultStatus.innerHTML= i18n["lwopSectionRemoved"][lang];
 } // End of removeLWoPDiv
 
 function removeOvertimeDiv (e) {
@@ -1354,7 +1366,7 @@ function removeOvertimeDiv (e) {
 	rmOTFS.parentNode.removeChild(rmOTFS);
 	rmOTFS = null;
 
-	resultStatus.innerHTML="Overtime section removed.";
+	resultStatus.innerHTML= i18n["OTSectionRemoved"][lang];
 } // End of removeOvertimeDiv
 
 function removeLumpSumDiv (e) {
@@ -1409,7 +1421,7 @@ function removeLumpSumDiv (e) {
 		}
 	}
 	*/
-	resultStatus.innerHTML="Lump sum section removed.";
+	resultStatus.innerHTML= i18n["lumpSumSectionRemoved"][lang];
 } // End of removeLumpSumDiv
 
 
@@ -1627,16 +1639,16 @@ function calculate() {
 			let endDate = new Date(periods[i+1]["startDate"]);
 			endDate.setDate(endDate.getDate() -1);
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"] + " - " + endDate.toISOString().substr(0,10)});
-			var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + periods[i]["reason"] + ")", "class":"small"});
+			var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + i18n[periods[i]["reason"]][lang] + ")", "class":"small"});
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["made"])}); //.toFixed(2)});
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["shouldHaveMade"])}); //.toFixed(2)});
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["backpay"])}); //.toFixed(2)});
 
 			if (dbug || showExtraCols) {
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "IT-0" + (level +1)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n["IT"][lang] + "-0" + (level +1)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (Math.max(1, (parseInt(step)+1)))});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? "Yes" : "No")});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (step >=0 ? (daily[level][step] * periods[i]["multiplier"]).toFixed(2) + " -> " + (newDaily[level][step] * periods[i]["multiplier"]).toFixed(2) : "0") + " / day"});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["yes"][lang] : i18n["no"][lang])});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (step >=0 ? (daily[level][step] * periods[i]["multiplier"]).toFixed(2) + " -> " + (newDaily[level][step] * periods[i]["multiplier"]).toFixed(2) : "0") + " / " + i18n["day"][lang]});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": days});
 			}
 			
@@ -1651,17 +1663,17 @@ function calculate() {
 					
 					var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
-					var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(Overtime Payment x " + rate + ")", "class":"small"});
+					var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode": "(" + i18n["OTPayment"][lang] + " " + rate + ")", "class":"small"});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
 
 					if (dbug || showExtraCols) {
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "IT-0" + (level +1)});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n["IT"][lang] + "-0" + (level +1)});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? "Yes" : "No")});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["yes"][lang] : i18n["no"][lang])});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + " * " + rate + "/hr"});
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "Hourly " + overtimePeriods[periods[i]["startDate"]][rate]});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18["hourly"][lang] + " " + overtimePeriods[periods[i]["startDate"]][rate]});
 					}
 	
 					periods[i]["made"] += made;
@@ -1680,18 +1692,18 @@ function calculate() {
 				
 				var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
-				var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(Lump Sum Payment)", "class":"small"});
+				var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + i18n["lumpSumPayment"][lang] + ")", "class":"small"});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
 
 				
 				if (dbug || showExtraCols) {
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "IT-0" + (level +1)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n["IT"][lang] + "-0" + (level +1)});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? "Yes" : "No")});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["yes"][lang] : i18n["no"][lang])});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + "/hr"});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "Hourly " + lumpSumPeriods[periods[i]["startDate"]]});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18["hourly"][lang] + lumpSumPeriods[periods[i]["startDate"]]});
 				}
 
 				periods[i]["made"] += made;
@@ -1734,12 +1746,12 @@ function calculate() {
 			total["backpay"] += preTotal["backpay"] + pTotal["backpay"];
 			*/
 			var totalTR = createHTMLElement("tr", {"parentNode":resultsFoot});
-			var totalTH = createHTMLElement("th", {"parentNode":totalTR, "scope":"row", "nodeText":"Total"});
+			var totalTH = createHTMLElement("th", {"parentNode":totalTR, "scope":"row", "nodeText":i18n["total"][lang]});
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["made"])});
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["shouldHaveMade"])});
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["backpay"])});
 		}
-		resultStatus.innerHTML = "Results shown below.";
+		resultStatus.innerHTML = i18n["resultsShownBelow"][lang]; 
 	//} else {
 		//if (dbug) console.log ("Not the top of your level.  This should be difficult.");
 		
@@ -1766,12 +1778,15 @@ function isValidDate (d) {
 function addStartDateErrorMessage () {
 	if (dbug) console.log ("Error:  st is " + startDateTxt.value + ".");
 	var errDiv = createHTMLElement("div", {"parentNode":startDateTxt.parentNode, "id":"startDateError", "class":"error"});
-	createHTMLElement("p", {"parentNode":errDiv, "nodeText":"Please enter the date at which you started at the level you were at on December 22, 2021. If you weren't an IT at that time, enter the date you started as an IT.  All dates must be in the format of YYYY-MM-DD."});
+	createHTMLElement("p", {"parentNode":errDiv, "nodeText": i18n["startDateErrorMsg"][lang]});
 	levelSel.setAttribute("aria-describedby", "startDateError");
 	return;
 }
+	
+lang = document.documentElement.lang;
+if (lang == "fr") langFormat = "fr-CA";
 
-var formatter = new Intl.NumberFormat('en-CA', {
+var formatter = new Intl.NumberFormat(langFormat, {
   style: 'currency',
   currency: 'CAD',
 
@@ -1855,6 +1870,7 @@ function genRates () {
 
 async function getData () {
 	let response = await fetch("raiseInfo.json");
+	let success = 0;
 	if (response.ok) { // if HTTP-status is 200-299
 		// get the response body (the method explained below)
 		let json = await response.json();
@@ -1866,9 +1882,22 @@ async function getData () {
 
 		genRates ();
 		
-		init();
+		success++;
 	} else {
 		console.error ("HTTP-Error: " + response.status);
+	}
+
+	response = await fetch("i18n.json");
+	if (response.ok) { // if HTTP-status is 200-299
+		i18n = await response.json();
+		if (dbug) console.log ("Got json: "  + JSON.stringify(i18n) + ".");
+		success++;
+	} else {
+		console.error ("HTTP-Error: " + response.status);
+	}
+	if (success==2) {
+		if (dbug) console.log ("getData::calling init.");
+		init();
 	}
 } // End of getData
 
