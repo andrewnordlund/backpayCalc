@@ -30,13 +30,13 @@
 		"fr" : "Échelon"
 	},
 	"there" : {"en" : "There",
-			"fr" : "Là"
+			"fr" : "Salarié"
 	},
 	"salary" : {"en" : "Salary",
 			"fr" : "Salaire"
 	},
 	"workingDays" : {"en" : "Working Days",
-			"fr" : "jours ouvrables"
+			"fr" : "Jours ouvrables"
 	},
 	"yourinfoTxt" : {"en" : "Your Information",
 			"fr" : "Votre information"
@@ -66,7 +66,7 @@
 			"fr" : "Nouvelle section d'intérim ajoutée."
 	},
 	"actingStint" : {"en" : "Acting Stint",
-			"fr" : "Période d'intérim"
+			"fr" : "Période intérimaire"
 	},
 	"from" : {"en" : "From",
 		"fr" : "De"
@@ -75,7 +75,7 @@
 		"fr"  : "À"
 	},
 	"actingLevel" : {"en" : "Acting Level:",
-			"fr" : "Niveau d'intérim :"
+			"fr" : "Niveau intérimaire :"
 	},
 	"remove" : {"en" : "Remove",
 			"fr" : "Supprimer"
@@ -168,7 +168,7 @@
 			"fr" : "Augmentation contractuelle"
 	},
 	"Fiscal New Year" : {"en" : "Fiscal New Year",
-			"fr" : "Nouvel an fiscal"
+			"fr" : "Nouvelle année financière"
 	},
 	"Contract Signed" : {"en" : "Contract Signed",
 			"fr" : "Contrat signé"
@@ -177,13 +177,13 @@
 		"fr" : "fin"
 	},
 	"Anniversary Increase" : {"en" : "Anniversary Increase",
-				"fr" : "Augmentation d'anniversaire"
+				"fr" : "Anniversaire de la promotion"
 	},
 	"Starting" : {"en" : "Starting",
 			"fr" : "Débutant"
 	},
 	"Acting Anniversary" : {"en" : "Acting Anniversary",
-			"fr" : "Anniversaire d'intérimaire"
+			"fr" : "Anniversaire de l’intérimaire"
 	},
 	"Acting Start" : {"en" : "Acting Start",
 			"fr" : "Début de l'intérimaire"
