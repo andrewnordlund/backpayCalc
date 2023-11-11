@@ -8,9 +8,13 @@
 		<title>Backpay Calculator for 2021 IT Tentative Agreement</title>
 		<meta name="dc.title" content="Test of backpayCalc">
 		<meta name="dcterms.title" content="Test of backpayCalc">
+
+		<!-- Bootstrap 5.3.2 Stylesheet -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
 		<link rel="Stylesheet" type="text/css" href="../backpayCalc.css" >
 	</head>
-	<body>
+	<body class="container">
 		<ul id="skipLinks">
 			<li><a href="#mainForm">Skip to Main Form</a></li>
 			<li><a href="#resultsDiv">Skip to Results</a></li>
@@ -60,8 +64,8 @@
 			<h2>Your Information</h2>
 			<p><strong>Note:</strong> All dates should be formatted as <span id="dateFormat">YYYY-MM-DD</span>.</p>
 			<div class="fieldHolder">
-				<label for="levelSelect">Select your Level on December 22, 2021 (of your substantive position)</label>
-				<select id="levelSelect">
+				<label class="form-label" for="levelSelect">Select your Level on December 22, 2021 (of your substantive position)</label>
+				<select class="form-select" id="levelSelect">
 					<option value="0">Select your level</option>
 					<option value="1">IT-01</option>
 					<option value="2">IT-02</option>
@@ -71,58 +75,58 @@
 				</select>
 			</div>
 			<div class="fieldHolder">
-				<label for="startDateTxt">When did you start at that level?</label> 
+				<label class="form-label" for="startDateTxt">When did you start at that level?</label> 
 				<p id="startDateDesc">For example, if you started as an IT-02 on March 15, 2015, enter <time>2015-03-15</time>.</p>
-				<input type="date" id="startDateTxt" aria-describedby="dateFormat startDateDesc" value="">
+				<input class="form-control" type="date" id="startDateTxt" aria-describedby="dateFormat startDateDesc" value="">
 			</div>
 			<div class="fieldHolder">
-				<label for="stepSelect">Select your salary on <time datetime="2021-12-22" id="calcStartDate">December 22, 2021</time> (of your substantive position)</label> 
-				<select id="stepSelect">
+				<label class="form-label" for="stepSelect">Select your salary on <time datetime="2021-12-22" id="calcStartDate">December 22, 2021</time> (of your substantive position)</label> 
+				<select class="form-select" id="stepSelect">
 				</select>
 			</div>
 			<div class="fieldHolder">
-				<label for="endDateTxt">When is the last day this should this stop calculating?</label> 
-				<input type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat lastDayBug" value="2024-03-17">
+				<label class="form-label" for="endDateTxt">When is the last day this should this stop calculating?</label> 
+				<input class="form-control" type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat lastDayBug" value="2024-03-17">
 				<span id="endDateFormat" class="helper">(ie: either the date you stopped being an IT, or when the contract is implemented.)</span>
 			</div>
-			<fieldset id="promotionsFS">
+			<fieldset class="border border-black p-2 m-2" id="promotionsFS">
 				<legend>Promotions</legend>
 				<p id="promoDesc">Were you promoted (to another IT level) during this time?  (Promotions to EX should be considered as Leave Without Pay.)</label>
 				<div class="fieldHolder">
-					<button id="addPromotionBtn" aria-describedby="promoDesc" type="button">Add Promotion</button>
+					<button type="button" class="btn btn-success" id="addPromotionBtn" aria-describedby="promoDesc">Add Promotion</button>
 				</div>
 				<div id="promotionsDiv"></div>
 			</fieldset>
-			<fieldset id="actingFS">
+			<fieldset class="border border-black p-2 m-2" id="actingFS">
 				<legend>Acting</legend>
-				<input type="button" id="addActingBtn" value="Add Acting Period">
+				<input type="button" class="btn btn-success" id="addActingBtn" value="Add Acting Period">
 				<div id="actingsDiv"></div>
 			</fieldset>
-			<fieldset id="LWoPFS">
+			<fieldset class="border border-black p-2 m-2" id="LWoPFS">
 				<legend>Leave without Pay</legend>
-				<input type="button" id="addLwopBtn" value="Add LwoP Period">
+				<input type="button" class="btn btn-success" id="addLwopBtn" value="Add LwoP Period">
 				<div id="LWoPDiv"></div>
 			</fieldset>
-			<fieldset id="overtimeFS">
+			<fieldset class="border border-black p-2 m-2" id="overtimeFS">
 				<legend>Overtime / Standby</legend>
-				<p id="overtimeExp">You don't need to put every single overtime instance in.  Just a total of hours for each rate (1.5 or 2.0) for each period.  Example: if you worked for an extra hour every day for a week where your pay rate didn't change, enter any date within that week, and enter 5 for the number of hours, and 1.5x for the rate.</p>
-				<input type="button" id="addOvertimeBtn" value="Add Overtime" aria-describedby="overtimeExp">
+				<p id="overtimeExp">You don't need to put every single overtime instance in. Just a total of hours for each rate (1.5 or 2.0) for each period.  Example: if you worked for an extra hour every day for a week where your pay rate didn't change, enter any date within that week, and enter 5 for the number of hours, and 1.5x for the rate.</p>
+				<input type="button" class="btn btn-success" id="addOvertimeBtn" value="Add Overtime" aria-describedby="overtimeExp">
 				<div id="overtimeDiv"></div>
 			</fieldset>
-			<fieldset id="lumpSumsFS">
+			<fieldset class="border border-black p-2 m-2" id="lumpSumsFS">
 				<legend>Lump Sum Payments</legend>
 				<p id="lumpSumExp">Example: unused vacation cash-out.</p>
-				<input type="button" id="addLumpSumBtn" value="Add Lump Sum Payment" aria-describedby="lumpSumExp">
+				<input type="button" class="btn btn-success" id="addLumpSumBtn" value="Add Lump Sum Payment" aria-describedby="lumpSumExp">
 				<div id="lumpSumDiv"></div>
 			</fieldset>
 			<div class="fieldHolder">
-				<input type="button" id="calcBtn" value="Calculate">
+				<input type="button" class="btn btn-primary" id="calcBtn" value="Calculate">
 			</div>
 		</form>
 		<div id="resultsDiv" tabindex="-1">
 			<h2>Results</h2>
 			<p>All amounts are gross.  You'll have to figure out your own taxes. (And sometimes your taxes are pretty gross!  Nyuk nyuk nyuk)</p>
-			<table id="resultsTable">
+			<table id="resultsTable" class="table table-striped">
 				<caption>Pay periods</caption>
 				<thead>
 					<tr id="resultsTheadTR">
@@ -151,5 +155,9 @@
 			<dd><time id="lastModTime" datetime="2023-11-10">2023-11-10</time></dd>
 		</dl>
 		</footer>
+
+		<!-- Bootstrap 5.3.2 Javascript -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
 	</body>
 </html>
