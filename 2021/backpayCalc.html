@@ -86,10 +86,15 @@
 						<select id="stepSelect"></select>
 					</div>
 					<div class="fieldHolder">
-						<label>Anniversary Date (YYYY-MM-DD): </label>
-						<input class="input" type="date" id="startDateTxt" aria-describedby="dateFormat startDateDesc"
-							value="">
+						<label for="startDateTxt">Anniversary Date: 
+							<div class="tooltip">
+								<span class="question-mark">🤔</span>
+								<span class="tooltiptext" id="startDateDescTooltip">For example, if you started as an IT-02 on March 15, 2015, enter <time>2015-03-15</time>.</span>
+							</div>
+						</label>
+						<input class="input" type="date" id="startDateTxt" aria-describedby="dateFormat startDateDesc" value="">
 					</div>
+					
 				</div>
 			</form>
 			<form id="mainForm2" tabindex="-1">
@@ -111,7 +116,7 @@
 						<p id="lumpSumExp"><strong>Lump Sum Payments: </strong> Example: unused vacation cash-out.</p>
 					</li>
 				</ul>
-				<fieldset id="promotionsFS">
+				<fieldset class="buttonLegend" id="promotionsFS">
 					<legend>Promotions</legend>
 					<div class="fieldHolder">
 						<button class="button" id="addPromotionBtn" aria-describedby="promoDesc" type="button">➕ Add
@@ -119,81 +124,85 @@
 					</div>
 					<div class="section" id="promotionsDiv"></div>
 				</fieldset>
-				<fieldset id="actingFS">
+				<fieldset class="buttonLegend"  id="actingFS">
 					<legend>Acting</legend>
 					<input class="button" type="button" id="addActingBtn" value="➕ Add Acting Period">
 					<div class="section" id="actingsDiv"></div>
 				</fieldset>
-				<fieldset id="LWoPFS">
+				<fieldset class="buttonLegend" id="LWoPFS">
 					<legend>Leave without Pay</legend>
 					<input class="button" type="button" id="addLwopBtn" value="➕ Add LwoP Period">
 					<div class="section" id="LWoPDiv"></div>
 				</fieldset>
-				<fieldset id="overtimeFS">
+				<fieldset class="buttonLegend" id="overtimeFS">
 					<legend>Overtime / Standby</legend>
 					<input class="button" type="button" id="addOvertimeBtn" value="➕ Add Overtime"
-						aria-describedby="overtimeExp">
+						aria-describedby="overtimevExp">
 					<div class="section" id="overtimeDiv"></div>
 				</fieldset>
 
-				<fieldset id="lumpSumsFS">
+				<fieldset class="buttonLegend" id="lumpSumsFS">
 					<legend>Lump Sum Payments</legend>
 					<input class="button" type="button" id="addLumpSumBtn" value="➕  Add Lump Sum Payment"
 						aria-describedby="lumpSumExp">
 					<div class="section" id="lumpSumDiv"></div>
 				</fieldset>
-	</div>
-	</form>
-	<form id="mainForm3" tabindex="-1">
-		<div class="formRow">
+			</form>
+			<form id="mainForm3" tabindex="-1">
+				<div>
+					<h2>End Date for Backpay Calculation</h2>
+				</div>
+				<div class="formRow">
+					<div class="fieldHolder">
+						<label for="endDateTxt">End date: </label>
+						<input class="input" type="date" id="endDateTxt"
+							aria-describedby="endDateFormat dateFormat lastDayBug" value="2024-03-17">
+						<span id="endDateFormat" class="helper"><em>ie: either the date you stopped being an IT, or when the contract is implemented.</em></span>
+					</div>
+				</div>
 			<div class="fieldHolder">
-				<label for="endDateTxt">End-Date For Backpay</label>
-				<input class="input" type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat lastDayBug"
-					value="2024-03-17">
-				<span id="endDateFormat" class="helper">(ie: either the date you stopped being an IT, or when the
-					contract is implemented.)</span>
+				<input class="buttoncalc" type="button" id="calcBtn" value="Calculate">
+				<div id="arrowHint" class="arrow-container"></div>
 			</div>
+			</form>
+			<div class="resultsSection" id="resultsDiv" tabindex="-1">
+				<h2>Results</h2>
+				<p>All amounts are gross. You'll have to figure out your own taxes. (And sometimes
+					your
+					taxes are pretty gross! Nyuk nyuk nyuk)</p>
+				<table class="table" id="resultsTable">
+					<thead>
+						<tr id="resultsTheadTR" class="table-row">
+							<th scope="col">Period</th>
+							<th scope="col">Amount Paid</th>
+							<th scope="col">Amount Entitled</th>
+							<th scope="col">Backpay Owed</th>
+						</tr>
+					</thead>
+					<tbody id="resultsBody"></tbody>
+					<tfoot id="resultsFoot"></tfoot>
+				</table>
+			</div>
+		</main>
+		<div class="footer">
+			<footer>
+				<h2>Note:</h2>
+				<p>This calculator was built as a hobby and is provided "as is" as
+					proof-of-concept.
+					There is absolutely no guarantee of accuracy, or officialness. It should be used for interest sakes,
+					not
+					as an authority.</p>
+				<p>See a problem? Have a suggestion? <a
+						href="https://github.com/andrewnordlund/backpayCalc/issues">Submit an issue</a>.</p>
+				<p>Back to the <a href="../index.html">Backpay Calculator</a> home page.</p>
+				<script src="backpayCalc.js"></script>
+				<div id="resultStatus" role="status" aria-live="polite" class="invisibleStuff"></div>
+				<dl>
+					<dt>Last Modified:</dt>
+					<dd><time id="lastModTime" datetime="2023-11-10">2023-11-10</time></dd>
+				</dl>
+			</footer>
 		</div>
-	</form>
-	<div class="fieldHolder">
-		<input class="buttoncalc" type="button" id="calcBtn" value="Calculate">
-		<div id="arrowHint" class="arrow-container"></div>
-	</div>
-	<div class="section" id="resultsDiv" tabindex="-1">
-		<h2>Results</h2>
-		<p id="resultsParagraph">All amounts are gross. You'll have to figure out your own taxes. (And sometimes your
-			taxes are pretty gross! Nyuk nyuk nyuk)</p>
-		<table class="table" id="resultsTable">
-			<thead>
-				<tr id="resultsTheadTR" class="table-row">
-					<th scope="col">Period</th>
-					<th scope="col">Amount Paid</th>
-					<th scope="col">Amount Entitled</th>
-					<th scope="col">Backpay Owed</th>
-				</tr>
-			</thead>
-			<tbody id="resultsBody"></tbody>
-			<tfoot id="resultsFoot"></tfoot>
-		</table>
-	</div>
-	</main>
-	<div class="footer">
-		<footer>
-			<h2>Note:</h2>
-			<p id="resultsParagraph">This calculator was built as a hobby and is provided "as is" as proof-of-concept.
-				There is absolutely no guarantee of accuracy, or officialness. It should be used for interest sakes, not
-				as an authority.</p>
-			<p id="resultsParagraph">See a problem? Have a suggestion? <a
-					href="https://github.com/andrewnordlund/backpayCalc/issues">Submit an issue</a>.</p>
-			<p id="resultsParagraph">Back to the <a href="../index.html">Backpay Calculator</a> home page.</p>
-			<script src="backpayCalc.js"></script>
-			<div id="resultStatus" role="status" aria-live="polite" class="invisibleStuff"></div>
-			<dl>
-				<dt>Last Modified:</dt>
-				<dd><time id="lastModTime" datetime="2023-11-10">2023-11-10</time></dd>
-			</dl>
-		</footer>
-	</div>
 	</div>
 	<script>
 		// Add a listener to the Calculate button to show the arrow
@@ -207,6 +216,27 @@
 				arrow.style.display = 'none';
 			});
 		});
+		
+		document.querySelectorAll('.tooltip').forEach(item => {
+			item.addEventListener('touchstart', function(event) {
+				var tooltipText = this.querySelector('.tooltiptext');
+				var touch = event.touches[0]; // Get the first touch point
+		
+				// Position the tooltip above the touch point
+				tooltipText.style.left = touch.pageX + 'px';
+				tooltipText.style.top = (touch.pageY - tooltipText.offsetHeight - 20) + 'px';
+		
+				tooltipText.style.visibility = 'visible';
+				tooltipText.style.opacity = '1';
+			}, false);
+		
+			item.addEventListener('touchend', function() {
+				var tooltipText = this.querySelector('.tooltiptext');
+				tooltipText.style.visibility = 'hidden';
+				tooltipText.style.opacity = '0';
+			}, false);
+		});
+		
 	</script>
 </body>
 

@@ -14,7 +14,7 @@ body {
 
 /* Header Styles */
 header h1 {
-    text-align: center;
+    text-align: left;
     color: #0056b3;
     font-size: 2em;
     margin-bottom: 0.5em;
@@ -58,8 +58,10 @@ form {
 .fieldHolder label {
     color: #0056b3;
     display: block;
+    margin-top: 5pm;
     margin-bottom: 5px;
-    font-size: 0.8em;
+    font-size: 1.1em;
+    text-align: center;
 }
 
 .fieldHolder select, 
@@ -67,8 +69,9 @@ form {
     width: 100%;
     padding: 8px;
     border: 1px solid #ccc;
+    text-align: center;
     border-radius: 10px;
-    font-size: 14px;
+    font-size: 1.2em;
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
  
@@ -149,15 +152,17 @@ form {
     background-color: darkgreen;
 }
 
-/* Fieldset and Legend Styling */
+/* Fieldset and ` Styling */
 fieldset {
     border-radius: 8px; /* Rounded corners for fieldsets */
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 3px solid #ccc;
+    color: #d35400
 }
 
+
 legend {
-    padding: 0 10px; /* Padding for legend */
+    padding: 0px 10px; /* Padding for legend */
     background-color: #f4f4f4; /* Background color for legend */
     border-radius: 4px; /* Rounded corners for legend */
 }
@@ -174,6 +179,11 @@ legend {
     max-width: 100%;
 }
 
+#resultsDiv h2 {  
+    color: #d35400; /* Maintain the orange color */
+    font-size: 1.2em; /* Slightly larger font size */
+    margin-bottom: 15px;
+}
 .table {
     width: 100%;
     border-collapse: collapse;
@@ -231,19 +241,6 @@ summary {
         flex-direction: column; /* Stack fields vertically on small screens */
         text-align: center;
     }
-}
-
-/* Results Section Styles */
-.results-section h2 {
-    color: #007bff; /* Example: a different shade of blue */
-    font-weight: bold;
-    text-align: center;
-}
-
-#resultsParagraph {
-    color: #666; /* Softer color */
-    font-size: 0.9em;
-    text-align: left;
 }
 
 #resultsTable {
@@ -369,16 +366,17 @@ summary {
     font-weight: bold;
     /* Add any other styling you desire */
 }
+
 .removeButton, .addButton {
     margin-top: 20px;
-    background-color: #f95b43; /* Change as needed for addButton */
+    background-color: #C24641;/* NOTE:addButton changed below */
     color: white;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 0.8em !important;
     padding: 5px 10px; /* Adjust padding as needed */
-    border: none; /* Optional, remove button border */
-    border-radius: 50px; /* Optional, for rounded corners */
-    width: 200px !important; /* or a specific width like 80px */
+    border: none; /* remove button border */
+    border-radius: 50px1; /*rounded corners */
+    width: 12em !important; /* or a specific width like 80px */
     height: auto; /* or a specific height like 30px */
     display: inline-block; /* or 'block' if you want the button to be on its own line */
 }
@@ -386,3 +384,62 @@ summary {
 .addButton {
     background-color: forestgreen; /* Specific to addButton */
 }
+
+/* Existing Tooltip Styles */
+.tooltip {
+    display: inline-block;
+    position: relative;
+    cursor: help;
+}
+
+.tooltip .question-mark {
+    display: inline-block;
+    margin-left: 5px;
+    color: #0056b3;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: cornflowerblue;
+    color: white;
+    text-align: left;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: -5px;
+    left: 110%;
+    margin-left: -60px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+/* Responsive Adjustments for Tooltips on Mobile Devices */
+@media screen and (max-width: 768px) {
+    .tooltip .tooltiptext {
+        position: absolute; /* Absolute positioning for dynamic placement */
+        /* Remove width constraints to allow natural sizing */
+        left: 50%; /* Start at the center */
+        transform: translateX(-50%); /* Center horizontally */
+        white-space: normal; /* Allow text wrapping */
+        visibility: hidden; /* Initially hidden */
+        opacity: 0; /* Fully transparent initially */
+        transition: opacity 0.5s linear; /* Smooth fade-in effect */
+        z-index: 100; /* Ensure it's above other elements */
+    }
+
+    .tooltip:hover .tooltiptext,
+    .tooltip:active .tooltiptext {
+        visibility: visible; /* Show tooltip on hover/touch */
+        opacity: 1; /* Fully opaque */
+    }
+}
+    
