@@ -1602,6 +1602,15 @@ function calculate() {
 			periods[i]["shouldHaveMade"] = 0;
 			periods[i]["backpay"] = 0;
 			multiplier =(1 + (periods[i]["increase"]/100));
+			if (periods[i].hasOwnProperty("exceptions")) {
+				for (let k = 0; k < periods[i]["exceptions"].length; k++) {
+					if (periods[i]["exceptions"][k]["level"] == (level-1)) {
+						if (periods[i]["exceptions"][k].hasOwnProperty("increase")) {
+							multiplier  = ((periods[i]["exceptions"][k]["increase"]/100) +1);
+						}
+					}
+				}		
+			}
 			if (dbug) console.log ("Multiplier: " + multiplier + ".");
 			if (periods[i]["increase"] > 0) {
 				// Calculate new salaries, dailys, and hourlys
@@ -2017,8 +2026,8 @@ async function getData () {
 		if (dbug) console.log ("Got json: "  + JSON.stringify(json) + ".");
 		salaries = json[classification][CAName]["salaries"]["annual"];
 		levels = salaries.length;
-		//daily = json[classification][CAName]["salaries"]["daily"];
-		//hourly = json[classification][CAName]["salaries"]["hourly"];
+		daily = json[classification][CAName]["salaries"]["daily"];
+		hourly = json[classification][CAName]["salaries"]["hourly"];
 		initPeriods = json[classification][CAName]["periods"];
 
 		
