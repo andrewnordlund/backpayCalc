@@ -59,6 +59,10 @@ var daily = [];
 var hourly = [];
 var newRates = {};
 var i18n = {};
+var levels = 0;
+var classification = "IT";
+var CAName = "2021-2025";
+
 // taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
 /*
 var salaries = [
@@ -88,8 +92,8 @@ var hourly = [
 //var days = [31, 29, 31
 function init () {
 	if (dbug) console.log ("Initting");
-	//lang = document.documentElement.lang;
-	//if (lang == "fr") langFormat = "fr-CA";
+	lang = document.documentElement.lang;
+	if (lang == "fr") langFormat = "fr-CA";
 	//saveValues = new Map();
 	var calcBtn = document.getElementById("calcBtn");
 	levelSel = document.getElementById("levelSelect");
@@ -120,6 +124,9 @@ function init () {
 		if (dbug) console.log ("init::lang link thingy: lang: " + lang + "; href: " + window.location.href + ".");
 		langSwitchA.href = (lang == "en" ? window.location.href.replace("backpayCalc.html", "arrDeSalCalc.html") : window.location.href.replace("arrDeSalCalc.html", "backpayCalc.html"));
 	}
+		
+	genRates ();
+	genTables ();
 
 	if (lastModTime) {
 		lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0,10));
@@ -975,7 +982,7 @@ function addPromotionHandler (e, o) {
 	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promotionLevel" + id, "nodeText":i18n["promotedToLevel"][lang] + " "});
 	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"promotionLevel" + id});
 	for (var j = 0; j < 6; j++) {
-		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n["IT"][lang] + "-0" + j)});
+		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n[classification][lang] + "-0" + j)});
 		if (plvl) {
 			if (plvl == j) newPromoOpt.setAttribute("selected", "selected");
 		} else {
@@ -1048,7 +1055,7 @@ function addActingHandler () {
 	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "for":"actingLevel" + id, "nodeText":i18n["actingLevel"][lang] + " "});
 	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, "id":"actingLevel" + id});
 	for (var j = 0; j < 6; j++) {
-		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n["IT"][lang] + "-0" + j)});
+		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n[classification][lang] + "-0" + j)});
 		if (alvl) {
 			if (alvl == j) newPromoOpt.setAttribute("selected", "selected");
 		} else {
@@ -1645,7 +1652,7 @@ function calculate() {
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["backpay"])}); //.toFixed(2)});
 
 			if (dbug || showExtraCols) {
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n["IT"][lang] + "-0" + (level +1)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n[classification][lang] + "-0" + (level +1)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (Math.max(1, (parseInt(step)+1)))});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["yes"][lang] : i18n["no"][lang])});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (step >=0 ? (daily[level][step] * periods[i]["multiplier"]).toFixed(2) + " -> " + (newDaily[level][step] * periods[i]["multiplier"]).toFixed(2) : "0") + " / " + i18n["day"][lang]});
@@ -1669,7 +1676,7 @@ function calculate() {
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
 
 					if (dbug || showExtraCols) {
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n["IT"][lang] + "-0" + (level +1)});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n[classification][lang] + "-0" + (level +1)});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["yes"][lang] : i18n["no"][lang])});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + " * " + rate + "/hr"});
@@ -1699,7 +1706,7 @@ function calculate() {
 
 				
 				if (dbug || showExtraCols) {
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n["IT"][lang] + "-0" + (level +1)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n[classification][lang] + "-0" + (level +1)});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["yes"][lang] : i18n["no"][lang])});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + "/hr"});
@@ -1843,30 +1850,163 @@ function removeChildren (el) {
 }
 
 function genRates () {
-	for (let i = 0; i < periods.length; i++) {
-		if (periods[i]["reason"] == "Contractual Increase") {
-			let startDate = periods[i]["startDate"];
-			let multiplier = ((periods[i]["multiplier"]/100) +1);
-			if !(newRates.hasOwnProperty(startDate)) newRates[startDate] = []; //{"annual" : [], "daily" : [], "hourly" : []};
-			for (let j = 0; j < salaries; j++) {	// levels
-				if (periods[i].hasOwnProperty("exceptions")) {
-					for (let k = 0; k < periods[i]["exceptions"].length; k++) {
-						if (periods[i]["exceptions"][k]["level"] == (j-1)) {
-							if (periods[i]["exceptions"][k].hasOwnProperty("increase")) {
-								multiplier  = ((periods[i]["exceptions"][k]["increase"]/100) +1);
+
+	newRates["current"] = [];
+	let wiy = 52.17604859194648;
+	for (let it = 0; it < levels; it++) {	// levels
+		let newStps = {"annual" : [], "weekly" : [], "daily" : [], "hourly" : []};
+		for (let stp = 0; stp < salaries[it].length; stp++) {	// steps
+			let newStp = salaries[it][stp];
+			newStps["annual"].push(newStp);
+			//console.log ("Pushing " + newStp + " onto newStps[annual].");
+			// Do the same for daily, and hourly
+			newStps["weekly"].push(newStp/wiy);
+			newStps["daily"].push((newStp/wiy)/5);
+			newStps["hourly"].push(((newStp/wiy)/5)/7.5);
+		}
+		//console.log ("newStps has length: " + newStps["annual"].length + ".");
+		newRates["current"].push(newStps);
+
+	}
+
+	for (let i = 0; i < initPeriods.length; i++) {
+		if (initPeriods[i]["reason"] == "Contractual Increase") {
+			console.log ("period: " + i + ":");
+			
+			let startDate = initPeriods[i]["startDate"];
+			let multiplier = ((initPeriods[i]["compound"]/100) +1);
+			console.log ("Multiplier: " + multiplier);
+
+			if (!(newRates.hasOwnProperty(startDate))) newRates[startDate] = [];
+			
+			//let newLevels = [];
+			console.log ("levels:  " + levels + ".");
+			for (let it = 0; it < levels; it++) {	// levels
+				//console.log ("it: " + it +".");
+				
+				if (initPeriods[i].hasOwnProperty("exceptions")) {
+					for (let k = 0; k < initPeriods[i]["exceptions"].length; k++) {
+						if (initPeriods[i]["exceptions"][k]["level"] == (it-1)) {
+							if (initPeriods[i]["exceptions"][k].hasOwnProperty("compound")) {
+								multiplier  = ((initPeriods[i]["exceptions"][k]["compound"]/100) +1);
 							}
 						}
 					}
 				}
-				for (let k = 0; k < salaries[j].length; k++) {	// steps
-
-					newRates[startDate]["annual"]
+				
+				let newStps = {"annual" : [], "weekly" : [], "daily" : [], "hourly" : []};
+				for (let stp = 0; stp < salaries[it].length; stp++) {	// steps
+					let newStp = salaries[it][stp] * multiplier;
+					newStps["annual"].push(newStp);
+					//console.log ("Pushing " + newStp + " onto newStps[annual].");
+					// Do the same for weekly, daily, and hourly
+					newStps["weekly"].push(newStp/wiy);
+					newStps["daily"].push((newStp/wiy)/5);
+					newStps["hourly"].push(((newStp/wiy)/5)/7.5);
 				}
+				//console.log ("newStps has length: " + newStps["annual"].length + ".");
+				newRates[startDate].push(newStps);
+				//console.log ("newRates has length: " + newRates[startDate].length + ".");
 			}
+			//newRates[startDate].push(newLevels);
+			//console.log ("Should have a newRates[" + startDate + "] now: " + newRates[startDate].length + ".");
 		}
 	}
 } // End of genRates
 
+function genTables() {
+	let payTablesSect = null;
+	payTablesSect = document.getElementById("payTablesSect");
+	if (!payTablesSect) {
+		return;
+	} else {
+		console.log ("Did get payTablesSect.");
+	}
+	
+	console.log ("Got payTablesSect and will now try to create an H3 with text " + i18n["paySectHeading"][lang] + ".");
+	let payTableH = createHTMLElement("h2", {"parentNode":payTablesSect, "textNode":i18n["paySectHeading"][lang]});
+	let timeps = ["annual", "weekly", "daily", "hourly"];
+
+	/*
+	// Create Filters
+	let payTablesFiltersDetails = createHTMLElement("details", {"parentNode":payTablesSect});
+	let payTablesFiltersSummary = createHTMLElement("summary", {"parentNode":payTablesFiltersDetails, "textNode":i18n["payTablesFilterLegend"][lang]});
+	let payTablesFiltersFS = createHTMLElement ("fieldset", {"parentNode":payTablesFiltersDetails, "id" : "payTablesFS"});
+	let payTableFiltersLengend = createHTMLElement ("legend", {"parentNode":payTablesFiltersFS, "textNode": i18n["show"][lang]});
+
+	for (let i = 0; i<timeps.length; i++) {
+		let newDiv = createHTMLElement("div", {"parentNode" : payTablesFiltersFS, "class" : "checkboxHolderDiv"});
+		let checkbox = createHTMLElement("input", {"parentNode" : newDiv, "type":"checkbox", "id" : timeps[i] + "Chk", "checked":"checked"});
+		let lbl = createHTMLElement("label", { "parentNode":newDiv, "for": timeps[i] + "Chk", "textNode" : i18n[timeps[i]][lang]});
+	}
+	*/
+	console.log ("levels:  " + levels + ".");
+	let sects = [];
+	for (let i = 0; i<levels; i++) {
+		let dl = "-0" + (i+1);
+		//let newDiv = createHTMLElement("div", {"parentNode" : payTablesFiltersFS, "class" : "checkboxHolderDiv"});
+		//let checkbox = createHTMLElement("input", {"parentNode" : newDiv, "type":"checkbox", "id" : "level" + i + "Chk", "checked":"checked"});
+		//let lbl = createHTMLElement("label", { "parentNode":newDiv, "for": timeps[i] + "Chk", "textNode" : i18n[classification][lang] + dl});
+
+		let newSect = createHTMLElement("details", {"parentNode" : payTablesSect, "id" : "payrateSect " + i});
+		let newSum = createHTMLElement("summary", {"parentNode": newSect});
+		let newSectH = createHTMLElement("h3", {"parentNode":newSum, "textNode" : i18n[classification][lang] + dl});
+
+		// You need a table for each year)
+		console.log ("Periods: " + initPeriods.length + ".");
+
+		let newTable = createHTMLElement("table", {"parentNode"  : newSect});
+		let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : i18n["current"][lang]});
+
+		let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
+		let newTR = createHTMLElement("tr", {"parentNode" : newTHead});
+		let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode":""});
+
+		for (let stp = 0; stp < newRates["current"][i]["annual"].length; stp++) {
+			let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : i18n["step"][lang] + "  " + (stp+1), "scope":"col"});
+		}
+
+		let newTBody = createHTMLElement("tbody", {"parentNode" : newTable});
+		for (let t = 0; t<timeps.length; t++) {
+			let newTR = createHTMLElement("tr", {"parentNode" : newTBody});
+			let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode": i18n[timeps[t]][lang], "scope":"row"});
+			for (let stp = 0; stp < newRates["current"][i][timeps[t]].length; stp++) {
+				let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : formatter.format(newRates["current"][i][timeps[t]][stp])});
+			}
+		}
+
+
+		for (let j = 0; j < initPeriods.length; j++) {
+			if (initPeriods[j]["reason"] == "Contractual Increase") {
+
+				let newTable = createHTMLElement("table", {"parentNode" : newSect});
+				let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : initPeriods[j]["startDate"]});
+
+				let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
+				let newTR = createHTMLElement("tr", {"parentNode" : newTHead});
+				let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode":""});
+
+				//console.log ("initPeriods[j]: " + initPeriods[j]["startDate"] +".");
+				for (let stp = 0; stp < newRates[initPeriods[j]["startDate"]][i]["annual"].length; stp++) {
+					let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : i18n["step"][lang] + "  " + (stp+1), "scope":"col"});
+				}
+
+				let newTBody = createHTMLElement("tbody", {"parentNode" : newTable});
+				for (let t = 0; t<timeps.length; t++) {
+					let newTR = createHTMLElement("tr", {"parentNode" : newTBody});
+					let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode": i18n[timeps[t]][lang], "scope":"row"});
+					for (let stp = 0; stp < newRates[initPeriods[j]["startDate"]][i][timeps[t]].length; stp++) {
+						let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : formatter.format(newRates[initPeriods[j]["startDate"]][i][timeps[t]][stp])});
+					}
+				}
+
+			}
+		}
+	}
+
+	
+
+} // End of genTables
 
 async function getData () {
 	let response = await fetch("raiseInfo.json");
@@ -1875,12 +2015,12 @@ async function getData () {
 		// get the response body (the method explained below)
 		let json = await response.json();
 		if (dbug) console.log ("Got json: "  + JSON.stringify(json) + ".");
-		salaries = json["IT"]["2021-2025"]["salaries"]["annual"];
-		daily = json["IT"]["2021-2025"]["salaries"]["daily"];
-		hourly = json["IT"]["2021-2025"]["salaries"]["hourly"];
-		initPeriods = json["IT"]["2021-2025"]["periods"];
+		salaries = json[classification][CAName]["salaries"]["annual"];
+		levels = salaries.length;
+		//daily = json[classification][CAName]["salaries"]["daily"];
+		//hourly = json[classification][CAName]["salaries"]["hourly"];
+		initPeriods = json[classification][CAName]["periods"];
 
-		genRates ();
 		
 		success++;
 	} else {

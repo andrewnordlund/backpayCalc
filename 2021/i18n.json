@@ -202,5 +202,26 @@
 	},
 	"lumpSumPayment" : {"en" : "Lump Sum Payment",
 			"fr" : "Paiement forfaitaire"
+	},
+	"paySectHeading" : {"en" : "Pay Rates",
+				"fr" : ""
+	},
+	"payTablesFilterLegend" : {"en" : "Filters",
+		"fr" : ""
+	},
+	"annual" : {"en" : "Annual",
+			"fr" : ""
+	},
+	"daily" : {"en" : "Daily",
+		"fr" : ""
+	},
+	"show" : {"en" : "Show",
+		"fr" : ""
+	},
+	"current" : {"en" : "Current",
+		"fr" : ""
+	},
+	"weekly" : {"en" : "Weekly",
+		"fr" : ""
 	}
 }
