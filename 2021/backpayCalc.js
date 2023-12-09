@@ -1891,14 +1891,16 @@ function genRates () {
 			//let newLevels = [];
 			console.log ("levels:  " + levels + ".");
 			for (let it = 0; it < levels; it++) {	// levels
-				//console.log ("it: " + it +".");
+				console.log ("it: " + it +".");
 				
 				if (initPeriods[i].hasOwnProperty("exceptions")) {
 					for (let k = 0; k < initPeriods[i]["exceptions"].length; k++) {
-						if (initPeriods[i]["exceptions"][k]["level"] == (it-1)) {
+						if (initPeriods[i]["exceptions"][k]["level"] == (it+1)) {
+							console.log ("Dealing with exception....");
 							if (initPeriods[i]["exceptions"][k].hasOwnProperty("compound")) {
 								multiplier  = ((initPeriods[i]["exceptions"][k]["compound"]/100) +1);
 							}
+							console.log ("multiplier is now: " + multiplier + ".");
 						}
 					}
 				}
