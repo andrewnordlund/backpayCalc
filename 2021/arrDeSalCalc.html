@@ -120,24 +120,26 @@
 				<input type="button" id="calcBtn" value="Calculer">
 			</div>
 		</form>
-		<div id="resultsDiv" tabindex="-1">
+		<div id="resultsDiv" tabindex="-1" class="tables-responsive">
 			<h2>Résultats</h2>
 			<p>Tous les montants sont bruts. Vous devrez calculer vos propres impôts. (Et parfois, vos impôts sont assez bruts ! Ha Ha Ha!)</p>
-			<table id="resultsTable">
-				<caption>Périodes de paie</caption>
-				<thead>
-					<tr id="resultsTheadTR">
-						<th scope="col">Période</th>
-						<th scope="col">Ce que vous avez gagné</th>
-						<th scope="col">Ce que vous auriez dû gagner</th>
-						<th scope="col">Montant de l'ajustement</th>
-					</tr>
-				</thead>
-				<tbody id="resultsBody">
-				</tbody>
-				<tfoot id="resultsFoot">
-				</tfoot>
-			</table>
+			<div class="tables-responsive">
+				<table id="resultsTable">
+					<caption>Périodes de paie</caption>
+					<thead>
+						<tr id="resultsTheadTR">
+							<th scope="col">Période</th>
+							<th scope="col">Ce que vous avez gagné</th>
+							<th scope="col">Ce que vous auriez dû gagner</th>
+							<th scope="col">Montant de l'ajustement</th>
+						</tr>
+					</thead>
+					<tbody id="resultsBody">
+					</tbody>
+					<tfoot id="resultsFoot">
+					</tfoot>
+				</table>
+			</div>
 		</div>
 		<section id="payTablesSect"></section>
 		</main>

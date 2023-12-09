@@ -1949,7 +1949,7 @@ function genTables() {
 		let lbl = createHTMLElement("label", { "parentNode":newDiv, "for": timeps[i] + "Chk", "textNode" : i18n[timeps[i]][lang]});
 	}
 	*/
-	console.log ("levels:  " + levels + ".");
+	//console.log ("levels:  " + levels + ".");
 	let sects = [];
 	for (let i = 0; i<levels; i++) {
 		let dl = "-0" + (i+1);
@@ -1962,9 +1962,11 @@ function genTables() {
 		let newSectH = createHTMLElement("h3", {"parentNode":newSum, "textNode" : i18n[classification][lang] + dl});
 
 		// You need a table for each year)
-		console.log ("Periods: " + initPeriods.length + ".");
+		//console.log ("Periods: " + initPeriods.length + ".");
 
-		let newTable = createHTMLElement("table", {"parentNode"  : newSect});
+		let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
+
+		let newTable = createHTMLElement("table", {"parentNode"  : respDiv});
 		let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : i18n["current"][lang]});
 
 		let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
@@ -1988,7 +1990,8 @@ function genTables() {
 		for (let j = 0; j < initPeriods.length; j++) {
 			if (initPeriods[j]["reason"] == "Contractual Increase") {
 
-				let newTable = createHTMLElement("table", {"parentNode" : newSect});
+				let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
+				let newTable = createHTMLElement("table", {"parentNode" : respDiv});
 				let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : initPeriods[j]["startDate"]});
 
 				let newTHead = createHTMLElement("thead", {"parentNode" : newTable});

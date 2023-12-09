@@ -24,11 +24,11 @@ footer {
 	font-size: 80%;
 }
 
-#resultsDiv {
+.tables-responsive {
 	max-width: 95%;
-overflow-x: scroll;
-margin: 0;
-padding: 2em 1%;
+	overflow-x: scroll;
+	margin: 0;
+	padding: 2em 1%;
 }
 .fieldHolder {
 	margin: .5em .5em;
@@ -121,3 +121,22 @@ dl dd:after{
 	margin: 0.8em 5%;
 	text-align: right;
 }
+
+#payTablesSect details {
+	width: 95%;
+}
+
+#payTablesSect details summary h3 {
+	display: inline;
+	padding-left: 0.5em;
+}
+
+#payTablesSect details table {
+	margin-top: 2em;
+}
+#payTablesSect details table caption {
+	text-align: left;
+	margin: 0 0 0.5em 0.5em;
+	font-size: 110%;
+}
+
