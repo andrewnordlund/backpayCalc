@@ -206,9 +206,6 @@
 	"paySectHeading" : {"en" : "Pay Rates",
 				"fr" : ""
 	},
-	"payTablesFilterLegend" : {"en" : "Filters",
-		"fr" : ""
-	},
 	"annual" : {"en" : "Annual",
 			"fr" : ""
 	},
