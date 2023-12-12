@@ -220,5 +220,11 @@
 	},
 	"weekly" : {"en" : "Weekly",
 		"fr" : "Hebdomadaire"
+	},
+	"hours" : {"en" : "Hours",
+		"fr" : "Heures"
+	},
+	"onlwop" : {"en" : "On Leave without pay",
+		"fr" : "En congé sans solde"
 	}
 }
