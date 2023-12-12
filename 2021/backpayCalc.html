@@ -15,6 +15,10 @@
 			<li><a href="#mainForm">Skip to Main Form</a></li>
 			<li><a href="#resultsDiv">Skip to Results</a></li>
 		</ul>
+		<div id="LangSwitcher">
+			<h2 class="invisibleStuff">Language Selection</h2>
+			<a id="langSwitchA" href="arrDeSalCalc.html" lang="fr">Français</a>
+		</div>
 		<header>
 			<h1>Backpay Calculator for 2021 IT TA</h1>
 		</header>
@@ -22,7 +26,7 @@
 		<details>
 		<summary><h2 class="summary">How this calculator works</h2></summary>
 		<p>After entering in all your details this calculator breaks everything down into <dfn>periods</dfn> which are ranges of dates with the same yearly, hourly, and/or daily rate of pay.</p>
-		<p>For example, let's say you became an IT-02 (step 1) on August 1, 2019. This tentative agreement would come into effect on <time datetime="2021-12-22">December 22, 2021</time>.  No backpay will be calculated before the start date of the tentative agreement.  So, from <time datetime="2021-12-22">December 22, 2021</time> to  <time datetime="2022-07-31">July 31, 2022</time> your annual rate of pay will be $75&nbsp;129. That's the first period. Then on  <time datetime="2022-08-01">August 1, 2022</time> you have your 1 year anniversary as an IT-02 and you move up to step 2.  From <time datetime="2022-08-01">August 1, 2022</time> to <time datetime="2022-12-21">December 21, 2022</time> you'll have an annual rate of pay of $77&nbsp;535.  That's the second period.</p>
+		<p>For example, let's say you became an IT-02 (step 1) on August 1, 2019. This tentative agreement would come into effect on <time datetime="2021-12-22">December 22, 2021</time>.  No backpay will be calculated before the start date of the tentative agreement.  So, from <time datetime="2021-12-22">December 22, 2021</time> to  <time datetime="2022-07-31">July 31, 2022</time> your annual rate of pay will be $79&nbsp;937. That's the first period. Then on  <time datetime="2022-08-01">August 1, 2022</time> you have your 3<sup>rd</sup> anniversary as an IT-02 and you move up to step 4.  From <time datetime="2022-08-01">August 1, 2022</time> to <time datetime="2022-12-21">December 21, 2022</time> you'll have an annual rate of pay of $82&nbsp;340.  That's the second period.</p>
 		<p>If you start an Acting period, that starts a new period which goes until your pay changes again, either through a raise in the tentative agreement, the end of your Acting period, or an anniversary raise.</p>
 		<p>Anything which causes a change in your rate of pay starts a new period.  And the period lasts as long as you're at that rate of pay.</p>
 		<p>When you click "Calculate", the calculator takes your yearly rate of pay to get what step you're at, and when your anniversary date is (if you're not yet at the highest step).  It takes all your acting periods, and leave-without-pay periods and creates a succession of periods each with its own rate of pay.  Then for each of those periods it calculates what you did make (based on the top rates in the last collective agreement), and what you would have made had the current offer/tentative agreement been signed by the start date of that agreement.  The Results table, which appears below the Calculate button after it's clicked, shows these, and the difference, your level, your step your rate of pay, and the number used to calculate that rate of pay.</p>
@@ -38,6 +42,11 @@
 		</details>
 		<details>
 			<summary><h2 class="summary">What's New</h2></summary>
+			<h3><time datetime="2023-12-12">2023-12-12</time></h3>
+			<ul>
+				<li>Added Pay Rates tables for each classification below the the results table.</li>
+				<li>Updated rates of pay for IT-05s to account for the extra 1% in the 2021-2025 Agreement.</li>
+			</ul>
 			<h3><time datetime="2023-10-28">2023-10-28</time></h3>
 			<ul>
 				<li><strong>2021-2025 TA</strong>:  I have added the rates published in our TA: 3.00%, 4.75%, and 3.50% for 2021, 2022, and 2023 respectively.  I didn't add the 2024 numbers because I figure this TA will either be rejected or implemented by then.</li>
@@ -118,22 +127,25 @@
 		<div id="resultsDiv" tabindex="-1">
 			<h2>Results</h2>
 			<p>All amounts are gross.  You'll have to figure out your own taxes. (And sometimes your taxes are pretty gross!  Nyuk nyuk nyuk)</p>
-			<table id="resultsTable">
-				<caption>Pay periods</caption>
-				<thead>
-					<tr id="resultsTheadTR">
-						<th scope="col">Period</th>
-						<th scope="col">What You Made</th>
-						<th scope="col">What You Should Have Made</th>
-						<th scope="col">Backpay Amount</th>
-					</tr>
-				</thead>
-				<tbody id="resultsBody">
-				</tbody>
-				<tfoot id="resultsFoot">
-				</tfoot>
-			</table>
+			<div class="tables-responsive">
+				<table id="resultsTable">
+					<caption>Pay periods</caption>
+					<thead>
+						<tr id="resultsTheadTR">
+							<th scope="col">Period</th>
+							<th scope="col">What You Made</th>
+							<th scope="col">What You Should Have Made</th>
+							<th scope="col">Backpay Amount</th>
+						</tr>
+					</thead>
+					<tbody id="resultsBody">
+					</tbody>
+					<tfoot id="resultsFoot">
+					</tfoot>
+				</table>
+			</div>
 		</div>
+		<section id="payTablesSect"></section>
 		</main>
 		<footer>
 			<h2>Note</h2>
@@ -144,7 +156,7 @@
 		<div id="resultStatus" role="status" aria-live="polite" class="invisibleStuff"></div>
 		<dl>
 			<dt>Last Modified:</dt>
-			<dd><time id="lastModTime" datetime="2021-04-05">2021-04-06</time</dd>
+			<dd><time id="lastModTime" datetime="2023-11-10">2023-11-10</time></dd>
 		</dl>
 		</footer>
 	</body>
