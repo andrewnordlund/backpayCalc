@@ -42,6 +42,11 @@
 		</details>
 		<details>
 			<summary><h2 class="summary">What's New</h2></summary>
+			<h3><time datetime="2023-12-12">2023-12-12</time></h3>
+			<ul>
+				<li>Added Pay Rates tables for each classification below the the results table.</li>
+				<li>Updated rates of pay for IT-05s to account for the extra 1% in the 2021-2025 Agreement.</li>
+			</ul>
 			<h3><time datetime="2023-10-28">2023-10-28</time></h3>
 			<ul>
 				<li><strong>2021-2025 TA</strong>:  I have added the rates published in our TA: 3.00%, 4.75%, and 3.50% for 2021, 2022, and 2023 respectively.  I didn't add the 2024 numbers because I figure this TA will either be rejected or implemented by then.</li>
@@ -122,22 +127,25 @@
 		<div id="resultsDiv" tabindex="-1">
 			<h2>Results</h2>
 			<p>All amounts are gross.  You'll have to figure out your own taxes. (And sometimes your taxes are pretty gross!  Nyuk nyuk nyuk)</p>
-			<table id="resultsTable">
-				<caption>Pay periods</caption>
-				<thead>
-					<tr id="resultsTheadTR">
-						<th scope="col">Period</th>
-						<th scope="col">What You Made</th>
-						<th scope="col">What You Should Have Made</th>
-						<th scope="col">Backpay Amount</th>
-					</tr>
-				</thead>
-				<tbody id="resultsBody">
-				</tbody>
-				<tfoot id="resultsFoot">
-				</tfoot>
-			</table>
+			<div class="tables-responsive">
+				<table id="resultsTable">
+					<caption>Pay periods</caption>
+					<thead>
+						<tr id="resultsTheadTR">
+							<th scope="col">Period</th>
+							<th scope="col">What You Made</th>
+							<th scope="col">What You Should Have Made</th>
+							<th scope="col">Backpay Amount</th>
+						</tr>
+					</thead>
+					<tbody id="resultsBody">
+					</tbody>
+					<tfoot id="resultsFoot">
+					</tfoot>
+				</table>
+			</div>
 		</div>
+		<section id="payTablesSect"></section>
 		</main>
 		<footer>
 			<h2>Note</h2>
@@ -148,7 +156,7 @@
 		<div id="resultStatus" role="status" aria-live="polite" class="invisibleStuff"></div>
 		<dl>
 			<dt>Last Modified:</dt>
-			<dd><time id="lastModTime" datetime="2021-04-05">2021-04-06</time</dd>
+			<dd><time id="lastModTime" datetime="2023-11-10">2023-11-10</time></dd>
 		</dl>
 		</footer>
 	</body>
