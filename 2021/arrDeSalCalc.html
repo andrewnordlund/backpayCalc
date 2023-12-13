@@ -17,7 +17,7 @@
 		</ul>
 		<header>
 		<div id="LangSwitcher">
-			<h2 class="invisibleStuff">Language Selection</h2>
+			<h2 class="invisibleStuff">Sélection de la langue</h2>
 			<a id="langSwitchA" href="backpayCalc.html" lang="en">English</a>
 		</div>
 
@@ -43,6 +43,11 @@
 		</details>
 		<details>
 			<summary><h2 class="summary">Quoi de neuf</h2></summary>
+			<h3><time datetime="2023-12-12">2023-12-12</time></h3>
+			<ul>
+				<li>Ajout des tableaux de taux de rémunération pour chaque classification sous le tableau des résultats.</li>
+				<li>Taux de rémunération mis à jour pour les IT-05 pour tenir compte du 1 % supplémentaire dans l'entente 2021-2025.</li>
+			</ul>
 			<h3><time datetime="2023-10-28">2023-10-28</time></h3>
 			<ul>
 				<li><strong>Accord de principe 2021-2025</strong> : J'ai ajouté les taux publiés dans notre accord de principe : 3,00 %, 4,75 % et 3,50 % pour 2021, 2022 et 2023 respectivement. Je n'ai pas ajouté les chiffres de 2024 car je pense que cet accord de principe sera soit rejetée, soit mise en œuvre d'ici là.</li>
@@ -120,25 +125,28 @@
 				<input type="button" id="calcBtn" value="Calculer">
 			</div>
 		</form>
-		<div id="resultsDiv" tabindex="-1">
+		<div id="resultsDiv" tabindex="-1" class="tables-responsive">
 			<h2>Résultats</h2>
 			<p>Tous les montants sont bruts. Vous devrez calculer vos propres impôts. (Et parfois, vos impôts sont assez bruts ! Ha Ha Ha!)</p>
-			<table id="resultsTable">
-				<caption>Périodes de paie</caption>
-				<thead>
-					<tr id="resultsTheadTR">
-						<th scope="col">Période</th>
-						<th scope="col">Ce que vous avez gagné</th>
-						<th scope="col">Ce que vous auriez dû gagner</th>
-						<th scope="col">Montant de l'ajustement</th>
-					</tr>
-				</thead>
-				<tbody id="resultsBody">
-				</tbody>
-				<tfoot id="resultsFoot">
-				</tfoot>
-			</table>
+			<div class="tables-responsive">
+				<table id="resultsTable">
+					<caption>Périodes de paie</caption>
+					<thead>
+						<tr id="resultsTheadTR">
+							<th scope="col">Période</th>
+							<th scope="col">Ce que vous avez gagné</th>
+							<th scope="col">Ce que vous auriez dû gagner</th>
+							<th scope="col">Montant de l'ajustement</th>
+						</tr>
+					</thead>
+					<tbody id="resultsBody">
+					</tbody>
+					<tfoot id="resultsFoot">
+					</tfoot>
+				</table>
+			</div>
 		</div>
+		<section id="payTablesSect"></section>
 		</main>
 		<footer>
 			<h2>Note</h2>
