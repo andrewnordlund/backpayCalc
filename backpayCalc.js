@@ -12,10 +12,11 @@
  *
  */
 
-var dbug = false;
-var version = "3.2.0";
-var lang = "en";
-var langFormat = "en-CA";
+var dbug = true;
+let data = {};
+let i18n = {};
+let lang = "en";
+var version = "3.0";
 var updateHash = true;
 var saveValues = null;
 var showExtraCols = true;
@@ -25,6 +26,10 @@ var mainForm = null;
 var startingSalary = 0;
 var resultsDiv = null;
 var startDateTxt = null;
+var classification = null;
+var chosenCA = null;
+var classSel = null;
+var CASel = null;
 var levelSel = null;
 var stepSelect = null;
 var numPromotions = null;
@@ -35,7 +40,7 @@ var addLwopBtn = null;
 var addLumpSumBtn = null;
 var resultStatus = null;
 var calcStartDate = null;
-var endDateTxt = "2021-04-15";
+var endDateTxt = "2024-04-15";
 var TABegin = new Date("2021", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var EndDate = new Date("2024", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var day = (1000 * 60 * 60 * 24);
@@ -52,20 +57,11 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2023", "11", "12");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var lastModified = new Date("2023", "09", "22");
 var lastModTime = null;
 var salaries = [];
 var daily = [];
 var hourly = [];
-var newRates = {};
-var i18n = {};
-var levels = 0;
-var classification = "IT";
-var CAName = "2021-2025";
-let payload = {};
-	
-const wiy = 52.17604859194648;
-
 // taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
 /*
 var salaries = [
@@ -93,17 +89,24 @@ var hourly = [
 */
 //var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 //var days = [31, 29, 31
-function init () {
-	if (dbug) console.log ("Initting");
+
+function init() {
 	lang = document.documentElement.lang;
-	if (lang == "fr") langFormat = "fr-CA";
+	console.log ("Got lang " + lang + ".");
+	mainForm = document.getElementById("mainForm");
+
+	createClassificationSelect ();
+
+} // End of init
+
+function oldinit () {
+	if (dbug) console.log ("Initting");
 	//saveValues = new Map();
 	var calcBtn = document.getElementById("calcBtn");
 	levelSel = document.getElementById("levelSelect");
 	//if (updateHash) levelSel.addEventListener("change", saveValue, false);
 	stepSelect = document.getElementById("stepSelect");
 	//if (updateHash) stepSelect.addEventListener("change", saveValue, false);
-	mainForm = document.getElementById("mainForm");
 	resultsDiv = document.getElementById("resultsDiv");
 	startDateTxt = document.getElementById("startDateTxt");
 	//if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
@@ -121,34 +124,18 @@ function init () {
 	resultStatus = document.getElementById("resultStatus");
 	lastModTime = document.getElementById("lastModTime");
 
-	let langSwitchA = null;
-	langSwitchA = document.getElementById("langSwitchA");
-	if (langSwitchA) {
-		if (dbug) console.log ("init::lang link thingy: lang: " + lang + "; href: " + window.location.href + ".");
-		langSwitchA.href = (lang == "en" ? window.location.href.replace("backpayCalc.html", "arrDeSalCalc.html") : window.location.href.replace("arrDeSalCalc.html", "backpayCalc.html"));
-	}
-	
-	// These next two lines, down the road, should allow for other bargaining groups and CAs to be added.
-	classification = getClassification();
-	CAName = getCAName();
-
-	getData(classification, CAName);
-
-	genRates ();
-	genTables ();
-
 	if (lastModTime) {
 		lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0,10));
-		lastModTime.innerHTML = lastModified.toLocaleString(lang + "-CA", { year: 'numeric', month: 'long', day: 'numeric' });	
+		lastModTime.innerHTML = lastModified.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });	
 	}
 	if (dbug || showExtraCols) {
 		var ths = resultsTheadTR.getElementsByTagName("th");
 		if (ths.length == 4) {
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["level"][lang]});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["step"][lang]});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["onlwop"][lang] + "?"});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["salary"][lang]});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["workingDays"][lang]});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":"Level"});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":"Step"});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":"There?"});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":"Salary"});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":"Working Days"});
 		}
 	}
 	/*for (var r in results) {
@@ -172,15 +159,68 @@ function init () {
 		if (dbug) console.error ("Couldn't get levelSelect.");
 	}
 	handleHash ();
-} // End of init
+} // End of oldinit
 
-function getClassification () {
-	return classification;
-} // End of getClassification
 
-function getCAName() {
-	return CAName;
-} // End of getCAName
+function createClassificationSelect () {
+	if (!document.getElementById("classSel")) {
+		let div = createHTMLElement ("div", {"parentNode":mainForm, "class":"fieldHolder"});
+		let lbl = createHTMLElement ("label", {"parentNode":div, "for":"classSel", "textNode":i18n["selectClass"][lang]});
+		classSel = createHTMLElement ("select", {"parentNode":div, "id":"classSel"});
+		let opt1 = createHTMLElement ("option", {"parentNode":classSel, "textNode":" -- " + i18n["selectClass"][lang] + " --"});
+
+		for (var classifications in data) {
+			let opt = createHTMLElement("option", {"parentNode":classSel, "textNode" : classifications});
+			// Add something for the bookmarks
+		}
+
+		// Add a change handler for this to add the next thing
+		classSel.addEventListener("change", function () {
+			classification = classSel.value;
+			createCASelect();
+		}, false);
+	}
+
+} // End of createClassificationSelect
+
+function createCASelect () {
+	if (!document.getElementById("CASel")) {
+		let div = createHTMLElement ("div", {"parentNode":mainForm, "class":"fieldHolder"});
+		let lbl = createHTMLElement ("label", {"parentNode":div, "for":"CASel", "textNode":i18n["selectCALbl"][lang]});
+		CASel = createHTMLElement ("select", {"parentNode":div, "id":"CASel"});
+
+		console.log ("Dealing with classification: " + classification + ".");
+		let opt = createHTMLElement("option", {"parentNode":CASel, "textNode" : i18n["selectCALbl"][lang]});
+		for (var CA in data[classification]) {
+			opt = createHTMLElement("option", {"parentNode":CASel, "textNode" : CA});
+			// Add something for the bookmarks
+		}
+
+		// Add a change handler for this to add the next thing
+		// What's next?
+		// Now we know what CA, we now need to determine a Start Date
+		CASel.addEventListener("change", function () {
+			chosenCA = CASel.value;
+			askStartDate();
+		}, false);
+	}
+} // End of createCASelect
+
+function askStartDate () {
+	if (!document.getElementById("askStartDateFS")) {
+		let askStartDateFS = createHTMLElement("fieldset", {"parentNode": mainForm, "id":"askStartDateFS"});
+		let askStartDateLgndTxt = i18n["startDateLgnd"][lang].replace("{{classification}}", classification).replace("{{startDate}}", data[classification][chosenCA]["TABegin"]);
+		let askStartDateLgnd = createHTMLElement("legend", {"parentNode": askStartDateFS, "textNode" : askStartDateLgndTxt});
+		let yesHolderDiv = createHTMLElement("div", {"parentNode" : askStartDateFS});
+		let noHolderDiv = createHTMLElement("div", {"parentNode" : askStartDateFS});
+		let yesRB = createHTMLElement("input", {"parentNode" : yesHolderDiv, "id" : "yesRB", "type" : "radio", "name" : "startDateRBs"});
+		let yesRBLbl = createHTMLElement("label", {"parentNode" : yesHolderDiv, "for" : "yesRB", "textNode" : i18n["yesTxt"][lang]});
+		let noRB = createHTMLElement("input", {"parentNode" : noHolderDiv, "id" : "noRB", "type" : "radio", "name" : "startDateRBs"});
+		let noRBLbl = createHTMLElement("label", {"parentNode" : noHolderDiv, "for" : "noRB", "textNode" : i18n["noTxt"][lang]});
+
+		yesRB.addEventListener("change", function () {}, false);
+	}
+} // End of askStartDate
 
 
 // Check the document location for saved things
@@ -212,7 +252,7 @@ function handleHash () {
 	}
 	if (params.has("stp")) {
 		let stp = params.get("stp").replace(/\D/g, "");
-		stepSelect.selectedIndex = (parseInt(stp) + parseInt(1));
+		stepSelect.selectedIndex = stp;
 		toCalculate = toCalculate | 4;
 		hasHash = true;
 	}
@@ -249,7 +289,6 @@ function handleHash () {
 	// Actings
 	looking = true;
 	let acl = 0;
-	//dbug = true;
 	while (looking) {
 		// afrom0=2020-01-05&ato0=2020-02-06&alvl0=3&afrom1=2020-04-04&ato1=2020-05-06&alvl1=3
 		if (params.has("afrom" + acl) || params.has("ato"+acl) || params.has("alvl"+acl)) {
@@ -262,7 +301,6 @@ function handleHash () {
 		}
 		acl++;
 	}
-	//dbug = false;
 
 	// LWoPs
 	looking = true;
@@ -378,27 +416,27 @@ function setURL () {
 
 
 /*
-   Populates the Salary Select basedon the IT-0x level selected
+   Populates the Salary Select basedon the CS-0x level selected
 */
 function populateSalary () {
 	removeChildren(stepSelect);
 	if (levelSel.value >0 && levelSel.value <= 5) {
-		createHTMLElement("option", {"parentNode":stepSelect, "value":"-1", "textNode":i18n["selectSalaryLbl"][lang]});
+		createHTMLElement("option", {"parentNode":stepSelect, "value":"-1", "textNode":"Select Salary"});
 		for (var i = 0; i < salaries[(levelSel.value-1)].length; i++) {
-			createHTMLElement("option", {"parentNode":stepSelect, "value":i, "textNode": i18n["step"][lang] + " " + (+i+1) + " - " + formatter.format(salaries[levelSel.value-1][i])});
+			createHTMLElement("option", {"parentNode":stepSelect, "value":i, "textNode":"$" + salaries[levelSel.value-1][i].toLocaleString()});
 		}
 	}
 	if (startDateTxt.value.replace(/[^-\d]/, "").match(/(\d\d\d\d)-(\d\d)-(\d\d)/)) selectSalary();
 } // End of populateSalary
 
-// Once an IT-level and startDate have been selected, select the most likely salary from the dropdown
+// Once a CS-level and startDate have been selected, select the most likely salary from the dropdown
 // Called from init when startDateTxt has changed, and from populateSalary if startDateTxt is a date (####-##-##)
 
 // I don't get it.  What's the difference btween selectSalary and getSalary?
 // They both start the same way: get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
 function selectSalary () {
 	//if (!(levelSelect.value > 0 && levelSelect.value <= 5))
-	if (parts && levelSel.value >0 && levelSel.value <= 5) {	// if you have a start date, and an IT-0x level
+	if (parts && levelSel.value >0 && levelSel.value <= 5) {	// if you have a start date, and a CS-0x level
 		let startDate = getStartDate();
 		startDateTxt.value = startDate.toISOString().substr(0,10)
 		let timeDiff = (TABegin - startDate) / day;
@@ -514,12 +552,8 @@ function startProcess () {
 } // End of startProcess
 
 function resetPeriods () {
-	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
-	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 	periods = [];
-	periods = Object.assign([], initPeriods);
-	// newRates = {};		Sound I reset newRates here?
-
+	periods = initPeriods;
 	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
 	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 } // End of resetPeriods
@@ -527,7 +561,7 @@ function resetPeriods () {
 // getSalary called during startProcess.  "guess" isn't really a good word for this, so I changed it to "get"
 
 // I don't get it.  What's the difference btween selectSalary and getSalary?
-// This ones starts: get the IT-0level, get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
+// This ones starts: get the CS-0level, get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
 function getSalary () {
 	var levelSelect = document.getElementById("levelSelect");
 	var lvl = levelSelect.value.replace(/\D/, "");
@@ -535,7 +569,7 @@ function getSalary () {
 	if (lvl < 1 || lvl > 5) {	// Should only happen if someone messes with the querystring
 		if (dbug) console.log ("getSalary::Error:  lvl is -1.");
 		var errDiv = createHTMLElement("div", {"parentNode":levelSelect.parentNode, "id":"levelSelectError", "class":"error"});
-		createHTMLElement("span", {"parentNode":errDiv, "nodeText":i18n["levelSelectError"][lang]});
+		createHTMLElement("span", {"parentNode":errDiv, "nodeText":"Please select a level"});
 		levelSelect.setAttribute("aria-describedby", "levelSelectError");
 		levelSelect.focus();
 		//return;
@@ -585,7 +619,7 @@ function getSalary () {
 
 		//add anniversarys
 		//dbug = true;
-		let startYear = Math.max(2021, startDate.getFullYear());
+		let startYear = Math.max(2018, startDate.getFullYear());
 		if (dbug) console.log ("getSalary::Going to set anniversary dates betwixt: " + startYear + " and " + EndDate.getFullYear() + ".");
 		for (var i = startYear; i <=EndDate.getFullYear(); i++) {
 			if (stp < salaries[level].length) {
@@ -687,7 +721,6 @@ function addPromotions () {
 } // End of addPromotions
 
 function getActings () {
-	//dbug = true;
 	// Add actings
 	var actingStints = document.querySelectorAll(".actingStints");
 	if (dbug) console.log ("getActings::Dealing with " + actingStints.length + " acting stints.");
@@ -695,116 +728,49 @@ function getActings () {
 	for (var i =0; i < actings; i++) {
 		var actingLvl = actingStints[i].getElementsByTagName("select")[0].value;
 		var dates = actingStints[i].getElementsByTagName("input");
-		var enteredActingFromDate = dates[0].value;
-		var effectiveActingStart = dates[0].value;
+		var actingFromDate = dates[0].value;
 		var actingToDate = dates[1].value;
-		if (dbug) console.log("getActings::Checking acting at  level " + actingLvl + " from " + enteredActingFromDate + " to " + actingToDate + ".");
-		// Check if the acting level actually exists, and if the dates are in the right format.
-		if (actingLvl >=0 && actingLvl <=5 && enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
-			if (dbug) console.log ("getActings::Passed the initial tests.  the Acting level exists and the dates are in the correct format.");
-			// Check if the from date is before the TA End Date, and the To Date is after the beginning of the TA period, and that to the Do date is after the From date.
-			if (enteredActingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= TABegin.toISOString().substr(0,10) && actingToDate > enteredActingFromDate) {
-				//var to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
-
-				var fromParts = enteredActingFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-				enteredActingFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
-
-				var toParts = actingToDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-				actingToDate = new Date(toParts[1], (toParts[2]-1), toParts[3]);
-
-				// Is the Acting for more than 1 year?  If so, add Acting Anniversarys
-				if (actingToDate >= +enteredActingFromDate + (1000*60*60*24)) {
-					if (dbug) console.log ("getActings::" + actingToDate.toISOString().substr(0,10) + " is at least 1 year past " + enteredActingFromDate.toISOString().substr(0,10) + ".  So, gotta add Acting Anniversaries.");
-					// From: the year after the acting start to the acting end.
-					for (var j = parseInt(fromParts[1])+1; j <= toParts[1]; j++) {
-						if (dbug) console.log ("getActings::j: " + j +".");
-						if ((j + "-" + fromParts[2] + "-" + fromParts[3] < actingToDate.toISOString().substr(0, 10)) && (j + "-" + fromParts[2] + "-" + fromParts[3] >= TABegin.toISOString().substr(0,10)) && (j + "-" + fromParts[2] + "-" + fromParts[3] <= EndDate.toISOString().substr(0,10))) {
-							addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1});
-						}
-					}
-				} else {
-					if (dbug) console.log ("getActings::Acting " + i + " is less than 1 year: from: " + enteredActingFromDate.toISOString().substr(0,10) + ", to: " + actingToDate.toISOString().substr(0,10) + ", and enteredActingFromDate + (1000*60*60*24): " + (+enteredActingFromDate + (1000*60*60*24))  +".");
-				}
-
-				// If the from-date starts before the TA begin, then re-set the from date to the start of the TA.
-				if (enteredActingFromDate < TABegin && actingToDate >= TABegin) {
-					// Problem is here, is that you need to account for an Acting Anniversary.  Actually, those were just added above.
-					effectiveActingStart = new Date(TABegin.getFullYear(), TABegin.getMonth(), TABegin.getDate());//.toISOString().substr(0,10);
-					if (dbug) console.log ("getActings::effectiveActingStart was before the TA, so gonna save " + enteredActingFromDate.toISOString().substr(0,10) + ", but gonna add period for " + effectiveActingStart.toISOString().substr(0,10) + ".");
-				} else {
-					effectiveActingStart = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
-
-				}
-
-				if (dbug) console.log ("getActings::Gonna add the period for the effectiveActingStart: " + effectiveActingStart.toISOString().substr(0,10) + ".");
-				// Now add the period for start acting
-				var from = addPeriod({"startDate":effectiveActingStart.toISOString().substr(0,10), "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
-
-				// Add a period to end the acting.
-				actingToDate.setDate(actingToDate.getDate() + parseInt(1));	// Add 1 because this will be the start date of post-acting
-				var to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
-
-				saveValues.push("afrom" + i + "=" + enteredActingFromDate.toISOString().substr(0, 10));
-				actingToDate.setDate(actingToDate.getDate() - parseInt(1));
-				saveValues.push("ato" + i + "=" + actingToDate.toISOString().substr(0, 10));
-				saveValues.push("alvl" + i + "=" + actingLvl);
-
-				
-
-				/*
-				// If the from-date starts before the TA begin, then re-set the from date to the start of the TA.
-				if (enteredActingFromDate < TABegin.toISOString().substr(0,10) && actingToDate >= TABegin.toISOString().substr(0,10)) {
-					// Problem is here, is that you need to account for an Acting Anniversary
-					enteredActingFromDate = TABegin.toISOString().substr(0,10);
-				}
+		if (dbug) console.log("getActings::Checking acting at " + actingLvl + " from " + actingFromDate + " to " + actingToDate + ".");
+		if (actingLvl >=0 && actingLvl <5 && actingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
+			if (dbug) console.log ("getActings::Passed the initial tests.");
+			if (actingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= TABegin.toISOString().substr(0,10) && actingToDate > actingFromDate) {
+				if (actingFromDate < TABegin.toISOString().substr(0,10) && actingToDate >= TABegin.toISOString().substr(0,10)) actingFromDate = TABegin.toISOString().substr(0,10);
 				if (dbug) console.log ("getActings::And the dates are in the right range.");
 				// add a period for starting
-				var from = addPeriod({"startDate":enteredActingFromDate, "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
+				var from = addPeriod({"startDate":actingFromDate, "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
 
 				// add a period for returning
 				var toParts = actingToDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				actingToDate = new Date(toParts[1], (toParts[2]-1), toParts[3]);
 				actingToDate.setDate(actingToDate.getDate() + parseInt(1));
 				var to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
-				var fromParts = enteredActingFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-				enteredActingFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
+				var fromParts = actingFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+				actingFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 				
-				// Check for Acting Anniversary
-				// From: the year after the acting start to the acting end.
-				for (var j = parseInt(fromParts[1])+1; j <= toParts[1]; j++) {
-					console.log ("getActings::j: " + j +".");
+				for (var j = parseInt(fromParts[1])+1; j < toParts[1]; j++) {
 					if (j + "-" + fromParts[2] + "-" + fromParts[3] < actingToDate.toISOString().substr(0, 10)) {
 						addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1});
 					}
 				}
-				saveValues.push("afrom" + i + "=" + enteredActingFromDate.toISOString().substr(0, 10));
-				actingToDate.setDate(actingToDate.getDate() - parseInt(1));
+				saveValues.push("afrom" + i + "=" + actingFromDate.toISOString().substr(0, 10));
 				saveValues.push("ato" + i + "=" + actingToDate.toISOString().substr(0, 10));
 				saveValues.push("alvl" + i + "=" + actingLvl);
-				*/
 			} else {
 				if (dbug) {
-					if (enteredActingFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingFrom is before EndDate");
+					if (actingFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingFrom is before EndDate");
 					if (actingToDate >= TABegin.toISOString().substr(0,10)) console.log ("getActings::actingTo is after startDate");
 					if (actingToDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingTo is before EndDate");
-					if (actingToDate > enteredActingFromDate) console.log ("getActings::actingTo is after actingFrom");
+					if (actingToDate > actingFromDate) console.log ("getActings::actingTo is after actingFrom");
 				}
 			}
 		} else {
-			if (actingLvl < 0 || actingLvl > 5) {
-				if (dbug) {
-					if (actingLvl >=0) console.log ("getActings::actingLvl >= 0");
-					if (actingLvl <5) console.log ("getActings::actingLvl < 5");
-				}
-				// Add Error Message
-
-			}
 			if (dbug) {
-				if (enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getActings::actingFrom is right format.");
+				if (actingLvl >=0) console.log ("getActings::actingLvl >= 0");
+				if (actingLvl <5) console.log ("getActings::actingLvl < 5");
+				if (actingFromDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getActings::actingFrom is right format.");
 				if (actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getActings::actingTo is right format.");
 			}
 		}
-		//dbug = false;
 	}
 } // End of getActings
 
@@ -838,7 +804,6 @@ function getLWoPs () {
 				}
 
 				saveValues.push("lfrom" + i + "=" + lwopFromDate); //.toISOString().substr(0, 10));
-				lwopToDate.setDate(lwopToDate.getDate() - parseInt(1));
 				saveValues.push("lto" + i + "=" + lwopToDate.toISOString().substr(0, 10));
 				//var fromParts = lwopFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				//lwopFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
@@ -945,13 +910,13 @@ function handlePromotions () {
 			// It's not there.
 			if (i < numOfPromotions) {
 				newPromotionDiv = createHTMLElement("div", {"parentNode":promotionsDiv, "class":"fieldHolder promotions", "id":"promo"+i});
-				var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionDiv, "class":"form-label", "for":"promoDate" + i, "nodeText":"Date of promotion: "});
-				var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionDiv, "class":"form-control", "type":"date", "id":"promoDate" + i, "aria-describedby":"dateFormat"});
+				var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionDiv, "for":"promoDate" + i, "nodeText":"Date of promotion: "});
+				var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionDiv, "type":"date", "id":"promoDate" + i, "aria-describedby":"dateFormat"});
 	
-				var newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionDiv, "class":"form-label", "for":"promoLevel" + i, "nodeText":"Level promotion: "});
-				var newPromoSel = createHTMLElement("select", {"parentNode":newPromotionDiv, class:"form-select", "id":"promoLevel" + i});
+				var newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionDiv, "for":"promoLevel" + i, "nodeText":"Level promotion: "});
+				var newPromoSel = createHTMLElement("select", {"parentNode":newPromotionDiv, "id":"promoLevel" + i});
 				for (var j = 0; j < 6; j++) {
-					var newPromoOpt = createHTMLElement("option", {"parentNode":newPromoSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "IT-0" + j)});
+					var newPromoOpt = createHTMLElement("option", {"parentNode":newPromoSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
 				}
 			}
 		}
@@ -988,18 +953,18 @@ function addPromotionHandler (e, o) {
 		}
 	}
 
-	let newPromotionFS = createHTMLElement("fieldset", {"parentNode":promotionsDiv, "class":"fieldHolder promotions border border-black p-2 m-2", "id" :"promo" + id});
-	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":i18n["promotion"][lang] + " " + (id+1)});
+	let newPromotionFS = createHTMLElement("fieldset", {"parentNode":promotionsDiv, "class":"fieldHolder promotions", "id" :"promo" + id});
+	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":"Promotion " + (id+1)});
 
-	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "class":"form-label", "for":"promoDate" + id, "nodeText": i18n["dateOfPromotion"][lang] + " "});
-	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "class":"form-control", "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat", "value":(pdate ? pdate : null)});
+	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promoDate" + id, "nodeText":"Date of promotion: "});
+	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat", "value":(pdate ? pdate : null)});
 	if (toFocus) newPromoDate.focus();
 	//newPromoDate.addEventListener("change", saveValue, false);
 
-	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "class":"form-label", "for":"promotionLevel" + id, "nodeText":i18n["promotedToLevel"][lang] + " "});
-	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, class:"form-select", "id":"promotionLevel" + id});
+	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promotionLevel" + id, "nodeText":"Promoted to level: "});
+	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"promotionLevel" + id});
 	for (var j = 0; j < 6; j++) {
-		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n[classification][lang] + "-0" + j)});
+		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
 		if (plvl) {
 			if (plvl == j) newPromoOpt.setAttribute("selected", "selected");
 		} else {
@@ -1011,8 +976,8 @@ function addPromotionHandler (e, o) {
 	let promoButtonsDiv = null;
 	if (id == 0) {
 		promoButtonsDiv = createHTMLElement("div", {"parentNode":newPromotionFS, "id":"promoButtonsDiv"});
-		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", class: "btn btn-warning", "value":i18n["remove"][lang], "id": "removePromotionBtn" + promotions});
-		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":i18n["addAnotherPromotion"][lang], "class":"promotionsBtn btn btn-success", "id": "addPromotionsBtnn" + id});
+		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":"Remove", "id": "removePromotionBtn" + promotions});
+		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":"Add another promotion", "class":"promotionsBtn", "id": "addPromotionsBtn" + id});
 		newAddPromotionBtn.addEventListener("click", addPromotionHandler, false);
 		newDelPromotionBtn.addEventListener("click", removePromotionDiv, false);
 	} else {
@@ -1023,7 +988,7 @@ function addPromotionHandler (e, o) {
 	promotions++;
 
 
-	resultStatus.innerHTML=i18n["newPromoAdded"][lang];
+	resultStatus.innerHTML="New Acting section added.";
 } // End of addPromotionHandler
 
 function addActingHandler () {
@@ -1036,8 +1001,7 @@ function addActingHandler () {
 		if (dbug) console.log ("addActingHandler::arguments: " + arguments.length);
 		if (args.hasOwnProperty("toFocus")) toFocus = args["toFocus"];
 		if (args.hasOwnProperty("from")) {
-			// Not doing isValidDate because that will check if it's in the range.  But starting actings are allowed to start before the TA start date.
-			afdate = (args["from"].match(/(\d\d\d\d)-(\d\d)-(\d\d)/) ? args["from"] : null);
+			afdate = (isValidDate(args["from"]) ? args["from"] : null);
 		}
 		if (args.hasOwnProperty("to")) {
 			atdate = (isValidDate(args["to"]) ? args["to"] : null);
@@ -1061,18 +1025,18 @@ function addActingHandler () {
 		}
 	}
 
-	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints border border-black p-2 m-2", "id":"acting"+id});
-	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode": i18n["actingStint"][lang] + " " + (id+1)});
+	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints", "id":"acting"+id});
+	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode":"Acting Stint " + (id+1)});
 
-	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "textNode":i18n["from"][lang], "for":"actingFrom" + id});
-	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "class":"form-control", "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(afdate ? afdate : null)});
-	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "textNode":i18n["to"][lang], "for":"actingTo"+id});
-	var newActingToDate = createHTMLElement("input", {"parentNode":newActingFS, "class":"form-control", "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat", "value":(atdate ? atdate : null)});
+	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"From", "for":"actingFrom" + id});
+	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(afdate ? afdate : null)});
+	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":"To", "for":"actingTo"+id});
+	var newActingToDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat", "value":(atdate ? atdate : null)});
 
-	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "for":"actingLevel" + id, "nodeText":i18n["actingLevel"][lang] + " "});
-	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, class:"form-select", "id":"actingLevel" + id});
+	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "for":"actingLevel" + id, "nodeText":"Acting Level: "});
+	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, "id":"actingLevel" + id});
 	for (var j = 0; j < 6; j++) {
-		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n[classification][lang] + "-0" + j)});
+		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "CS-0" + j)});
 		if (alvl) {
 			if (alvl == j) newPromoOpt.setAttribute("selected", "selected");
 		} else {
@@ -1086,8 +1050,8 @@ function addActingHandler () {
 	let actingButtonsDiv = null;
 	if (id == 0) {
 		actingButtonsDiv = createHTMLElement("div", {"parentNode":newActingFS, "id":"actingButtonsDiv"});
-		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeActingBtn" + actings});
-		var newAddActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":i18n["addAnotherActing"][lang], "class":"actingBtn btn btn-success", "id": "addActingsBtn" + id});
+		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":"Remove", "id": "removeActingBtn" + actings});
+		var newAddActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":"Add another Acting", "class":"actingBtn", "id": "addActingsBtn" + id});
 		newAddActingBtn.addEventListener("click", addActingHandler, false);
 		newDelActingBtn.addEventListener("click", removeActingDiv, false);
 	} else {
@@ -1098,7 +1062,7 @@ function addActingHandler () {
 	if (toFocus) newActingFromDate.focus();
 
 	actings++;
-	resultStatus.innerHTML=i18n["newActingAdded"][lang];
+	resultStatus.innerHTML="New Acting section added.";
 } // End of addActingHandler
 
 function addLWoPHandler () {
@@ -1130,19 +1094,19 @@ function addLWoPHandler () {
 		}
 	}
 
-	var newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints border border-black p-2 m-2", "id":"lwop"+id});
-	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":i18n["lwopStint"][lang] + " " + (id+1)});
+	var newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints", "id":"lwop"+id});
+	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":"LWoP Stint " + (id+1)});
 
-	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "class":"form-label", "textNode":i18n["from"][lang], "for":"lwopFrom" + id});
-	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "class":"form-control", "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(lfrom ? lfrom : null)});
-	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "class":"form-label", "textNode":i18n["to"][lang], "for":"lwopTo"+id});
-	var newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPFS, "class":"form-control", "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lto ? lto : null)});
+	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":"From", "for":"lwopFrom" + id});
+	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(lfrom ? lfrom : null)});
+	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":"To", "for":"lwopTo"+id});
+	var newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lto ? lto : null)});
 
 	let lwopButtonsDiv = null;
 	if (id == 0) {
 		lwopButtonsDiv = createHTMLElement("div", {"parentNode":newLWoPFS, "id":"lwopButtonsDiv"});
-		var newDelLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeLWoPBtn" + lwops});
-		var newAddLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":i18n["addAnotherLwop"][lang], "class":"lwopBtn btn btn-success", "id": "addLWoPsBtn" + id});
+		var newDelLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":"Remove", "id": "removeLWoPBtn" + lwops});
+		var newAddLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":"Add another LWoP", "class":"lwopBtn", "id": "addLWoPsBtn" + id});
 		newAddLWoPBtn.addEventListener("click", addLWoPHandler, false);
 		newDelLWoPBtn.addEventListener("click", removeLWoPDiv, false);
 	} else {
@@ -1153,7 +1117,7 @@ function addLWoPHandler () {
 	
 	lwops++;
 	if (toFocus) newLWoPFromDate.focus();
-	resultStatus.innerHTML=i18n["newLwopSection"][lang];
+	resultStatus.innerHTML="New leave without pay section added.";
 } // End of lWoPHandler
 
 function addOvertimeHandler () {
@@ -1188,23 +1152,23 @@ function addOvertimeHandler () {
 			looking = false;
 		}
 	}
-	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes border border-black p-2 m-2", "id":"ot" + id});
-	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":i18n["otOrStby"][lang] + " " + (id+1)});
+	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes", "id":"ot" + id});
+	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":"Overtime or Standby " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "class":"form-label", "textNode":i18n["dtOfOT"][lang], "for":"overtimeDate" + id});
-	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "class":"form-control", "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat", "value":(otdate ? otdate : null)});
+	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":"Date of Overtime:", "for":"overtimeDate" + id});
+	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat", "value":(otdate ? otdate : null)});
 
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":i18n["hrsOT"][lang], "for":"overtimeAmount" + id});
-	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "class":"form-control", "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
+	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Hours-worth of overtime", "for":"overtimeAmount" + id});
+	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
 
 	var newRateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":i18n["OTRate"][lang], "for":"overtimeRate" + id});
-	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, class:"form-select", "id":"overtimeRate"+id});
-	let rates = {"0" : i18n["selectOTRate"][lang], "0.125" : "1/8x - " + i18n["standby"][lang], "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
-	//createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":i18n["selectOTRate"][lang]});
+	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Overtime Rate:", "for":"overtimeRate" + id});
+	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, "id":"overtimeRate"+id});
+	let rates = {"0" : "Select Overtime Rate", "0.125" : "1/8x - Standby", "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
+	createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":"Select Overtime Rate"});
 	
 	for (let r in rates) {
 		let rt = createHTMLElement("option", {"parentNode":newOvertimeRate, "value":r, "nodeText": rates[r]});
@@ -1215,8 +1179,8 @@ function addOvertimeHandler () {
 	let otButtonsDiv = null;
 	if (id == 0) {
 		otButtonsDiv = createHTMLElement("div", {"parentNode":newOvertimeFS, "id":"otButtonsDiv"});
-		var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeOvertimeBtn" + overtimes});
-		var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":i18n["addAnotherOvertime"][lang], "class":"otBtn btn btn-success", "id": "addOvertimesBtn" + id});
+		var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":"Remove", "id": "removeOvertimeBtn" + overtimes});
+		var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":"Add another Overtime", "class":"otBtn", "id": "addOvertimesBtn" + id});
 		newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
 		newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
 	} else {
@@ -1226,7 +1190,7 @@ function addOvertimeHandler () {
 	if (toFocus) newOvertimeDate.focus();
 	overtimes++;
 
-	resultStatus.innerHTML= i18n["newOTSection"][lang];
+	resultStatus.innerHTML="New overtime section added.";
 } // End of addOvertimeHandler
 
 function addLumpSumHandler () {
@@ -1257,23 +1221,23 @@ function addLumpSumHandler () {
 			looking = false;
 		}
 	}
-	var newLumpSumFS = createHTMLElement("fieldset", {"parentNode":LumpSumDiv, "class":"fieldHolder lumpSums border border-black p-2 m-2", "id":"lumpSum" + id});
-	var newLumpSumLegend = createHTMLElement("legend", {"parentNode":newLumpSumFS, "textNode": i18n["Lump Sum"][lang] + " " + (id+1)});
+	var newLumpSumFS = createHTMLElement("fieldset", {"parentNode":LumpSumDiv, "class":"fieldHolder lumpSums", "id":"lumpSum" + id});
+	var newLumpSumLegend = createHTMLElement("legend", {"parentNode":newLumpSumFS, "textNode":"Lump Sum " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
-	var newLumpSumDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "class":"form-label", "textNode": i18n["dtPdOut"][lang], "for":"lumpSumDate" + id});
-	var newLumpSumDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "class":"form-control", "id":"lumpSumDate"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lsdate ? lsdate : null)});
+	var newLumpSumDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":"Date paid out:", "for":"lumpSumDate" + id});
+	var newLumpSumDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"lumpSumDate"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lsdate ? lsdate : null)});
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
-	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode": i18n["hrsLumpSum"][lang], "for":"lumpSumAmount" + id});
-	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "class":"form-control", "id":"lumpSumAmount"+id, "type":"text", "value" : (lshours ? lshours : "")});
+	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":"Hours-worth of payout", "for":"lumpSumAmount" + id});
+	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"lumpSumAmount"+id, "type":"text", "value" : (lshours ? lshours : "")});
 
 
 	let lumpSumButtonsDiv = null;
 	if (id == 0) {
 		lumpSumButtonsDiv = createHTMLElement("div", {"parentNode":newLumpSumFS, "id":"lumpSumButtonsDiv"});
-		var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeLumpSumBtn" + lumpSums});
-		var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":i18n["addAnotherLumpSum"][lang], "class":"lumpSumBtn btn btn-success", "id": "addLumpSumsBtn" + id});
+		var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":"Remove", "id": "removeLumpSumBtn" + lumpSums});
+		var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":"Add another LumpSum", "class":"lumpSumBtn", "id": "addLumpSumsBtn" + id});
 		newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 		newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 	} else {
@@ -1285,13 +1249,13 @@ function addLumpSumHandler () {
 
 
 	/*
-	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeLumpSumBtn" + id});
-	var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Add another Lump Sum period", "class":"lumpsumBtn btn btn-success", "id":"addLumpSumsBtn" + id});
+	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Remove", "id": "removeLumpSumBtn" + id});
+	var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Add another Lump Sum period", "class":"lumpsumBtn", "id":"addLumpSumsBtn" + id});
 	newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 	newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 	*/
 	lumpSums++;
-	resultStatus.innerHTML=i18n["newLumpSumSection"][lang];
+	resultStatus.innerHTML="New lump sum section added.";
 } // End of addLumpSum Handler
 
 function removePromotionDiv (e) {
@@ -1316,7 +1280,7 @@ function removePromotionDiv (e) {
 	rmPromoFS.parentNode.removeChild(rmPromoFS);
 	rmPromoFS = null;
 
-	resultStatus.innerHTML= i18n["promoSectionRemoved"][lang];
+	resultStatus.innerHTML="Promotion section removed.";
 } // End of removePromotionDiv
 
 function removeActingDiv (e) {
@@ -1342,7 +1306,7 @@ function removeActingDiv (e) {
 	rmActingFS = null;
 
 
-	resultStatus.innerHTML= i18n["actingSectionRemoved"][lang];
+	resultStatus.innerHTML="Acting section removed.";
 } // End of removeActingDiv
 function removeLWoPDiv (e) {
 	let lwopButtonsDiv = null;
@@ -1365,7 +1329,7 @@ function removeLWoPDiv (e) {
 
 	rmLwopFS.parentNode.removeChild(rmLwopFS);
 	rmLwopFS = null;
-	resultStatus.innerHTML= i18n["lwopSectionRemoved"][lang];
+	resultStatus.innerHTML="Leave Without Pay section removed.";
 } // End of removeLWoPDiv
 
 function removeOvertimeDiv (e) {
@@ -1390,7 +1354,7 @@ function removeOvertimeDiv (e) {
 	rmOTFS.parentNode.removeChild(rmOTFS);
 	rmOTFS = null;
 
-	resultStatus.innerHTML= i18n["OTSectionRemoved"][lang];
+	resultStatus.innerHTML="Overtime section removed.";
 } // End of removeOvertimeDiv
 
 function removeLumpSumDiv (e) {
@@ -1445,7 +1409,7 @@ function removeLumpSumDiv (e) {
 		}
 	}
 	*/
-	resultStatus.innerHTML= i18n["lumpSumSectionRemoved"][lang];
+	resultStatus.innerHTML="Lump sum section removed.";
 } // End of removeLumpSumDiv
 
 
@@ -1472,7 +1436,7 @@ function addPeriod (p) {
 	for (var i = 1; i < periods.length && looking; i++) {
 		//if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]Is p[startDate](" + p["startDate"] + ") before periods["+i+"][startDate](" + periods[i]["startDate"] + ")?");
 		if (p["startDate"] < periods[i]["startDate"]) {
-			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It is before the periods["+i+"][\"startDate\"]!");
+			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It is!");
 			if (p["reason"] == "Lump Sum") {
 				if (lumpSumPeriods.hasOwnProperty(periods["startDate"])) {
 					lumpSumPeriods[periods[i-1]["startDate"]] += p["hours"];
@@ -1508,17 +1472,14 @@ function addPeriod (p) {
 				looking = false;
 				//dbug = false;
 			} else {
-				//if (p["reason"] == "Anniversary Increase" && dbug) console.log ("addPeriod::Adding anniversary increase.");
-				//dbug = true;
-				if (dbug) console.log ("addPeriod:: Adding period for reason " + p["reason"] + ", from: " + p["startDate"] + ".");
+				if (p["reason"] == "Anniversary Increase" && dbug) console.log ("addPeriod::Adding anniversary increase.");
 				periods.splice(i, 0, p);
 				rv = i;
 				looking = false;
 				if (p["reason"]=="end") {
-					periods.splice(i+1);
+					periods.splice(i+1); 
 					rv = periods.length-1;
 				}
-				//dbug = false;
 			}
 		} else if (p["startDate"] == periods[i]["startDate"]) {
 			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It's the same date!");
@@ -1548,10 +1509,10 @@ function calculate() {
 		}
 		var actingStack = [];
 		var multiplier = 1;
-		//var newSalaries = JSON.parse(JSON.stringify(salaries));
-		//var newDaily = JSON.parse(JSON.stringify(daily));
-		//var newHourly = JSON.parse(JSON.stringify(hourly));
-		var preTotal = {"made":0, "shouldHaveMade":0, "backpay":0};	// What the heck are these?
+		var newSalaries = JSON.parse(JSON.stringify(salaries));
+		var newDaily = JSON.parse(JSON.stringify(daily));
+		var newHourly = JSON.parse(JSON.stringify(hourly));
+		var preTotal = {"made":0, "shouldHaveMade":0, "backpay":0};
 		var pTotal = {"made":0, "shouldHaveMade":0, "backpay":0};
 		var total = {"made":0, "shouldHaveMade":0, "backpay":0};
 		if (dbug) {
@@ -1560,7 +1521,6 @@ function calculate() {
 				console.log (periods[i]["reason"] + ": " + periods[i]["startDate"] + ".");
 			}
 		}
-		let theYear = "current";
 		for (var i = 0; i < periods.length-1; i++) {
 			if (dbug) console.log(i + ": " + periods[i]["startDate"] + ":");
 			if (dbug) console.log (i + ": going between " + periods[i]["startDate"] + " and " + periods[i+1]["startDate"] + " for the reason of " + periods[i]["reason"] + ".");
@@ -1571,7 +1531,7 @@ function calculate() {
 						output += "Not increasing step because this is the first anniversary, and your anniversary is on this date.";
 					} else {
 						output += "Increasing step from " + step + " to ";
-						step = Math.min(parseInt(step) + 1, salaries[level].length-1);	// Should this be salaries, or newRates[theYear]?
+						step = Math.min(parseInt(step) + 1, salaries[level].length-1);
 						output += step + ".";
 					}
 				} else {
@@ -1581,37 +1541,29 @@ function calculate() {
 				}
 				if (dbug) console.log (output);
 			} else if (periods[i]["reason"] == "Acting Anniversary") {
-				//dbug = true;
 				var output = "Increasing step from " + step + " to ";
 				step = Math.min(step + 1, salaries[level].length-1);
 				output += step + "."
 				if (dbug) console.log (output);
-				//dbug = false;
 			} else if (periods[i]["reason"] == "promotion") {
-				//var currentSal = salaries[level][step];
-				let currentSal = newRates["current"][level][step]["annual"];
-				let minNewSal = currentSal * 1.04;
+				var currentSal = salaries[level][step];
+				var minNewSal = currentSal * 1.04;
 				level = periods[i]["level"];
-				let looking = true;
-				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
-				for (let stp = 0; stp < newRates["current"][level].length && looking; stp++) {
-					//if (salaries[level][stp] > minNewSal) {
-					if (newRates["current"][level][stp]["annual"] > minNewSal) {
+				var looking = true;
+				for (var stp = 0; stp < salaries[level].length && looking; stp++) {
+					if (salaries[level][stp] > minNewSal) {
 						step = stp;
 						looking = false;
 					}
 				}
 			} else if (periods[i]["reason"] == "Acting Start") {
 				actingStack.push({"level":level, "step":step});
-				//var currentSal = salaries[level][step];
-				let currentSal = newRates["current"][level][step]["annual"];
-				let minNewSal = currentSal * 1.04;
+				var currentSal = salaries[level][step];
+				var minNewSal = currentSal * 1.04;
 				level = periods[i]["level"];
-				let looking = true;
-				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
-				for (let stp = 0; stp < newRates["current"][level].length && looking; stp++) {
-					//if (salaries[level][stp] > minNewSal) {
-					if (newRates["current"][level][stp]["annual"] > minNewSal) {
+				var looking = true;
+				for (var stp = 0; stp < salaries[level].length && looking; stp++) {
+					if (salaries[level][stp] > minNewSal) {
 						step = stp;
 						looking = false;
 					}
@@ -1621,26 +1573,12 @@ function calculate() {
 				var orig = actingStack.pop();
 				step = orig["step"];
 				level = orig["level"];
-			} else if (periods[i]["reason"] == "Contractual Increase") {
-				theYear = periods[i]["startDate"];
 			}
 			periods[i]["made"] = 0;
 			periods[i]["shouldHaveMade"] = 0;
 			periods[i]["backpay"] = 0;
-
-			/*
 			multiplier =(1 + (periods[i]["increase"]/100));
-			if (periods[i].hasOwnProperty("exceptions")) {
-				for (let k = 0; k < periods[i]["exceptions"].length; k++) {
-					if (periods[i]["exceptions"][k]["level"] == (level-1)) {
-						if (periods[i]["exceptions"][k].hasOwnProperty("increase")) {
-							multiplier  = ((periods[i]["exceptions"][k]["increase"]/100) +1);
-						}
-					}
-				}		
-			}
 			if (dbug) console.log ("Multiplier: " + multiplier + ".");
-			
 			if (periods[i]["increase"] > 0) {
 				// Calculate new salaries, dailys, and hourlys
 				for (var l = 0; l < newSalaries.length; l++) {
@@ -1654,7 +1592,6 @@ function calculate() {
 				}
 				if (dbug) console.log ("Your annual salary went from " + salaries[level][step] + " to " + newSalaries[level][step] + ".");
 			}
-			*/
 			var days = 0;
 			if (step >= 0) {
 				if (dbug) console.log ("current period: periods[" + i + "][startDate]: " + periods[i]["startDate"] + ".");
@@ -1670,11 +1607,8 @@ function calculate() {
 					//if (dbug) console.log ("Now calculating for day " + current.toString() + ".");
 					if (current.getDay() > 0 && current.getDay() < 6) {	// don't calculate weekends
 						days++;
-						//periods[i]["made"] = periods[i]["made"] + daily[level][step] * periods[i]["multiplier"];	// multiplier is if you were there then or not.
-						//periods[i]["shouldHaveMade"] = (periods[i]["shouldHaveMade"] + (newDaily[level][step] * periods[i]["multiplier"]));
-						
-						periods[i]["made"] = periods[i]["made"] + newRates["current"][level][step]["daily"] * periods[i]["multiplier"];	// multiplier is if you were there then or not.
-						periods[i]["shouldHaveMade"] = (periods[i]["shouldHaveMade"] + (newRates[theYear][level][step]["daily"] * periods[i]["multiplier"]));
+						periods[i]["made"] = periods[i]["made"] + daily[level][step] * periods[i]["multiplier"];	// multiplier is if you were there then or not.
+						periods[i]["shouldHaveMade"] = (periods[i]["shouldHaveMade"] + (newDaily[level][step] * periods[i]["multiplier"]));
 					}
 					current.setDate(current.getDate() + parseInt(1));
 		//			//if (dbug) console.log ("Now day is " + current.toString() + ".");
@@ -1688,17 +1622,16 @@ function calculate() {
 			let endDate = new Date(periods[i+1]["startDate"]);
 			endDate.setDate(endDate.getDate() -1);
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"] + " - " + endDate.toISOString().substr(0,10)});
-			var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + i18n[periods[i]["reason"]][lang] + ")", "class":"small"});
+			var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + periods[i]["reason"] + ")", "class":"small"});
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["made"])}); //.toFixed(2)});
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["shouldHaveMade"])}); //.toFixed(2)});
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["backpay"])}); //.toFixed(2)});
 
 			if (dbug || showExtraCols) {
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n[classification][lang] + "-0" + (level +1)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "CS-0" + (level +1)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (Math.max(1, (parseInt(step)+1)))});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["no"][lang] : i18n["yes"][lang])});
-				//var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (step >=0 ? (daily[level][step] * periods[i]["multiplier"]).toFixed(2) + " -> " + (newDaily[level][step] * periods[i]["multiplier"]).toFixed(2) : "0") + " / " + i18n["day"][lang]});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "innerHTML": (step >=0 ? formatter.format(newRates["current"][level][step]["daily"] * periods[i]["multiplier"]) + " <span class=\"invisibleStuff\">" + i18n["to"][lang] + "</span><span aria-hidden=\"true\">-></span> " + formatter.format(newRates[theYear][level][step]["daily"] * periods[i]["multiplier"]) : "0") + " / " + i18n["day"][lang]});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? "Yes" : "No")});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (step >=0 ? (daily[level][step] * periods[i]["multiplier"]).toFixed(2) + " -> " + (newDaily[level][step] * periods[i]["multiplier"]).toFixed(2) : "0") + " / day"});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": days});
 			}
 			
@@ -1707,27 +1640,23 @@ function calculate() {
 				for (var rate in overtimePeriods[periods[i]["startDate"]]) {
 					if (dbug) console.log ("rate: " + rate + ".");
 					if (dbug) console.log ("amount: " + overtimePeriods[periods[i]["startDate"]][rate] + ".");
-
-					//var made = overtimePeriods[periods[i]["startDate"]][rate] * hourly[level][step] * rate;
-					//var shouldHaveMade = overtimePeriods[periods[i]["startDate"]][rate] * newHourly[level][step] * rate;
-					let made = overtimePeriods[periods[i]["startDate"]][rate] * newRates["current"][level][step]["hourly"] * rate;
-					let shouldHaveMade = overtimePeriods[periods[i]["startDate"]][rate] * newRates[theYear][level][step]["hourly"] * rate;
+					var made = overtimePeriods[periods[i]["startDate"]][rate] * hourly[level][step] * rate;
+					var shouldHaveMade = overtimePeriods[periods[i]["startDate"]][rate] * newHourly[level][step] * rate;
 					var backpay = shouldHaveMade - made;
 					
 					var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
-					var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode": "(" + i18n["OTPayment"][lang] + " " + rate + ")", "class":"small"});
+					var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(Overtime Payment x " + rate + ")", "class":"small"});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
 
 					if (dbug || showExtraCols) {
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n[classification][lang] + "-0" + (level +1)});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "CS-0" + (level +1)});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["no"][lang] : i18n["yes"][lang])});
-						//var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + " * " + rate + "/hr"});
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "innerHTML": formatter.format(newRates["current"][level][step]["hourly"] * periods[i]["multiplier"]) + " <span class=\"invisibleStuff\">" + i18n["to"][lang] + "</span><span aria-hidden=\"true\">-></span> " + formatter.format(newRates[theYear][level][step]["hourly"] * periods[i]["multiplier"]) + " * " + rate + "/hr"});
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": overtimePeriods[periods[i]["startDate"]][rate] + " " + i18n["hours"][lang]});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? "Yes" : "No")});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + " * " + rate + "/hr"});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "Hourly " + overtimePeriods[periods[i]["startDate"]][rate]});
 					}
 	
 					periods[i]["made"] += made;
@@ -1740,27 +1669,24 @@ function calculate() {
 			//dbug = false;
 
 			if (lumpSumPeriods.hasOwnProperty(periods[i]["startDate"])) {
-				//var made = lumpSumPeriods[periods[i]["startDate"]] * hourly[level][step];
-				//var shouldHaveMade = lumpSumPeriods[periods[i]["startDate"]] * newHourly[level][step];
-				let made = lumpSumPeriods[periods[i]["startDate"]] * newRates["current"][level][step]["hourly"];
-				let shouldHaveMade = lumpSumPeriods[periods[i]["startDate"]] * newRates[theYear][level][step]["hourly"];
+				var made = lumpSumPeriods[periods[i]["startDate"]] * hourly[level][step];
+				var shouldHaveMade = lumpSumPeriods[periods[i]["startDate"]] * newHourly[level][step];
 				var backpay = shouldHaveMade - made;
 				
 				var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
-				var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + i18n["lumpSumPayment"][lang] + ")", "class":"small"});
+				var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(Lump Sum Payment)", "class":"small"});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
 
 				
 				if (dbug || showExtraCols) {
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n[classification][lang] + "-0" + (level +1)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "CS-0" + (level +1)});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["no"][lang] : i18n["yes"][lang])});
-					//var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + "/hr"});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(newRates[theYear][level][step]["hourly"] * periods[i]["multiplier"]) + "/hr"});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n["hourly"][lang] + lumpSumPeriods[periods[i]["startDate"]]});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? "Yes" : "No")});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + "/hr"});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": "Hourly " + lumpSumPeriods[periods[i]["startDate"]]});
 				}
 
 				periods[i]["made"] += made;
@@ -1803,12 +1729,12 @@ function calculate() {
 			total["backpay"] += preTotal["backpay"] + pTotal["backpay"];
 			*/
 			var totalTR = createHTMLElement("tr", {"parentNode":resultsFoot});
-			var totalTH = createHTMLElement("th", {"parentNode":totalTR, "scope":"row", "nodeText":i18n["total"][lang]});
+			var totalTH = createHTMLElement("th", {"parentNode":totalTR, "scope":"row", "nodeText":"Total"});
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["made"])});
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["shouldHaveMade"])});
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["backpay"])});
 		}
-		resultStatus.innerHTML = i18n["resultsShownBelow"][lang]; 
+		resultStatus.innerHTML = "Results shown below.";
 	//} else {
 		//if (dbug) console.log ("Not the top of your level.  This should be difficult.");
 		
@@ -1835,15 +1761,12 @@ function isValidDate (d) {
 function addStartDateErrorMessage () {
 	if (dbug) console.log ("Error:  st is " + startDateTxt.value + ".");
 	var errDiv = createHTMLElement("div", {"parentNode":startDateTxt.parentNode, "id":"startDateError", "class":"error"});
-	createHTMLElement("p", {"parentNode":errDiv, "nodeText": i18n["startDateErrorMsg"][lang]});
+	createHTMLElement("p", {"parentNode":errDiv, "nodeText":"Please enter the date at which you started at the level you were at on December 22, 2018. If you weren't a CS at that time, enter the date you started as a CS.  All dates must be in the format of YYYY-MM-DD."});
 	levelSel.setAttribute("aria-describedby", "startDateError");
 	return;
 }
-	
-lang = document.documentElement.lang;
-if (lang == "fr") langFormat = "fr-CA";
 
-var formatter = new Intl.NumberFormat(langFormat, {
+var formatter = new Intl.NumberFormat('en-CA', {
   style: 'currency',
   currency: 'CAD',
 
@@ -1886,9 +1809,6 @@ function createHTMLElement (type, attribs) {
 				if (dbug) console.log("As something else...");
 				newEl.appendChild(document.createTextNode(attribs[k].toString()));
 			}
-		} else if (k == "innerHTML") {
-			if (dbug) console.log ("Dealing with innerHTML " + attribs[k] + ".");
-			newEl.innerHTML = attribs[k];
 		} else {
 			newEl.setAttribute(k, attribs[k]);
 		}
@@ -1902,247 +1822,53 @@ function removeChildren (el) {
 	}
 }
 
-function getWeekly (an) {
-	return (an/wiy);
-} // End of getWeekly
-
-function getDaily (an) {
-	return ((an/wiy)/5);
-} // End of getDaily
-
-function getHourly (an) {
-	return (((an/wiy)/5)/7.5);
-} // End of getHourly
-
-function genRates () {
-	//console.log ("in genRates.");
-
-	newRates["current"] = [];
-	for (let it = 0; it < levels; it++) {	// global variable levels
-		let lvl = [];
-		let newStps = []; //
-		for (let stp = 0; stp < salaries[it].length; stp++) {	// steps
-			let newStp = {"annual" : salaries[it][stp],
-				"weekly" : getWeekly(salaries[it][stp]),
-				"daily" : getDaily(salaries[it][stp]),
-				"hourly" : getHourly(salaries[it][stp])
-			};
-			//newStps["annual"].push(newStp);
-			//console.log ("Pushing " + newStp + " onto newStps[annual].");
-			// Do the same for daily, and hourly
-			//newStps["weekly"].push(newStp/wiy);
-			//newStps["daily"].push((newStp/wiy)/5);
-			//newStps["hourly"].push(((newStp/wiy)/5)/7.5);
-			lvl.push(newStp);
-
+function isReady () {
+	if (JSON.stringify(i18n) != "{}" && JSON.stringify(data) != "{}") {
+		if (dbug) {
+			console.log ("Got both");
+			console.log ("Got json: "  + JSON.stringify(data) + ".");
+			console.log ("Got json: "  + JSON.stringify(i18n) + ".");
 		}
-		//console.log ("newStps has length: " + newStps["annual"].length + ".");
-		newRates["current"].push(lvl);
-
-	}
-
-	//console.log ("initPeriods has " + initPeriods.length + " elements.");
-	for (let i = 0; i < initPeriods.length; i++) {
-		//console.log ("reason: " + initPeriods[i]["reason"]);
-		if (initPeriods[i]["reason"] == "Contractual Increase") {
-			//console.log ("period: " + i + ":");
-			
-			let startDate = initPeriods[i]["startDate"];
-			let multiplier = ((initPeriods[i]["compound"]/100) +1);
-			//console.log ("Multiplier: " + multiplier);
-
-			if (!(newRates.hasOwnProperty(startDate))) newRates[startDate] = [];
-			
-			//console.log ("newRates[" + startDate + "] has length " + newRates[startDate].length + ".");
-			
-			//let newLevels = [];
-			//console.log ("levels:  " + levels + ".");
-			for (let it = 0; it < levels; it++) {	// levels
-				let lvl = [];
-				if (dbug) console.log ("it: " + it +".");
-				
-				if (initPeriods[i].hasOwnProperty("exceptions")) {
-					for (let k = 0; k < initPeriods[i]["exceptions"].length; k++) {
-						if (initPeriods[i]["exceptions"][k]["level"] == (it+1)) {
-							//console.log ("Dealing with exception....");
-							if (initPeriods[i]["exceptions"][k].hasOwnProperty("compound")) {
-								multiplier  = ((initPeriods[i]["exceptions"][k]["compound"]/100) +1);
-							}
-							//console.log ("multiplier is now: " + multiplier + ".");
-						}
-					}
-				}
-				
-				//let newStps = {"annual" : [], "weekly" : [], "daily" : [], "hourly" : []};
-				let newStps = [];
-				for (let stp = 0; stp < salaries[it].length; stp++) {	// steps
-					let newSal = salaries[it][stp] * multiplier;
-
-					let newStp = {"annual" : newSal,
-						"weekly" : getWeekly(newSal),
-						"daily" : getDaily(newSal),
-						"hourly" : getHourly(newSal)
-					}
-					//newStps["annual"].push(newStp);
-					//console.log ("Pushing " + newStp + " onto newStps[annual].");
-					// Do the same for weekly, daily, and hourly
-					//newStps["weekly"].push(newStp/wiy);
-					//newStps["daily"].push((newStp/wiy)/5);
-					//newStps["hourly"].push(((newStp/wiy)/5)/7.5);
-					lvl.push(newStp);
-				}
-				//console.log ("newStps has length: " + newStps["annual"].length + ".");
-				newRates[startDate].push(lvl);
-				//console.log ("newRates has length: " + newRates[startDate].length + ".");
-			}
-			//newRates[startDate].push(newLevels);
-			//console.log ("Should have a newRates[" + startDate + "] now: " + newRates[startDate].length + ".");
-		}
-	}
-} // End of genRates
-
-function genTables() {
-	let payTablesSect = null;
-	payTablesSect = document.getElementById("payTablesSect");
-	if (!payTablesSect) {
-		return;
+		init();
 	} else {
-		//console.log ("Did get payTablesSect.");
-	}
-	
-	//console.log ("Got payTablesSect and will now try to create an H3 with text " + i18n["paySectHeading"][lang] + ".");
-	let payTableH = createHTMLElement("h2", {"parentNode":payTablesSect, "textNode":i18n["paySectHeading"][lang]});
-	let timeps = ["annual", "weekly", "daily", "hourly"];
-
-	/*
-	// Create Filters
-	let payTablesFiltersDetails = createHTMLElement("details", {"parentNode":payTablesSect});
-	let payTablesFiltersSummary = createHTMLElement("summary", {"parentNode":payTablesFiltersDetails, "textNode":i18n["payTablesFilterLegend"][lang]});
-	let payTablesFiltersFS = createHTMLElement ("fieldset", {"parentNode":payTablesFiltersDetails, "id" : "payTablesFS"});
-	let payTableFiltersLengend = createHTMLElement ("legend", {"parentNode":payTablesFiltersFS, "textNode": i18n["show"][lang]});
-
-	for (let i = 0; i<timeps.length; i++) {
-		let newDiv = createHTMLElement("div", {"parentNode" : payTablesFiltersFS, "class" : "checkboxHolderDiv"});
-		let checkbox = createHTMLElement("input", {"parentNode" : newDiv, "type":"checkbox", "id" : timeps[i] + "Chk", "checked":"checked"});
-		let lbl = createHTMLElement("label", { "parentNode":newDiv, "for": timeps[i] + "Chk", "textNode" : i18n[timeps[i]][lang]});
-	}
-	*/
-	//console.log ("levels:  " + levels + ".");
-	let sects = [];
-	for (let i = 0; i<levels; i++) {
-		let dl = "-0" + (i+1);
-		//let newDiv = createHTMLElement("div", {"parentNode" : payTablesFiltersFS, "class" : "checkboxHolderDiv"});
-		//let checkbox = createHTMLElement("input", {"parentNode" : newDiv, "type":"checkbox", "id" : "level" + i + "Chk", "checked":"checked"});
-		//let lbl = createHTMLElement("label", { "parentNode":newDiv, "for": timeps[i] + "Chk", "textNode" : i18n[classification][lang] + dl});
-
-		let newSect = createHTMLElement("details", {"parentNode" : payTablesSect, "id" : "payrateSect " + i});
-		let newSum = createHTMLElement("summary", {"parentNode": newSect});
-		let newSectH = createHTMLElement("h3", {"parentNode":newSum, "textNode" : i18n[classification][lang] + dl});
-
-		// You need a table for each year)
-		//console.log ("Periods: " + initPeriods.length + ".");
-
-		let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
-
-		let newTable = createHTMLElement("table", {"parentNode"  : respDiv, "class":"table caption-top"});
-		let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : i18n["current"][lang]});
-
-		let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
-		let newTR = createHTMLElement("tr", {"parentNode" : newTHead});
-		let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode":""});
-
-		for (let stp = 0; stp < newRates["current"][i].length; stp++) {
-			let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : i18n["step"][lang] + "  " + (stp+1), "scope":"col"});
+		if (JSON.stringify(i18n) == "{}") {
+			console.log ("Didn't get i18n, so must have gotten data.");
 		}
-
-		let newTBody = createHTMLElement("tbody", {"parentNode" : newTable});
-		for (let t = 0; t<timeps.length; t++) {
-			let newTR = createHTMLElement("tr", {"parentNode" : newTBody});
-			let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode": i18n[timeps[t]][lang], "scope":"row"});
-			for (let stp = 0; stp < newRates["current"][i].length; stp++) {
-				let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : formatter.format(newRates["current"][i][stp][timeps[t]])});
-			}
+		if (JSON.stringify(data) === "{}") {
+			console.log ("Didn't get data, so must have gotten i18n.");
 		}
-
-
-		//for (let j = 0; j < initPeriods.length; j++) {
-		//console.log ("newRates.length has " + newRates.length + ".");
-		//for (let j = 1; j < newRates.length; j++) {
-		for (let j in newRates) {
-			//console.log ("j: " + j);
-			if (j == "current") continue;
-			//if (initPeriods[j]["reason"] == "Contractual Increase") {
-
-				let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
-				let newTable = createHTMLElement("table", {"parentNode" : respDiv, "class":"table caption-top"});
-				let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : j});
-
-				let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
-				let newTR = createHTMLElement("tr", {"parentNode" : newTHead});
-				let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode":""});
-
-				//console.log ("initPeriods[j]: " + initPeriods[j]["startDate"] +".");
-				for (let stp = 0; stp < newRates[j][i].length; stp++) {
-					let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : i18n["step"][lang] + "  " + (stp+1), "scope":"col"});
-				}
-
-				let newTBody = createHTMLElement("tbody", {"parentNode" : newTable});
-				for (let t = 0; t<timeps.length; t++) {
-					let newTR = createHTMLElement("tr", {"parentNode" : newTBody});
-					let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode": i18n[timeps[t]][lang], "scope":"row"});
-					for (let stp = 0; stp < newRates[j][i].length; stp++) {
-						let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : formatter.format(newRates[j][i][stp][timeps[t]])});
-					}
-				}
-
-		//}
-		}
+		
 	}
+} // End of isReader
 
-	
-
-} // End of genTables
-
-
-function getData(classif, caname) {
-
-	if (dbug) console.log ("getData::Getting salaries from classification " + classif + " from CA/TA " + caname + ".");
-	salaries = payload[classif][caname]["salaries"]["annual"];
-	levels = salaries.length;
-	//daily = json[classification][CAName]["salaries"]["daily"];
-	//hourly = json[classification][CAName]["salaries"]["hourly"];
-	initPeriods = payload[classification][CAName]["periods"];
-
-} // End of getData
-
-async function getDataFile () {
+async function getData () {
 	let response = await fetch("raiseInfo.json");
-	let success = 0;
 	if (response.ok) { // if HTTP-status is 200-299
 		// get the response body (the method explained below)
-		payload = await response.json();
-		if (dbug) console.log ("Got json: "  + JSON.stringify(payload) + ".");
-		
-		
-		success++;
+		data = await response.json();
+		if (dbug) console.log ("Got json: "  + JSON.stringify(data) + ".");
+		//salaries = json["IT"]["2018-2021"]["salaries"]["annual"];
+		//daily = json["IT"]["2018-2021"]["salaries"]["daily"];
+		//hourly = json["IT"]["2018-2021"]["salaries"]["hourly"];
+		//initPeriods = json["IT"]["2018-2021"]["periods"];
+		console.log ("getData::calling isReady");
+		//isReady();
 	} else {
 		console.error ("HTTP-Error: " + response.status);
 	}
-
 	response = await fetch("i18n.json");
 	if (response.ok) { // if HTTP-status is 200-299
 		i18n = await response.json();
 		if (dbug) console.log ("Got json: "  + JSON.stringify(i18n) + ".");
-		success++;
+		console.log ("getI18n::calling isReady");
+		//isReady();
 	} else {
 		console.error ("HTTP-Error: " + response.status);
 	}
-	if (success==2) {
-		if (dbug) console.log ("getDataFile::calling init.");
-		init();
-	}
-} // End of getDataFile
+	if (dbug) console.log ("getData::calling init.");
+	init();
+} // End of getData
 
 if (dbug) console.log ("Finished loading backpayCalc.js.");
-document.addEventListener('DOMContentLoaded', getDataFile, false);
+document.addEventListener('DOMContentLoaded', getData, false);
 
