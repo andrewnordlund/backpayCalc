@@ -52,7 +52,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2023", "10", "10");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var lastModified = new Date("2023", "11", "12");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lastModTime = null;
 var salaries = [];
 var daily = [];
@@ -945,11 +945,11 @@ function handlePromotions () {
 			// It's not there.
 			if (i < numOfPromotions) {
 				newPromotionDiv = createHTMLElement("div", {"parentNode":promotionsDiv, "class":"fieldHolder promotions", "id":"promo"+i});
-				var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionDiv, "for":"promoDate" + i, "nodeText":"Date of promotion: "});
-				var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionDiv, "type":"date", "id":"promoDate" + i, "aria-describedby":"dateFormat"});
+				var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionDiv, "class":"form-label", "for":"promoDate" + i, "nodeText":"Date of promotion: "});
+				var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionDiv, "class":"form-control", "type":"date", "id":"promoDate" + i, "aria-describedby":"dateFormat"});
 	
-				var newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionDiv, "for":"promoLevel" + i, "nodeText":"Level promotion: "});
-				var newPromoSel = createHTMLElement("select", {"parentNode":newPromotionDiv, "id":"promoLevel" + i});
+				var newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionDiv, "class":"form-label", "for":"promoLevel" + i, "nodeText":"Level promotion: "});
+				var newPromoSel = createHTMLElement("select", {"parentNode":newPromotionDiv, class:"form-select", "id":"promoLevel" + i});
 				for (var j = 0; j < 6; j++) {
 					var newPromoOpt = createHTMLElement("option", {"parentNode":newPromoSel, "value": j, "nodeText":(j == 0 ? "Select Level" : "IT-0" + j)});
 				}
@@ -988,16 +988,16 @@ function addPromotionHandler (e, o) {
 		}
 	}
 
-	let newPromotionFS = createHTMLElement("fieldset", {"parentNode":promotionsDiv, "class":"fieldHolder promotions", "id" :"promo" + id});
+	let newPromotionFS = createHTMLElement("fieldset", {"parentNode":promotionsDiv, "class":"fieldHolder promotions border border-black p-2 m-2", "id" :"promo" + id});
 	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":i18n["promotion"][lang] + " " + (id+1)});
 
-	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promoDate" + id, "nodeText": i18n["dateOfPromotion"][lang] + " "});
-	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat", "value":(pdate ? pdate : null)});
+	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "class":"form-label", "for":"promoDate" + id, "nodeText": i18n["dateOfPromotion"][lang] + " "});
+	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "class":"form-control", "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat", "value":(pdate ? pdate : null)});
 	if (toFocus) newPromoDate.focus();
 	//newPromoDate.addEventListener("change", saveValue, false);
 
-	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "for":"promotionLevel" + id, "nodeText":i18n["promotedToLevel"][lang] + " "});
-	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, "id":"promotionLevel" + id});
+	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "class":"form-label", "for":"promotionLevel" + id, "nodeText":i18n["promotedToLevel"][lang] + " "});
+	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, class:"form-select", "id":"promotionLevel" + id});
 	for (var j = 0; j < 6; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n[classification][lang] + "-0" + j)});
 		if (plvl) {
@@ -1011,8 +1011,8 @@ function addPromotionHandler (e, o) {
 	let promoButtonsDiv = null;
 	if (id == 0) {
 		promoButtonsDiv = createHTMLElement("div", {"parentNode":newPromotionFS, "id":"promoButtonsDiv"});
-		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removePromotionBtn" + promotions});
-		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":i18n["addAnotherPromotion"][lang], "class":"promotionsBtn", "id": "addPromotionsBtn" + id});
+		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", class: "btn btn-warning", "value":i18n["remove"][lang], "id": "removePromotionBtn" + promotions});
+		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":i18n["addAnotherPromotion"][lang], "class":"promotionsBtn btn btn-success", "id": "addPromotionsBtnn" + id});
 		newAddPromotionBtn.addEventListener("click", addPromotionHandler, false);
 		newDelPromotionBtn.addEventListener("click", removePromotionDiv, false);
 	} else {
@@ -1061,16 +1061,16 @@ function addActingHandler () {
 		}
 	}
 
-	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints", "id":"acting"+id});
+	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints border border-black p-2 m-2", "id":"acting"+id});
 	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode": i18n["actingStint"][lang] + " " + (id+1)});
 
-	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":i18n["from"][lang], "for":"actingFrom" + id});
-	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(afdate ? afdate : null)});
-	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "textNode":i18n["to"][lang], "for":"actingTo"+id});
-	var newActingToDate = createHTMLElement("input", {"parentNode":newActingFS, "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat", "value":(atdate ? atdate : null)});
+	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "textNode":i18n["from"][lang], "for":"actingFrom" + id});
+	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "class":"form-control", "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(afdate ? afdate : null)});
+	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "textNode":i18n["to"][lang], "for":"actingTo"+id});
+	var newActingToDate = createHTMLElement("input", {"parentNode":newActingFS, "class":"form-control", "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat", "value":(atdate ? atdate : null)});
 
-	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "for":"actingLevel" + id, "nodeText":i18n["actingLevel"][lang] + " "});
-	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, "id":"actingLevel" + id});
+	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "for":"actingLevel" + id, "nodeText":i18n["actingLevel"][lang] + " "});
+	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, class:"form-select", "id":"actingLevel" + id});
 	for (var j = 0; j < 6; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n[classification][lang] + "-0" + j)});
 		if (alvl) {
@@ -1086,8 +1086,8 @@ function addActingHandler () {
 	let actingButtonsDiv = null;
 	if (id == 0) {
 		actingButtonsDiv = createHTMLElement("div", {"parentNode":newActingFS, "id":"actingButtonsDiv"});
-		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removeActingBtn" + actings});
-		var newAddActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":i18n["addAnotherActing"][lang], "class":"actingBtn", "id": "addActingsBtn" + id});
+		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeActingBtn" + actings});
+		var newAddActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":i18n["addAnotherActing"][lang], "class":"actingBtn btn btn-success", "id": "addActingsBtn" + id});
 		newAddActingBtn.addEventListener("click", addActingHandler, false);
 		newDelActingBtn.addEventListener("click", removeActingDiv, false);
 	} else {
@@ -1130,19 +1130,19 @@ function addLWoPHandler () {
 		}
 	}
 
-	var newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints", "id":"lwop"+id});
+	var newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints border border-black p-2 m-2", "id":"lwop"+id});
 	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":i18n["lwopStint"][lang] + " " + (id+1)});
 
-	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":i18n["from"][lang], "for":"lwopFrom" + id});
-	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(lfrom ? lfrom : null)});
-	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "textNode":i18n["to"][lang], "for":"lwopTo"+id});
-	var newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPFS, "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lto ? lto : null)});
+	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "class":"form-label", "textNode":i18n["from"][lang], "for":"lwopFrom" + id});
+	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "class":"form-control", "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(lfrom ? lfrom : null)});
+	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "class":"form-label", "textNode":i18n["to"][lang], "for":"lwopTo"+id});
+	var newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPFS, "class":"form-control", "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lto ? lto : null)});
 
 	let lwopButtonsDiv = null;
 	if (id == 0) {
 		lwopButtonsDiv = createHTMLElement("div", {"parentNode":newLWoPFS, "id":"lwopButtonsDiv"});
-		var newDelLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removeLWoPBtn" + lwops});
-		var newAddLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":i18n["addAnotherLwop"][lang], "class":"lwopBtn", "id": "addLWoPsBtn" + id});
+		var newDelLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeLWoPBtn" + lwops});
+		var newAddLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":i18n["addAnotherLwop"][lang], "class":"lwopBtn btn btn-success", "id": "addLWoPsBtn" + id});
 		newAddLWoPBtn.addEventListener("click", addLWoPHandler, false);
 		newDelLWoPBtn.addEventListener("click", removeLWoPDiv, false);
 	} else {
@@ -1188,21 +1188,21 @@ function addOvertimeHandler () {
 			looking = false;
 		}
 	}
-	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes", "id":"ot" + id});
+	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes border border-black p-2 m-2", "id":"ot" + id});
 	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":i18n["otOrStby"][lang] + " " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode":i18n["dtOfOT"][lang], "for":"overtimeDate" + id});
-	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat", "value":(otdate ? otdate : null)});
+	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "class":"form-label", "textNode":i18n["dtOfOT"][lang], "for":"overtimeDate" + id});
+	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "class":"form-control", "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat", "value":(otdate ? otdate : null)});
 
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":i18n["hrsOT"][lang], "for":"overtimeAmount" + id});
-	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
+	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":i18n["hrsOT"][lang], "for":"overtimeAmount" + id});
+	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "class":"form-control", "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
 
 	var newRateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode":i18n["OTRate"][lang], "for":"overtimeRate" + id});
-	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, "id":"overtimeRate"+id});
+	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":i18n["OTRate"][lang], "for":"overtimeRate" + id});
+	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, class:"form-select", "id":"overtimeRate"+id});
 	let rates = {"0" : i18n["selectOTRate"][lang], "0.125" : "1/8x - " + i18n["standby"][lang], "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
 	//createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":i18n["selectOTRate"][lang]});
 	
@@ -1215,8 +1215,8 @@ function addOvertimeHandler () {
 	let otButtonsDiv = null;
 	if (id == 0) {
 		otButtonsDiv = createHTMLElement("div", {"parentNode":newOvertimeFS, "id":"otButtonsDiv"});
-		var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removeOvertimeBtn" + overtimes});
-		var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":i18n["addAnotherOvertime"][lang], "class":"otBtn", "id": "addOvertimesBtn" + id});
+		var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeOvertimeBtn" + overtimes});
+		var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":i18n["addAnotherOvertime"][lang], "class":"otBtn btn btn-success", "id": "addOvertimesBtn" + id});
 		newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
 		newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
 	} else {
@@ -1257,23 +1257,23 @@ function addLumpSumHandler () {
 			looking = false;
 		}
 	}
-	var newLumpSumFS = createHTMLElement("fieldset", {"parentNode":LumpSumDiv, "class":"fieldHolder lumpSums", "id":"lumpSum" + id});
+	var newLumpSumFS = createHTMLElement("fieldset", {"parentNode":LumpSumDiv, "class":"fieldHolder lumpSums border border-black p-2 m-2", "id":"lumpSum" + id});
 	var newLumpSumLegend = createHTMLElement("legend", {"parentNode":newLumpSumFS, "textNode": i18n["Lump Sum"][lang] + " " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
-	var newLumpSumDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "textNode": i18n["dtPdOut"][lang], "for":"lumpSumDate" + id});
-	var newLumpSumDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "id":"lumpSumDate"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lsdate ? lsdate : null)});
+	var newLumpSumDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "class":"form-label", "textNode": i18n["dtPdOut"][lang], "for":"lumpSumDate" + id});
+	var newLumpSumDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "class":"form-control", "id":"lumpSumDate"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lsdate ? lsdate : null)});
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
-	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "textNode": i18n["hrsLumpSum"][lang], "for":"lumpSumAmount" + id});
-	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "id":"lumpSumAmount"+id, "type":"text", "value" : (lshours ? lshours : "")});
+	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode": i18n["hrsLumpSum"][lang], "for":"lumpSumAmount" + id});
+	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "class":"form-control", "id":"lumpSumAmount"+id, "type":"text", "value" : (lshours ? lshours : "")});
 
 
 	let lumpSumButtonsDiv = null;
 	if (id == 0) {
 		lumpSumButtonsDiv = createHTMLElement("div", {"parentNode":newLumpSumFS, "id":"lumpSumButtonsDiv"});
-		var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":i18n["remove"][lang], "id": "removeLumpSumBtn" + lumpSums});
-		var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":i18n["addAnotherLumpSum"][lang], "class":"lumpSumBtn", "id": "addLumpSumsBtn" + id});
+		var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeLumpSumBtn" + lumpSums});
+		var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":i18n["addAnotherLumpSum"][lang], "class":"lumpSumBtn btn btn-success", "id": "addLumpSumsBtn" + id});
 		newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 		newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 	} else {
@@ -1285,8 +1285,8 @@ function addLumpSumHandler () {
 
 
 	/*
-	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":i18n["remove"][lang], "id": "removeLumpSumBtn" + id});
-	var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Add another Lump Sum period", "class":"lumpsumBtn", "id":"addLumpSumsBtn" + id});
+	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeLumpSumBtn" + id});
+	var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Add another Lump Sum period", "class":"lumpsumBtn btn btn-success", "id":"addLumpSumsBtn" + id});
 	newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 	newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 	*/
@@ -2044,7 +2044,7 @@ function genTables() {
 
 		let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
 
-		let newTable = createHTMLElement("table", {"parentNode"  : respDiv});
+		let newTable = createHTMLElement("table", {"parentNode"  : respDiv, "class":"table caption-top"});
 		let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : i18n["current"][lang]});
 
 		let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
@@ -2074,7 +2074,7 @@ function genTables() {
 			//if (initPeriods[j]["reason"] == "Contractual Increase") {
 
 				let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
-				let newTable = createHTMLElement("table", {"parentNode" : respDiv});
+				let newTable = createHTMLElement("table", {"parentNode" : respDiv, "class":"table caption-top"});
 				let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : j});
 
 				let newTHead = createHTMLElement("thead", {"parentNode" : newTable});

@@ -8,18 +8,22 @@
 		<title>Calculateur d’ajustement salarial rétroactif pour les conventions collectives du SCT</title>
 		<meta name="dc.title" content="Calculateur d’ajustement salarial rétroactif">
 		<meta name="dcterms.title" content="Calculateur d’ajustement salarial rétroactif">
+		
+		<!-- Bootstrap 5.3.2 Stylesheet -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
 		<link rel="Stylesheet" type="text/css" href="../backpayCalc.css" >
 	</head>
-	<body>
+	<body class="container">
 		<ul id="skipLinks">
 			<li><a href="#mainForm">Passe au contenu prinicpal</a></li>
-			<!-- <li><a href="#resultsDiv">Skip to Results</a></li> -->
+			<li><a href="#resultsDiv">Passe au Résultats</a></li>
 		</ul>
 		<header>
-		<div id="LangSwitcher">
-			<h2 class="invisibleStuff">Sélection de la langue</h2>
-			<a id="langSwitchA" href="backpayCalc.html" lang="en">English</a>
-		</div>
+			<div id="LangSwitcher">
+				<h2 class="invisibleStuff">Sélection de la langue</h2>
+				<a id="langSwitchA" href="backpayCalc.html" lang="en">English</a>
+			</div>
 
 			<h1>Calculateur d’ajustement salarial rétroactif pour les conventions collectives du SCT</h1>
 		</header>
@@ -66,8 +70,8 @@
 			<h2>Vos informations</h2>
 			<p><strong>Remarque :</strong> Toutes les dates doivent être dans le format <span id="dateFormat">AAAA-MM-JJ</span>.</p>
 			<div class="fieldHolder">
-				<label for="levelSelect">Sélectionnez votre niveau le 22 décembre 2021 (de votre poste d'attache)</label>
-				<select id="levelSelect">
+				<label class="form-label" for="levelSelect">Sélectionnez votre niveau le 22 décembre 2021 (de votre poste d'attache)</label>
+				<select class="form-select" id="levelSelect">
 					<option value="0">Sélectionnez votre niveau</option>
 					<option value="1">TI-01</option>
 					<option value="2">TI-02</option>
@@ -77,59 +81,59 @@
 				</select>
 			</div>
 			<div class="fieldHolder">
-				<label for="startDateTxt">Quand avez-vous commencé à ce niveau ?</label> 
+				<label class="form-label" for="startDateTxt">Quand avez-vous commencé à ce niveau ?</label> 
 				<p id="startDateDesc">Par exemple, si vous avez commencé en tant qu'IT-02 le 15 mars 2015, saisissez <time>2015-03-15</time>.</p>
-				<input type="date" id="startDateTxt" aria-describedby="dateFormat startDateDesc" value="">
+				<input class="form-control" type="date" id="startDateTxt" aria-describedby="dateFormat startDateDesc" value="">
 			</div>
 			<div class="fieldHolder">
-				<label for="stepSelect">Sélectionnez votre salaire le <time datetime="2021-12-22" id="calcStartDate">22 décembre 2021</time> (de votre poste d'attache)</label>
-				<select id="stepSelect">
+				<label  class="form-label"for="stepSelect">Sélectionnez votre salaire le <time datetime="2021-12-22" id="calcStartDate">22 décembre 2021</time> (de votre poste d'attache)</label>
+				<select class="form-select" id="stepSelect">
 				</select>
 			</div>
 			<div class="fieldHolder">
-				<label for="endDateTxt">Quel est le dernier jour où ce calcul devrait cesser ?</label> 
-				<input type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat lastDayBug" value="2024-03-17">
+				<label class="form-label" for="endDateTxt">Quel est le dernier jour où ce calcul devrait cesser ?</label> 
+				<input type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat" value="2024-03-17">
 				<span id="endDateFormat" class="helper">(soit la date à laquelle vous avez cessé d’être TI ou la date de mise en œuvre du contrat)</span>
 			</div>
-			<fieldset id="promotionsFS">
+			<fieldset class="border border-black p-2 m-2" id="promotionsFS">
 				<legend>Promotions</legend>
 				<p id="promoDesc">Avez-vous été promu (à un autre niveau TI) pendant cette période ? (Les promotions au niveau EX doivent être considérées comme un congé sans solde.)</p>
 				<div class="fieldHolder">
-					<button id="addPromotionBtn" aria-describedby="promoDesc" type="button">Ajouter une promotion</button>
+					<button id="addPromotionBtn" class="btn btn-success" aria-describedby="promoDesc" type="button">Ajouter une promotion</button>
 				</div>
 				<div id="promotionsDiv"></div>
 			</fieldset>
-			<fieldset id="actingFS">
+			<fieldset class="border border-black p-2 m-2" id="actingFS">
 				<legend>Intérimaire</legend>
-				<input type="button" id="addActingBtn" value="Ajoutez une période intérimaire">
+				<input type="button" id="addActingBtn" class="btn btn-success" value="Ajoutez une période intérimaire">
 				<div id="actingsDiv"></div>
 			</fieldset>
-			<fieldset id="LWoPFS">
+			<fieldset class="border border-black p-2 m-2" id="LWoPFS">
 				<legend>Congé non payé</legend>
-				<input type="button" id="addLwopBtn" value="Ajouter une période de congé non payé">
+				<input type="button" id="addLwopBtn" class="btn btn-success" value="Ajouter une période de congé non payé">
 				<div id="LWoPDiv"></div>
 			</fieldset>
-			<fieldset id="overtimeFS">
+			<fieldset class="border border-black p-2 m-2" id="overtimeFS">
 				<legend>Heures supplémentaires/disponibilité</legend>
 				<p id="overtimeExp">Vous n'avez pas besoin d'inclure chaque instance d'heures supplémentaires. Juste un total d'heures pour chaque taux (1,5 ou 2,0) par période. Exemple : si vous avez travaillé une heure supplémentaire chaque jour pendant une semaine pendant laquelle votre taux de rémunération n'a pas changé, saisissez n'importe quelle date au cours de cette semaine, puis saisissez 5 pour le nombre d'heures et 1,5x pour le taux.</p>
-				<input type="button" id="addOvertimeBtn" value="Ajouter les heures supplémentaires" aria-describedby="overtimeExp">
+				<input type="button" id="addOvertimeBtn" class="btn btn-success" value="Ajouter les heures supplémentaires" aria-describedby="overtimeExp">
 				<div id="overtimeDiv"></div>
 			</fieldset>
-			<fieldset id="lumpSumsFS">
+			<fieldset class="border border-black p-2 m-2" id="lumpSumsFS">
 				<legend>Paiements forfaitaires</legend>
 				<p id="lumpSumExp">Exemple : paiement de vacances non utilisé.</p>
-				<input type="button" id="addLumpSumBtn" value="Ajouter un paiement forfaitaire" aria-describedby="lumpSumExp">
+				<input type="button" id="addLumpSumBtn" class="btn btn-success" value="Ajouter un paiement forfaitaire" aria-describedby="lumpSumExp">
 				<div id="lumpSumDiv"></div>
 			</fieldset>
 			<div class="fieldHolder">
-				<input type="button" id="calcBtn" value="Calculer">
+				<input type="button" class="btn btn-primary" id="calcBtn" value="Calculer">
 			</div>
 		</form>
 		<div id="resultsDiv" tabindex="-1" class="tables-responsive">
 			<h2>Résultats</h2>
 			<p>Tous les montants sont bruts. Vous devrez calculer vos propres impôts. (Et parfois, vos impôts sont assez bruts ! Ha Ha Ha!)</p>
 			<div class="tables-responsive">
-				<table id="resultsTable">
+				<table id="resultsTable" class="table caption-top">
 					<caption>Périodes de paie</caption>
 					<thead>
 						<tr id="resultsTheadTR">
@@ -157,8 +161,11 @@
 		<div id="resultStatus" role="status" aria-live="polite" class="invisibleStuff"></div>
 		<dl>
 			<dt>Dernière modification :</dt>
-			<dd><time id="lastModTime" datetime="2021-04-05">2021-04-06</time</dd>
+			<dd><time id="lastModTime" datetime="2023-12-12">2023-12-12</time</dd>
 		</dl>
 		</footer>
+		<!-- Bootstrap 5.3.2 Javascript -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
 	</body>
 </html>
