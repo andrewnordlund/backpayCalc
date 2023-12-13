@@ -91,7 +91,7 @@
 			</div>
 			<div class="fieldHolder">
 				<label class="form-label" for="endDateTxt">When is the last day this should this stop calculating?</label> 
-				<input class="form-control" type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat lastDayBug" value="2024-03-17">
+				<input class="form-control" type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat" value="2024-03-17">
 				<span id="endDateFormat" class="helper">(ie: either the date you stopped being an IT, or when the contract is implemented.)</span>
 			</div>
 			<fieldset class="border border-black p-2 m-2" id="promotionsFS">
@@ -132,7 +132,7 @@
 			<h2>Results</h2>
 			<p>All amounts are gross.  You'll have to figure out your own taxes. (And sometimes your taxes are pretty gross!  Nyuk nyuk nyuk)</p>
 			<div class="tables-responsive">
-				<table id="resultsTable">
+				<table id="resultsTable" class="table caption-top">
 					<caption>Pay periods</caption>
 					<thead>
 						<tr id="resultsTheadTR">

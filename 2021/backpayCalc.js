@@ -2044,7 +2044,7 @@ function genTables() {
 
 		let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
 
-		let newTable = createHTMLElement("table", {"parentNode"  : respDiv});
+		let newTable = createHTMLElement("table", {"parentNode"  : respDiv, "class":"table caption-top"});
 		let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : i18n["current"][lang]});
 
 		let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
@@ -2074,7 +2074,7 @@ function genTables() {
 			//if (initPeriods[j]["reason"] == "Contractual Increase") {
 
 				let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
-				let newTable = createHTMLElement("table", {"parentNode" : respDiv});
+				let newTable = createHTMLElement("table", {"parentNode" : respDiv, "class":"table caption-top"});
 				let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : j});
 
 				let newTHead = createHTMLElement("thead", {"parentNode" : newTable});

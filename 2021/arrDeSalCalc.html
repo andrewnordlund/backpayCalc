@@ -92,7 +92,7 @@
 			</div>
 			<div class="fieldHolder">
 				<label class="form-label" for="endDateTxt">Quel est le dernier jour où ce calcul devrait cesser ?</label> 
-				<input type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat lastDayBug" value="2024-03-17">
+				<input type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat" value="2024-03-17">
 				<span id="endDateFormat" class="helper">(soit la date à laquelle vous avez cessé d’être TI ou la date de mise en œuvre du contrat)</span>
 			</div>
 			<fieldset class="border border-black p-2 m-2" id="promotionsFS">
@@ -133,7 +133,7 @@
 			<h2>Résultats</h2>
 			<p>Tous les montants sont bruts. Vous devrez calculer vos propres impôts. (Et parfois, vos impôts sont assez bruts ! Ha Ha Ha!)</p>
 			<div class="tables-responsive">
-				<table id="resultsTable">
+				<table id="resultsTable" class="table caption-top">
 					<caption>Périodes de paie</caption>
 					<thead>
 						<tr id="resultsTheadTR">
