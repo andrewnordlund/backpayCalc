@@ -527,7 +527,7 @@ function resetPeriods () {
 // getSalary called during startProcess.  "guess" isn't really a good word for this, so I changed it to "get"
 
 // I don't get it.  What's the difference btween selectSalary and getSalary?
-// This ones starts: get the IT-0level, get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
+// This ones starts: get the IT-0level, get the startDateTxt date, check for leapyear, set the startDateTxt value, figure out your step, select the step
 function getSalary () {
 	var levelSelect = document.getElementById("levelSelect");
 	var lvl = levelSelect.value.replace(/\D/, "");
