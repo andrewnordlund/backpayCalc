@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<!-- <meta content="width=device-width,initial-scale=1" name="viewport"> -->
+		<title>Backpay Calculator for TBS Collective Agreements</title>
+		<meta name="dc.title" content="Test of backpayCalc">
+		<meta name="dcterms.title" content="Test of backpayCalc">
+		<link rel="Stylesheet" type="text/css" href="backpayCalc.css" >
+	</head>
+	<body>
+		<ul id="skipLinks">
+			<li><a href="#mainForm">Skip to Main Form</a></li>
+			<!-- <li><a href="#resultsDiv">Skip to Results</a></li> -->
+		</ul>
+		<header>
+			<h1>Backpay Calculator for TBS Collective Agreements</h1>
+		</header>
+		<main>
+		<!--
+		<details>
+		<summary><h2 class="summary">How this calculator works</h2></summary>
+		<p>After entering in all your details this calculator breaks everything down into <dfn>periods</dfn> which are ranges of dates with the same yearly, hourly, and/or daily rate of pay.</p>
+		<p>For example, let's say you became a CS-02 (step 1) on August 1, 2017. This collective agreement will come into effect on <time datetime="2018-12-22">December 22, 2018</time>.  No backpay will be calculated before the start date of the collective agreement.  So, from <time datetime="2018-12-22">December 22, 2018</time> to  <time datetime="2019-07-31">July 31, 2019</time> your annual rate of pay will be $70&nbsp;439. That's the first period. Then on  <time datetime="2019-08-01">August 1, 2019</time> you have your 1 year anniversary as a CS-02 and you move up to step 2.  From <time datetime="2019-08-01">August 1, 2019</time> to <time datetime="2019-12-21">December 21, 2019</time> you'll have an annual rate of pay of $72&nbsp;694.  That's the second period.</p>
+		<p>If you start an Acting period, that starts a new period which goes until your pay changes again, either through a raise in the collective agreement, the end of your Acting period, or an anniversary raise.</p>
+		<p>Anything which causes a change in your rate of pay starts a new period.  And the period lasts as long as you're at that rate of pay.</p>
+		<p>When you click "Calculate", the calculator takes your yearly rate of pay to get what step you're at, and when your anniversary date is (if you're not yet at the highest step).  It takes all your acting periods, and leave-without-pay periods and creates a succession of periods each with its own rate of pay.  Then for each of those periods it calculates what you did make (based on the top rates in the last collective agreement), and what you would have made had the current offer/tentative agreement been signed by the start date of that agreement.  The Results table, which appears below the Calculate button after it's clicked, shows these, and the difference, your level, your step your rate of pay, and the number used to calculate that rate of pay.</p>
+		<p>For each of those periods the calculator counts the weekdays in the period and multiplies that by the daily rate of pay at that step.  <strong>This calculator assumes you work full time hours on a regular schedule.  This will not work for those on part time schedules, or who work erratic schedule.</strong></p>
+		<p>Within each period, extra money made through overtime, or standby, or vacation cash-out will be paid out based on your rate of pay at that time.<p>
+		<p>Using the above example, if you do 4 hours of overtime at time-and-a-half on <time datetime="2019-05-15">May 15, 2019</time>, that's part of the first period.  In terms of calculating your backpay, it doesn't matter when exactly you did that overtime.  All that matters is what your rate of pay was in that period.  That's why the dates aren't the same in the results table as what you entered into the date fields.</p>
+		<p>That also means that if you do one hour of overtime once a week for 4 weeks during a particular period, you don't need to add 4 separate overtime amounts.  Instead pick a single date in that period and enter 4 hours.</p>
+		<h3>What This Calculator Doesn't Do</h3>
+		<dl><dt>Parental Leave</dt><dd>This calculator doesn't handle parental leave.  I'm not sure how that works. If you know how it works, and want it added, <a href="">submit an issue on the GitHub Repo</a> with a link or explanation of how it works.  Or fork this repo, add it, and submit a pull request.</dd>
+		<dt>Collective agreements other than the PIPSC CS groups</dt><dd>Eventually, I'd like to build that in.  So if you're a CS with CRA, this won't have your numbers.  If you're an AS, then this won't be of help.</dd>
+		<dt>Part time work</dt><dd>If you work only 3 days a week, or 5 hours a day, this won't help you.  Maybe one day.</dd>
+		</dl>
+		</details>
+		<details>
+			<summary><h2 class="summary">What's New</h2></summary>
+			<h3><time datetime="2023-09-17">2023-09-17</time></h3>
+			<ul>
+				<li><strong>What's New</strong>:  There is now a list of new features near the top of the page.</li>
+				<li><strong>Bookmarkable Results</strong>:  When you click the the "Calculate" button, the URL in the address bar gets updated with the information you've entered.  This allows you to bookmark, or share results.</li>
+			</ul>
+			</dl>
+		</details>
+		-->
+		<form id="mainForm" tabindex="-1">
+			<h2>Your Information</h2>
+			<p><strong>Note:</strong> All dates should be formatted as <span id="dateFormat">YYYY-MM-DD</span>.</p>
+			
+		</form>
+		<!--
+		<div id="resultsDiv" tabindex="-1">
+			<h2>Results</h2>
+			<p>All amounts are gross.  You'll have to figure out your own taxes. (And sometimes your taxes are pretty gross!  Nyuk nyuk nyuk)</p>
+			<table id="resultsTable">
+				<caption>Pay periods</caption>
+				<thead>
+					<tr id="resultsTheadTR">
+						<th scope="col">Period</th>
+						<th scope="col">What You Made</th>
+						<th scope="col">What You Should Have Made</th>
+						<th scope="col">Backpay Amount</th>
+					</tr>
+				</thead>
+				<tbody id="resultsBody">
+				</tbody>
+				<tfoot id="resultsFoot">
+				</tfoot>
+			</table>
+		</div>
+		-->
+		</main>
+		<footer>
+			<h2>Note</h2>
+			<p>This calculator was built as a hobby and is provided "as is" as proof-of-concept. There is absolutely no guarantee of accuracy, or officialness. It should be used for interest sakes, not as an authority.</p>
+			<p>See a problem?  Have a suggestion? <a href="https://github.com/andrewnordlund/backpayCalc/issues">Submit an issue</a>.</p>
+			<p>Back to the <a href="index.html">Backpay Calculator</a> home page.</p>
+		<script src="backpayCalc.js"></script>
+		<div id="resultStatus" role="status" aria-live="polite" class="invisibleStuff"></div>
+		<dl>
+			<dt>Last Modified:</dt>
+			<dd><time id="lastModTime" datetime="2023-09-19">2023-09-19</time</dd>
+		</dl>
+		</footer>
+	</body>
+</html>
+

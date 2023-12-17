@@ -1,0 +1,23 @@
+{
+	"selectClass" : {"en" : "Select your classification",
+			"fr" : "Sélectionnez votre classification"
+	},
+	"selectCALbl" : {"en" : "Select the collective agreement",
+			"fr" : "Sélectionnez votre convention collective"
+	},
+	"startDateLgnd" : {"en" : "Were you in classification {{classification}} on {{startDate}}?",
+			"fr" : "Étiez-vous dans la {{classification}} le {{startDate}}"
+	},
+	"yesTxt" : {"en" : "Yes",
+			"fr" : "Oui"
+	},
+	"noTxt" : {"en" : "No",
+			"fr" : "Non"
+	},
+	"yourinfoTxt" : {"en" : "Your Information",
+			"fr" : "Votre information"
+	},
+	"datesTxt" : {"en" : "Note: All dates should be formatted as YYYY-MM-DD.",
+			"fr" : "Remarque : Toutes les dates doivent être dans le format AAAA-MM-JJ."
+	}
+}
