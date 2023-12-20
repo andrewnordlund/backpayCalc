@@ -14,78 +14,86 @@
  */
 
  var dbug = false;
- var version = "3.2.0";
- var lang = "en";
- var langFormat = "en-CA";
- var updateHash = true;
- var saveValues = null;
- var showExtraCols = true;
- var level = -1;
- var step = -1;
- var mainForm = null;
- var startingSalary = 0;
- var resultsDiv = null;
- var startDateTxt = null;
- var levelSel = null;
- var stepSelect = null;
- var numPromotions = null;
- var addPromotionBtn = null;
- var addActingBtn = null;
- var addOvertimeBtn = null;
- var addLwopBtn = null;
- var addLumpSumBtn = null;
- var resultStatus = null;
- var calcStartDate = null;
- var endDateTxt = "2021-04-15";
- var TABegin = new Date("2021", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
- var EndDate = new Date("2024", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
- var day = (1000 * 60 * 60 * 24);
- var parts = [];
- var resultsBody = null;
- var resultsFoot = null;
- var resultsTheadTR = null;
- var periods = [];
- var initPeriods = [];
- var lumpSumPeriods = {};
- var overtimePeriods = {};
- var promotions = 0;
- var actings = 0;
- var lumpSums = 0;
- var overtimes = 0;
- var lwops = 0;
- var lastModified = new Date("2023", "10", "10");		// Remember months:  0 == Janaury, 1 == Feb, etc.
- var lastModTime = null;
- var salaries = [];
- var daily = [];
- var hourly = [];
- var i18n = {};
- // taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
- /*
- var salaries = [
-	 [56907, 59011, 61111, 63200, 65288, 67375, 69461, 73333],
-	 [70439, 72694, 74947, 77199, 79455, 81706, 83960, 86213],
-	 [83147, 86010, 88874, 91740, 94602, 97462, 100325, 103304],
-	 [95201, 98485, 101766, 105050, 108331, 111613, 114896, 118499],
-	 [108528, 112574, 116618, 120665, 124712, 128759, 132807, 136852, 141426]
- 
- ];
- var daily = [
-	 [218.13, 226.20, 234.25, 242.26, 250.26, 258.26, 266.26, 281.10],
-	 [270.01, 278.65, 287.29, 295.92, 304.57, 313.19, 321.83, 330.47],
-	 [318.72, 329.69, 340.67, 351.66, 362.63, 373.59, 384.56, 395.98],
-	 [364.92, 377.51, 390.09, 402.68, 415.25, 427.83, 440.42, 454.23],
-	 [416.01, 431.52, 447.02, 462.53, 478.04, 493.56, 509.07, 524.58, 542.11]
- ];
- var hourly = [
-	 [29.08, 30.16, 31.23, 32.30, 33.37, 34.43, 35.50, 37.48],
-	 [36.00, 37.15, 38.30, 39.46, 40.61, 41.76, 42.91, 44.06],
-	 [42.50, 43.96, 45.42, 46.89, 48.35, 49.81, 51.28, 52.80],
-	 [48.66, 50.33, 52.01, 53.69, 55.37, 57.04, 58.72, 60.56],
-	 [55.47, 57.54, 59.60, 61.67, 63.74, 65.81, 67.88, 69.94, 72.28]
- ];
- */
- //var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
- //var days = [31, 29, 31
+var version = "3.2.0";
+var lang = "en";
+var langFormat = "en-CA";
+var updateHash = true;
+var saveValues = null;
+var showExtraCols = true;
+var level = -1;
+var step = -1;
+var mainForm = null;
+var startingSalary = 0;
+var resultsDiv = null;
+var startDateTxt = null;
+var levelSel = null;
+var stepSelect = null;
+var numPromotions = null;
+var addPromotionBtn = null;
+var addActingBtn = null;
+var addOvertimeBtn = null;
+var addLwopBtn = null;
+var addLumpSumBtn = null;
+var resultStatus = null;
+var calcStartDate = null;
+var endDateTxt = "2021-04-15";
+var TABegin = new Date("2021", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var EndDate = new Date("2024", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+var day = (1000 * 60 * 60 * 24);
+var parts = [];
+var resultsBody = null;
+var resultsFoot = null;
+var resultsTheadTR = null;
+var periods = [];
+var initPeriods = [];
+var lumpSumPeriods = {};
+var overtimePeriods = {};
+var promotions = 0;
+var actings = 0;
+var lumpSums = 0;
+var overtimes = 0;
+var lwops = 0;
+var lastModified = new Date("2023", "11", "12");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var lastModTime = null;
+var salaries = [];
+var daily = [];
+var hourly = [];
+var newRates = {};
+var i18n = {};
+var levels = 0;
+var classification = "IT";
+var CAName = "2021-2025";
+let payload = {};
+	
+const wiy = 52.17604859194648;
+
+// taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
+/*
+var salaries = [
+	[56907, 59011, 61111, 63200, 65288, 67375, 69461, 73333],
+	[70439, 72694, 74947, 77199, 79455, 81706, 83960, 86213],
+	[83147, 86010, 88874, 91740, 94602, 97462, 100325, 103304],
+	[95201, 98485, 101766, 105050, 108331, 111613, 114896, 118499],
+	[108528, 112574, 116618, 120665, 124712, 128759, 132807, 136852, 141426]
+
+];
+var daily = [
+	[218.13, 226.20, 234.25, 242.26, 250.26, 258.26, 266.26, 281.10],
+	[270.01, 278.65, 287.29, 295.92, 304.57, 313.19, 321.83, 330.47],
+	[318.72, 329.69, 340.67, 351.66, 362.63, 373.59, 384.56, 395.98],
+	[364.92, 377.51, 390.09, 402.68, 415.25, 427.83, 440.42, 454.23],
+	[416.01, 431.52, 447.02, 462.53, 478.04, 493.56, 509.07, 524.58, 542.11]
+];
+var hourly = [
+	[29.08, 30.16, 31.23, 32.30, 33.37, 34.43, 35.50, 37.48],
+	[36.00, 37.15, 38.30, 39.46, 40.61, 41.76, 42.91, 44.06],
+	[42.50, 43.96, 45.42, 46.89, 48.35, 49.81, 51.28, 52.80],
+	[48.66, 50.33, 52.01, 53.69, 55.37, 57.04, 58.72, 60.56],
+	[55.47, 57.54, 59.60, 61.67, 63.74, 65.81, 67.88, 69.94, 72.28]
+];
+*/
+//var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+//var days = [31, 29, 31
 function init () {
 	if (dbug) console.log ("Initting");
 	lang = document.documentElement.lang;
