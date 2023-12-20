@@ -453,103 +453,118 @@
  
  // I don't get it.  What's the difference btween selectSalary and getSalary?
  // This ones starts: get the IT-0level, get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
- function getSalary() {
-	 var levelSelect = document.getElementById("levelSelect");
-	 var lvl = levelSelect.value.replace(/\D/, "");
-	 if (dbug) console.log("Got level " + lvl + "."); // and start date of " + startDate + ".");
-	 if (lvl < 1 || lvl > 5) {	// Should only happen if someone messes with the querystring
-		 if (dbug) console.log("getSalary::Error:  lvl is -1.");
-		 var errDiv = createHTMLElement("div", { "parentNode": levelSelect.parentNode, "id": "levelSelectError", "class": "error" });
-		 createHTMLElement("span", { "parentNode": errDiv, "nodeText": i18n["levelSelectError"][lang] });
-		 levelSelect.setAttribute("aria-describedby", "levelSelectError");
-		 levelSelect.focus();
-		 //return;
-	 } else {
-		 saveValues.push("lvl=" + lvl);
-	 }
-	 level = ((lvl > 0 && lvl < salaries.length + 1) ? lvl : null);
- 
-	 let startDate = getStartDate();
-	 if (level && startDate) {
- 
-		 level -= 1;
- 
-		 if (dbug) console.log("getSalary::Got valid data (" + startDate.toISOString().substr(0, 10) + ")....now trying to figure out salary.");
- 
-		 let timeDiff = (TABegin - startDate) / day;
- 
- 
-		 if (stepSelect.value && stepSelect.value >= 0 && stepSelect.value < salaries[level].length) {
-			 step = stepSelect.value;
-			 if (dbug) console.log("getSalary::Got step from the stepSelect.  And it's " + step + ".");
-		 } else {
-			 if (dbug) console.log("getSalary::Couldn't get step from the stepSelect. Gotta guess. stepSelect.value: " + stepSelect.value + ".");
-			 if (dbug) console.log("getSalary::TimeDiff: " + timeDiff + ".");
- 
-			 let years = Math.floor(timeDiff / 365);
-			 step = Math.min(years, salaries[level].length - 1);
-			 if (dbug) console.log("getSalary::Your step would be " + step + ".");
-		 }
-		 var stp = step;
- 
-		 saveValues.push("stp=" + stp);
-		 saveValues.push("strtdt=" + startDateTxt.value);
-		 saveValues.push("enddt=" + endDateTxt.value);
- 
-		 let dparts = null;
-		 dparts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-		 if (dparts) {
-			 EndDate = new Date(dparts[1], (dparts[2] - 1), dparts[3]);
-			 EndDate.setDate(EndDate.getDate() + parseInt(1));
-			 if (dbug) console.log("getSalary::Got EndDateTxt as " + endDateTxt.value + ".");
-			 //if (dbug) console.log ("Got EndDate as " + EndDate.toISOString().substr(0, 10) + ".");
-		 }
-		 //This used to be below adding anniversaries, but some anniversaries were being missed
-		 if (dbug) console.log("getSalary::About to set EndDate to " + EndDate.toISOString().substr(0, 10) + ".");
-		 addPeriod({ "startDate": EndDate.toISOString().substr(0, 10), "increase": 0, "reason": "end", "multiplier": 1 });
- 
-		 //add anniversarys
-		 //dbug = true;
-		 let startYear = Math.max(2021, startDate.getFullYear());
-		 if (dbug) console.log("getSalary::Going to set anniversary dates betwixt: " + startYear + " and " + EndDate.getFullYear() + ".");
-		 for (var i = startYear; i <= EndDate.getFullYear(); i++) {
-			 if (stp < salaries[level].length) {
-				 let dateToAdd = i + "-" + ((startDate.getMonth() + 1) > 9 ? "" : "0") + (startDate.getMonth() + 1) + "-" + (startDate.getDate() > 9 ? "" : "0") + startDate.getDate();
-				 if (dbug) console.log("getSalary::Going to set anniversary date " + dateToAdd + ".");
-				 if (dateToAdd > startDate.toISOString().substr(0, 10)) {
-					 if (dbug) console.log("getSalary::Going to add anniversary on " + dateToAdd + " because it's past " + startDate.toISOString().substr(0, 10) + ".");
-					 addPeriod({ "startDate": dateToAdd, "increase": 0, "reason": "Anniversary Increase", "multiplier": 1 });
-					 stp++;
-				 } else {
-					 if (dbug) console.log("getSalary::Not going to add anniversary on " + dateToAdd + " because it's too early.");
-				 }
-			 }
-		 }
-		 //dbug = false;
-		 if (timeDiff < 0) {
-			 if (dbug) console.log("getSalary::You weren't even there then.");
-			 // remove all older periods?? Maybe?  Or just somehow make them 0s?
-			 // This one makes the mulitpliers 0.
-			 addPeriod({ "startDate": startDate.toISOString().substr(0, 10), "increase": 0, "reason": "Starting", "multiplier": 1 });
-			 for (var i = 0; i < periods.length; i++) {
-				 if (startDate.toISOString().substr(0, 10) > periods[i]["startDate"]) periods[i]["multiplier"] = 0;
-			 }
-		 } else {
-			 //var salary = salaries[level][step];
-			 //if (dbug) console.log ("You were there at that point, and your salary would be $" + salary.toFixed(2) + ".");
-		 }
-		 if (dbug) {
-			 console.log("getSalary::pre-calc checks:");
-			 for (var i = 0; i < periods.length; i++) {
-				 console.log("getSalary::" + periods[i]["reason"] + ": " + periods[i]["startDate"] + ".");
-			 }
-		 }
- 
-	 } else {
-		 if (dbug) console.log("getSalary::Something's not valid.  Lvl: " + level + ", startDate: " + startDate + ".");
-		 addStartDateErrorMessage();
-	 }
- } // End of getSalary
+ function getSalary () {
+	var levelSelect = document.getElementById("levelSelect");
+	var lvl = levelSelect.value.replace(/\D/, "");
+	if (dbug) console.log ("Got level " + lvl + "."); // and start date of " + startDate + ".");
+	if (lvl < 1 || lvl > 5) {	// Should only happen if someone messes with the querystring
+		if (dbug) console.log ("getSalary::Error:  lvl is -1.");
+		var errDiv = createHTMLElement("div", {"parentNode":levelSelect.parentNode, "id":"levelSelectError", "class":"error"});
+		createHTMLElement("span", {"parentNode":errDiv, "nodeText":i18n["levelSelectError"][lang]});
+		levelSelect.setAttribute("aria-describedby", "levelSelectError");
+		levelSelect.focus();
+		//return;
+	} else {
+		saveValues.push("lvl="+lvl);
+	}
+	level = ((lvl > 0 && lvl < salaries.length+1) ? lvl : null);
+
+	let startDate = getStartDate();
+	if (level && startDate) {
+		
+		level -= 1;
+
+		if (dbug) console.log("getSalary::Got valid data (" + startDate.toISOString().substr(0,10) + ")....now trying to figure out salary.");
+			
+		let timeDiff = (TABegin - startDate) / day;
+
+
+		if (stepSelect.value && stepSelect.value >= 0 && stepSelect.value < salaries[level].length) {
+			step = stepSelect.value;
+			if (dbug) console.log ("getSalary::Got step from the stepSelect.  And it's " + step + ".");
+		} else {
+			if (dbug) console.log ("getSalary::Couldn't get step from the stepSelect. Gotta guess. stepSelect.value: " + stepSelect.value + ".");
+			if (dbug) console.log ("getSalary::TimeDiff: "  + timeDiff + ".");
+		
+			let years = Math.floor(timeDiff/365);
+			step = Math.min(years, salaries[level].length-1);
+			if (dbug) console.log ("getSalary::Your step would be " + step + ".");
+		}
+		var stp = step;
+
+		saveValues.push("stp="+stp);
+		saveValues.push("strtdt="+startDateTxt.value);
+		saveValues.push("enddt="+endDateTxt.value);
+
+		let dparts = null;
+		dparts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+		if (dparts) {
+			EndDate = new Date(dparts[1], (dparts[2]-1), dparts[3]);
+			EndDate.setDate(EndDate.getDate() + parseInt(1));
+			if (dbug) console.log ("getSalary::Got EndDateTxt as " + endDateTxt.value + ".");
+			//if (dbug) console.log ("Got EndDate as " + EndDate.toISOString().substr(0, 10) + ".");
+		}
+		//This used to be below adding anniversaries, but some anniversaries were being missed
+		if (dbug) console.log ("getSalary::About to set EndDate to " + EndDate.toISOString().substr(0, 10) + ".");
+		addPeriod ({"startDate" : EndDate.toISOString().substr(0, 10), "increase":0, "reason":"end", "multiplier" : 1});
+
+		//add anniversarys
+		//dbug = true;
+		let startYear = Math.max(2021, startDate.getFullYear());
+		if (dbug) console.log ("getSalary::Going to set anniversary dates betwixt: " + startYear + " and " + EndDate.getFullYear() + ".");
+		for (var i = startYear; i <=EndDate.getFullYear(); i++) {
+			if (stp < salaries[level].length) {
+				let dateToAdd = i + "-" + ((startDate.getMonth()+1) > 9 ? "" : "0") + (startDate.getMonth()+1)	+ "-" + (startDate.getDate() > 9 ? "" : "0") +  startDate.getDate();
+				if (dbug) console.log ("getSalary::Going to set anniversary date " + dateToAdd + ".");
+				if (dateToAdd > startDate.toISOString().substr(0,10)) {
+					if (dbug) console.log ("getSalary::Going to add anniversary on " + dateToAdd + " because it's past " + startDate.toISOString().substr(0,10) + ".");
+					addPeriod ({"startDate": dateToAdd, "increase":0, "reason":"Anniversary Increase", "multiplier":1});
+					stp++;
+				} else {
+					if (dbug) console.log ("getSalary::Not going to add anniversary on " + dateToAdd + " because it's too early.");
+				}
+			}
+		}
+		//dbug = false;
+		if (timeDiff < 0) {
+			if (dbug) console.log ("getSalary::You weren't even there then.");
+			// remove all older periods?? Maybe?  Or just somehow make them 0s?
+			// This one makes the mulitpliers 0.
+			addPeriod ({"startDate" : startDate.toISOString().substr(0,10), "increase":0, "reason":"Starting", "multiplier":1});
+			for (var i = 0; i < periods.length; i++) {
+				if (startDate.toISOString().substr(0,10) > periods[i]["startDate"]) periods[i]["multiplier"] = 0;
+			}
+			
+			// This one removes the ones before start date.
+			// This _sounds_ good, but it totally messes up the compounding raises later.
+			/*
+			addPeriod ({"startDate" : startDate.toISOString().substr(0,10), "increase":0, "reason":"Starting", "multiplier":1});
+			do {
+				periods.shift();
+			} while (periods[0]["startDate"] <= startDate.toISOString().substr(0,10) && periods[0]["reason"] != "Starting");
+			*/
+			//for (var i = periods.length-1; i >=0; i--)
+			/*
+			if (dbug) console.log ("getSalary::From step " + step + ".");
+			step = step - startYear - EndDate.getFullYear();
+			if (dbug) console.log ("getSalary::to step " + step + ".");
+			*/
+		} else {
+			//var salary = salaries[level][step];
+			//if (dbug) console.log ("You were there at that point, and your salary would be $" + salary.toFixed(2) + ".");
+		}
+		if (dbug) {
+			console.log("getSalary::pre-calc checks:");
+			for (var i = 0; i < periods.length; i++) {
+				console.log ("getSalary::" + periods[i]["reason"] + ": " + periods[i]["startDate"] + ".");
+			}
+		}
+
+	} else {
+		if (dbug) console.log ("getSalary::Something's not valid.  Lvl: " + level + ", startDate: " + startDate + ".");
+		addStartDateErrorMessage();
+	}
+} // End of getSalary
  
  function addPromotions() {
 	 // Add promotions
