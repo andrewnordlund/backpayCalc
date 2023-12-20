@@ -1427,126 +1427,150 @@ function getStartDate () {
  } // End of addPeriod
  
  function calculate() {
-	 resultStatus.innerHTML = "";
-	 //if (step == salaries[level].length -1) {
-	 //if (dbug) console.log ("Top of your level.  This should be easy.");
-	 if (dbug) {
-		 console.log("\n\nCalculating:  There are " + periods.length + " periods to be concerned with.");
-		 console.log("With salary: " + salaries[level][step] + ".");
-	 }
-	 var actingStack = [];
-	 var multiplier = 1;
-	 var newSalaries = JSON.parse(JSON.stringify(salaries));
-	 var newDaily = JSON.parse(JSON.stringify(daily));
-	 var newHourly = JSON.parse(JSON.stringify(hourly));
-	 var preTotal = { "made": 0, "shouldHaveMade": 0, "backpay": 0 };
-	 var pTotal = { "made": 0, "shouldHaveMade": 0, "backpay": 0 };
-	 var total = { "made": 0, "shouldHaveMade": 0, "backpay": 0 };
-	 if (dbug) {
-		 console.log("prelim checks:");
-		 for (var i = 0; i < periods.length; i++) {
-			 console.log(periods[i]["reason"] + ": " + periods[i]["startDate"] + ".");
-		 }
-	 }
-	 for (var i = 0; i < periods.length - 1; i++) {
-		 if (dbug) console.log(i + ": " + periods[i]["startDate"] + ":");
-		 if (dbug) console.log(i + ": going between " + periods[i]["startDate"] + " and " + periods[i + 1]["startDate"] + " for the reason of " + periods[i]["reason"] + ".");
-		 if (periods[i]["reason"].match(/Anniversary Increase/)) {
-			 var output = "";
-			 if (actingStack.length == 0) {
-				 if (i == 0) {
-					 output += "Not increasing step because this is the first anniversary, and your anniversary is on this date.";
-				 } else {
-					 output += "Increasing step from " + step + " to ";
-					 step = Math.min(parseInt(step) + 1, salaries[level].length - 1);
-					 output += step + ".";
-				 }
-			 } else {
-				 output += "Increasing non-acting step from " + actingStack[0]["step"] + " to ";
-				 actingStack[0]["step"] = Math.min(parseInt(actingStack[0]["step"]) + 1, salaries[actingStack[0]["level"]].length - 1);
-				 output += actingStack[0]["step"] + ".";
-			 }
-			 if (dbug) console.log(output);
-		 } else if (periods[i]["reason"] == "Acting Anniversary") {
-			 //dbug = true;
-			 var output = "Increasing step from " + step + " to ";
-			 step = Math.min(step + 1, salaries[level].length - 1);
-			 output += step + "."
-			 if (dbug) console.log(output);
-			 //dbug = false;
-		 } else if (periods[i]["reason"] == "promotion") {
-			 var currentSal = salaries[level][step];
-			 var minNewSal = currentSal * 1.04;
-			 level = periods[i]["level"];
-			 var looking = true;
-			 for (var stp = 0; stp < salaries[level].length && looking; stp++) {
-				 if (salaries[level][stp] > minNewSal) {
-					 step = stp;
-					 looking = false;
-				 }
-			 }
-		 } else if (periods[i]["reason"] == "Acting Start") {
-			 actingStack.push({ "level": level, "step": step });
-			 var currentSal = salaries[level][step];
-			 var minNewSal = currentSal * 1.04;
-			 level = periods[i]["level"];
-			 var looking = true;
-			 for (var stp = 0; stp < salaries[level].length && looking; stp++) {
-				 if (salaries[level][stp] > minNewSal) {
-					 step = stp;
-					 looking = false;
-				 }
-			 }
- 
-		 } else if (periods[i]["reason"] == "Acting Finished") {
-			 var orig = actingStack.pop();
-			 step = orig["step"];
-			 level = orig["level"];
-		 }
-		 periods[i]["made"] = 0;
-		 periods[i]["shouldHaveMade"] = 0;
-		 periods[i]["backpay"] = 0;
-		 multiplier = (1 + (periods[i]["increase"] / 100));
-		 if (dbug) console.log("Multiplier: " + multiplier + ".");
-		 if (periods[i]["increase"] > 0) {
-			 // Calculate new salaries, dailys, and hourlys
-			 for (var l = 0; l < newSalaries.length; l++) {
-				 for (var s = 0; s < newSalaries[l].length; s++) {
-					 //if (dbug && l == level) console.log ("Multiplying " + newSalaries[l][s] + " * " + multiplier + ".");
-					 newSalaries[l][s] = (newSalaries[l][s] * multiplier).toFixed(2);
-					 newDaily[l][s] = (newSalaries[l][s] / 260.88); //.toFixed(2);
-					 newHourly[l][s] = (newSalaries[l][s] / 1956.6); //.toFixed(2);
-					 //if (dbug && l == level) console.log ("And it came to " + newSalaries[l][s] + ".");
-				 }
-			 }
-			 if (dbug) console.log("Your annual salary went from " + salaries[level][step] + " to " + newSalaries[level][step] + ".");
-		 }
-		 resultStatus.innerHTML = i18n["resultsShownBelow"][lang];
-		 var days = 0;
-		 if (step >= 0) {
-			 if (dbug) console.log("current period: periods[" + i + "][startDate]: " + periods[i]["startDate"] + ".");
-			 if (dbug) console.log("future period: periods[" + (i + 1) + "][startDate]: " + periods[(i + 1)]["startDate"] + ".");
-			 var dparts = periods[i]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
-			 var current = new Date(dparts[1], dparts[2] - 1, dparts[3]);
-			 parts = periods[i + 1]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
-			 var future = new Date(parts[1], parts[2] - 1, parts[3]);
-			 //future.setDate(future.getDate() - 1);
-			 var diff = (future - current) / day;
-			 if (dbug) console.log("There were " + diff + " days between " + current.getFullYear() + "-" + (current.getMonth() + 1) + "-" + current.getDate() + " and " + future.getFullYear() + "-" + (future.getMonth() + 1) + "-" + future.getDate() + ".");
-			 while (current < future) {
-				 //if (dbug) console.log ("Now calculating for day " + current.toString() + ".");
-				 if (current.getDay() > 0 && current.getDay() < 6) {	// don't calculate weekends
-					 days++;
-					 periods[i]["made"] = periods[i]["made"] + daily[level][step] * periods[i]["multiplier"];	// multiplier is if you were there then or not.
-					 periods[i]["shouldHaveMade"] = (periods[i]["shouldHaveMade"] + (newDaily[level][step] * periods[i]["multiplier"]));
-				 }
-				 current.setDate(current.getDate() + parseInt(1));
-				 //			//if (dbug) console.log ("Now day is " + current.toString() + ".");
-			 }
-		 } else {
-			 if (dbug) console.log(periods[i]["startDate"] + ": Step is still " + step + " therefore, not adding anything to made.");
-		 }
-		 periods[i]["backpay"] = periods[i]["shouldHaveMade"] - periods[i]["made"];
+	resultStatus.innerHTML="";
+	//if (step == salaries[level].length -1) {
+		//if (dbug) console.log ("Top of your level.  This should be easy.");
+		if (dbug) {
+			console.log ("\n\nCalculating:  There are " + periods.length + " periods to be concerned with.");
+			console.log ("With salary: " + salaries[level][step] + ".");
+		}
+		var actingStack = [];
+		var multiplier = 1;
+		//var newSalaries = JSON.parse(JSON.stringify(salaries));
+		//var newDaily = JSON.parse(JSON.stringify(daily));
+		//var newHourly = JSON.parse(JSON.stringify(hourly));
+		var preTotal = {"made":0, "shouldHaveMade":0, "backpay":0};	// What the heck are these?
+		var pTotal = {"made":0, "shouldHaveMade":0, "backpay":0};
+		var total = {"made":0, "shouldHaveMade":0, "backpay":0};
+		if (dbug) {
+			console.log("prelim checks:");
+			for (var i = 0; i < periods.length; i++) {
+				console.log (periods[i]["reason"] + ": " + periods[i]["startDate"] + ".");
+			}
+		}
+		let theYear = "current";
+		for (var i = 0; i < periods.length-1; i++) {
+			if (dbug) console.log(i + ": " + periods[i]["startDate"] + ":");
+			if (dbug) console.log (i + ": going between " + periods[i]["startDate"] + " and " + periods[i+1]["startDate"] + " for the reason of " + periods[i]["reason"] + ".");
+			if (periods[i]["reason"].match(/Anniversary Increase/)) {
+				var output = "";
+				if (actingStack.length == 0) {
+					if (i ==0) {
+						output += "Not increasing step because this is the first anniversary, and your anniversary is on this date.";
+					} else {
+						output += "Increasing step from " + step + " to ";
+						step = Math.min(parseInt(step) + 1, salaries[level].length-1);	// Should this be salaries, or newRates[theYear]?
+						output += step + ".";
+					}
+				} else {
+					output += "Increasing non-acting step from " + actingStack[0]["step"] + " to ";
+					actingStack[0]["step"] = Math.min(parseInt(actingStack[0]["step"]) +1, salaries[actingStack[0]["level"]].length-1);
+					output += actingStack[0]["step"] + ".";
+				}
+				if (dbug) console.log (output);
+			} else if (periods[i]["reason"] == "Acting Anniversary") {
+				//dbug = true;
+				var output = "Increasing step from " + step + " to ";
+				step = Math.min(step + 1, salaries[level].length-1);
+				output += step + "."
+				if (dbug) console.log (output);
+				//dbug = false;
+			} else if (periods[i]["reason"] == "promotion") {
+				//var currentSal = salaries[level][step];
+				let currentSal = newRates["current"][level][step]["annual"];
+				let minNewSal = currentSal * 1.04;
+				level = periods[i]["level"];
+				let looking = true;
+				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
+				for (let stp = 0; stp < newRates["current"][level].length && looking; stp++) {
+					//if (salaries[level][stp] > minNewSal) {
+					if (newRates["current"][level][stp]["annual"] > minNewSal) {
+						step = stp;
+						looking = false;
+					}
+				}
+			} else if (periods[i]["reason"] == "Acting Start") {
+				actingStack.push({"level":level, "step":step});
+				//var currentSal = salaries[level][step];
+				let currentSal = newRates["current"][level][step]["annual"];
+				let minNewSal = currentSal * 1.04;
+				level = periods[i]["level"];
+				let looking = true;
+				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
+				for (let stp = 0; stp < newRates["current"][level].length && looking; stp++) {
+					//if (salaries[level][stp] > minNewSal) {
+					if (newRates["current"][level][stp]["annual"] > minNewSal) {
+						step = stp;
+						looking = false;
+					}
+				}
+
+			} else if (periods[i]["reason"] == "Acting Finished") {
+				var orig = actingStack.pop();
+				step = orig["step"];
+				level = orig["level"];
+			} else if (periods[i]["reason"] == "Contractual Increase") {
+				theYear = periods[i]["startDate"];
+			}
+			periods[i]["made"] = 0;
+			periods[i]["shouldHaveMade"] = 0;
+			periods[i]["backpay"] = 0;
+
+			/*
+			multiplier =(1 + (periods[i]["increase"]/100));
+			if (periods[i].hasOwnProperty("exceptions")) {
+				for (let k = 0; k < periods[i]["exceptions"].length; k++) {
+					if (periods[i]["exceptions"][k]["level"] == (level-1)) {
+						if (periods[i]["exceptions"][k].hasOwnProperty("increase")) {
+							multiplier  = ((periods[i]["exceptions"][k]["increase"]/100) +1);
+						}
+					}
+				}		
+			}
+			if (dbug) console.log ("Multiplier: " + multiplier + ".");
+			
+			if (periods[i]["increase"] > 0) {
+				// Calculate new salaries, dailys, and hourlys
+				for (var l = 0; l < newSalaries.length; l++) {
+					for (var s = 0; s < newSalaries[l].length; s++) {
+						//if (dbug && l == level) console.log ("Multiplying " + newSalaries[l][s] + " * " + multiplier + ".");
+						newSalaries[l][s] = (newSalaries[l][s] * multiplier).toFixed(2);
+						newDaily[l][s] = (newSalaries[l][s] / 260.88); //.toFixed(2);
+						newHourly[l][s] = (newSalaries[l][s] / 1956.6); //.toFixed(2);
+						//if (dbug && l == level) console.log ("And it came to " + newSalaries[l][s] + ".");
+					}
+				}
+				if (dbug) console.log ("Your annual salary went from " + salaries[level][step] + " to " + newSalaries[level][step] + ".");
+			}
+			*/
+			var days = 0;
+			if (step >= 0) {
+				if (dbug) console.log ("current period: periods[" + i + "][startDate]: " + periods[i]["startDate"] + ".");
+				if (dbug) console.log ("future period: periods[" + (i+1) + "][startDate]: " + periods[(i+1)]["startDate"] + ".");
+				var dparts = periods[i]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
+				var current = new Date(dparts[1], dparts[2]-1, dparts[3]);
+				parts = periods[i+1]["startDate"].match(/(\d\d\d\d)-(\d\d?)-(\d\d?)/);
+				var future = new Date(parts[1], parts[2]-1, parts[3]);
+				//future.setDate(future.getDate() - 1);
+				var diff = (future  - current) / day;
+				if (dbug) console.log ("There were " + diff + " days between " + current.getFullYear() + "-" +  (current.getMonth()+1) +"-" + current.getDate() + " and " + future.getFullYear() + "-" + (future.getMonth()+1) + "-" + future.getDate() +".");
+				while (current < future) {
+					//if (dbug) console.log ("Now calculating for day " + current.toString() + ".");
+					if (current.getDay() > 0 && current.getDay() < 6) {	// don't calculate weekends
+						days++;
+						//periods[i]["made"] = periods[i]["made"] + daily[level][step] * periods[i]["multiplier"];	// multiplier is if you were there then or not.
+						//periods[i]["shouldHaveMade"] = (periods[i]["shouldHaveMade"] + (newDaily[level][step] * periods[i]["multiplier"]));
+						
+						periods[i]["made"] = periods[i]["made"] + newRates["current"][level][step]["daily"] * periods[i]["multiplier"];	// multiplier is if you were there then or not.
+						periods[i]["shouldHaveMade"] = (periods[i]["shouldHaveMade"] + (newRates[theYear][level][step]["daily"] * periods[i]["multiplier"]));
+					}
+					current.setDate(current.getDate() + parseInt(1));
+		//			//if (dbug) console.log ("Now day is " + current.toString() + ".");
+				}
+			} else {
+				if (dbug) console.log (periods[i]["startDate"] + ": Step is still " + step + " therefore, not adding anything to made.");
+			}
+			periods[i]["backpay"] = periods[i]["shouldHaveMade"] - periods[i]["made"];
  
 		 var newTR = createHTMLElement("tr", { "parentNode": resultsBody });
 		 let endDate = new Date(periods[i + 1]["startDate"]);
@@ -1570,9 +1594,11 @@ function getStartDate () {
 			 for (var rate in overtimePeriods[periods[i]["startDate"]]) {
 				 if (dbug) console.log("rate: " + rate + ".");
 				 if (dbug) console.log("amount: " + overtimePeriods[periods[i]["startDate"]][rate] + ".");
-				 var made = overtimePeriods[periods[i]["startDate"]][rate] * hourly[level][step] * rate;
-				 var shouldHaveMade = overtimePeriods[periods[i]["startDate"]][rate] * newHourly[level][step] * rate;
-				 var backpay = shouldHaveMade - made;
+					//var made = overtimePeriods[periods[i]["startDate"]][rate] * hourly[level][step] * rate;
+					//var shouldHaveMade = overtimePeriods[periods[i]["startDate"]][rate] * newHourly[level][step] * rate;
+					let made = overtimePeriods[periods[i]["startDate"]][rate] * newRates["current"][level][step]["hourly"] * rate;
+					let shouldHaveMade = overtimePeriods[periods[i]["startDate"]][rate] * newRates[theYear][level][step]["hourly"] * rate;
+					var backpay = shouldHaveMade - made;
  
 				 var newTR = createHTMLElement("tr", { "parentNode": resultsBody });
 				 var newPaidTD = createHTMLElement("td", { "parentNode": newTR, "textNode": periods[i]["startDate"] });
@@ -1599,9 +1625,11 @@ function getStartDate () {
 		 //dbug = false;
  
 		 if (lumpSumPeriods.hasOwnProperty(periods[i]["startDate"])) {
-			 var made = lumpSumPeriods[periods[i]["startDate"]] * hourly[level][step];
-			 var shouldHaveMade = lumpSumPeriods[periods[i]["startDate"]] * newHourly[level][step];
-			 var backpay = shouldHaveMade - made;
+				//var made = lumpSumPeriods[periods[i]["startDate"]] * hourly[level][step];
+				//var shouldHaveMade = lumpSumPeriods[periods[i]["startDate"]] * newHourly[level][step];
+				let made = lumpSumPeriods[periods[i]["startDate"]] * newRates["current"][level][step]["hourly"];
+				let shouldHaveMade = lumpSumPeriods[periods[i]["startDate"]] * newRates[theYear][level][step]["hourly"];
+				var backpay = shouldHaveMade - made;
  
 			 var newTR = createHTMLElement("tr", { "parentNode": resultsBody });
 			 var newPaidTD = createHTMLElement("td", { "parentNode": newTR, "textNode": periods[i]["startDate"] });
@@ -1750,35 +1778,45 @@ function getStartDate () {
 	 }
  }
  
- async function getData() {
-	 let response = await fetch("raiseInfo.json");
-	 let success = 0;
-	 if (response.ok) { // if HTTP-status is 200-299
-		 // get the response body (the method explained below)
-		 let json = await response.json();
-		 if (dbug) console.log("Got json: " + JSON.stringify(json) + ".");
-		 salaries = json["IT"]["2021-2025"]["salaries"]["annual"];
-		 daily = json["IT"]["2021-2025"]["salaries"]["daily"];
-		 hourly = json["IT"]["2021-2025"]["salaries"]["hourly"];
-		 initPeriods = json["IT"]["2021-2025"]["periods"];
-		 success++;
-	 } else {
-		 console.error("HTTP-Error: " + response.status);
-	 }
- 
-	 response = await fetch("i18n.json");
-	 if (response.ok) { // if HTTP-status is 200-299
-		 i18n = await response.json();
-		 if (dbug) console.log("Got json: " + JSON.stringify(i18n) + ".");
-		 success++;
-	 } else {
-		 console.error("HTTP-Error: " + response.status);
-	 }
-	 if (success == 2) {
-		 if (dbug) console.log("getData::calling init.");
-		 init();
-	 }
- } // End of getData
+function getData(classif, caname) {
+
+	if (dbug) console.log ("getData::Getting salaries from classification " + classif + " from CA/TA " + caname + ".");
+	salaries = payload[classif][caname]["salaries"]["annual"];
+	levels = salaries.length;
+	//daily = json[classification][CAName]["salaries"]["daily"];
+	//hourly = json[classification][CAName]["salaries"]["hourly"];
+	initPeriods = payload[classification][CAName]["periods"];
+
+} // End of getData
+
+async function getDataFile () {
+	let response = await fetch("raiseInfo.json");
+	let success = 0;
+	if (response.ok) { // if HTTP-status is 200-299
+		// get the response body (the method explained below)
+		payload = await response.json();
+		if (dbug) console.log ("Got json: "  + JSON.stringify(payload) + ".");
+		
+		
+		success++;
+	} else {
+		console.error ("HTTP-Error: " + response.status);
+	}
+
+	response = await fetch("i18n.json");
+	if (response.ok) { // if HTTP-status is 200-299
+		i18n = await response.json();
+		if (dbug) console.log ("Got json: "  + JSON.stringify(i18n) + ".");
+		success++;
+	} else {
+		console.error ("HTTP-Error: " + response.status);
+	}
+	if (success==2) {
+		if (dbug) console.log ("getDataFile::calling init.");
+		init();
+	}
+} // End of getDataFile
+
  
  if (dbug) console.log("Finished loading backpayCalc.js.");
  document.addEventListener('DOMContentLoaded', getData, false);
