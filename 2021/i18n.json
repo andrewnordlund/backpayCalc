@@ -1,0 +1,230 @@
+{
+	"selectClass" : {"en" : "Select your classification",
+			"fr" : "Sélectionnez votre classification"
+	},
+	"selectSalaryLbl" : {"en" : "Select salary",
+			"fr" : "Sélectionnez votre salaire"
+	},
+	"selectCALbl" : {"en" : "Select the collective agreement",
+			"fr" : "Sélectionnez votre convention collective"
+	},
+	"startDateLgnd" : {"en" : "Were you in classification {{classification}} on {{startDate}}?",
+			"fr" : "Étiez-vous dans la {{classification}} le {{startDate}}"
+	},
+	"yes" : {"en" : "Yes",
+			"fr" : "Oui"
+	},
+	"no" : {"en" : "No",
+			"fr" : "Non"
+	},
+	"day" : {"en" : "day",
+		"fr" : "jour"
+	},
+	"IT" : {"en" : "IT",
+			"fr" : "TI"
+	},
+	"level" : {"en" : "Level",
+			"fr" : "Niveau"
+	},
+	"step" : {"en" : "Step",
+		"fr" : "Échelon"
+	},
+	"there" : {"en" : "There",
+			"fr" : "Salarié"
+	},
+	"salary" : {"en" : "Salary",
+			"fr" : "Salaire"
+	},
+	"workingDays" : {"en" : "Working Days",
+			"fr" : "Jours ouvrables"
+	},
+	"yourinfoTxt" : {"en" : "Your Information",
+			"fr" : "Votre information"
+	},
+	"datesTxt" : {"en" : "Note: All dates should be formatted as YYYY-MM-DD.",
+			"fr" : "Remarque : Toutes les dates doivent être dans le format AAAA-MM-JJ."
+	},
+	"levelSelectError" : {"en" : "Please select a level",
+				"fr" : "Veuillez sélectionner un niveau"
+	},
+	"promotion" : {"en" : "Promotion",
+			"fr" : "Promotion"
+	},
+	"dateOfPromotion" : {"en" : "Date of promotion:",
+		"fr" : "Date de la promotion"
+	},
+	"promotedToLevel"  : {"en" : "Promoted to level:",
+			"fr" : "Promu au niveau :"
+	},
+	"selectLevel" : {"en" : "Select Level",
+			"fr" : "Choisir le niveau"
+	},
+	"newPromoAdded" : {"en" : "New promotion section added.",
+			"fr" : "Nouvelle section de promotion ajoutée."
+	},
+	"newActingAdded" : {"en" : "New Acting section added.",
+			"fr" : "Nouvelle section d'intérim ajoutée."
+	},
+	"actingStint" : {"en" : "Acting Stint",
+			"fr" : "Période intérimaire"
+	},
+	"from" : {"en" : "From",
+		"fr" : "De"
+	},
+	"to" : {"en" : "To",
+		"fr"  : "À"
+	},
+	"actingLevel" : {"en" : "Acting Level:",
+			"fr" : "Niveau intérimaire :"
+	},
+	"remove" : {"en" : "Remove",
+			"fr" : "Supprimer"
+	},
+	"addAnotherActing" : {"en" : "Add Another Acting",
+				"fr" : "Ajouter un autre intérim"
+	},
+	"lwopStint" : {"en" : "LWoP Stint",
+			"fr" : "Période de congé non payé"
+	},
+	"addAnotherLwop" : {"en" : "Add another LWoP",
+				"fr" : "Ajouter un autre congé non payé"
+	},
+	"newLwopSection" : {"en" : "New leave without pay section added.",
+				"fr" : "Nouvelle section de congé non payé ajoutée."
+	},
+	"otOrStby" : {"en" : "Overtime or Standby",
+		"fr" : "Heures supplémentaires ou disponibilité"
+	},
+	"dtOfOT" : {"en" : "Date of Overtime:",
+		"fr" : "Date de l'heure supplémentaire"
+	},
+	"hrsOT" : {"en" : "Hours-worth of overtime",
+		"fr" : "Combien d'heures supplémentaires"
+	},
+	"OTRate" : {"en" : "Overtime Rate:",
+			"fr" : "Taux d'heure supplémentaire:"
+	},
+	"selectOTRate" : {"en" : "Select Overtime Rate",
+		"fr" : "Sélectionnez le taux des heures supplémentaires"
+	},
+	"standby" : {"en" : "Standby",
+		"fr" : "Disponibilité"
+	},
+	"addAnotherOvertime" : {"en" : "Add Another Overtime",
+				"fr" : "Ajouter une autre heure supplémentaire"
+	},
+	"newOTSection" : {"en" :"New overtime section added.",
+			"fr" : "Nouvelle section d'heures supplémentaires ajoutée."
+	},
+	"Lump Sum" : {"en" : "Lump Sum",
+			"fr" : "Paiement forfaitaire"
+	},
+	"dtPdOut" : {"en" : "Date paid out:",
+			"fr" : "Date de paiement :"
+	},
+	"hrsLumpSum" : {"en" : "Hours-worth of payout",
+		"fr" : "Nombre d'heures en paiement"
+	},
+	"addAnotherPromotion" : {"en" : "Add another promotion",
+		"fr" : "Ajouter une autre promotion"
+	},
+	"addAnotherLumpSum" : {"en" : "Add another LumpSum",
+		"fr" : "Ajouter une autre paiement forfaitaire"
+	},
+	"newLumpSumSection" : {"en" : "New lump sum section added.",
+				"fr" : "Nouvelle section de paiement forfaitaire ajoutée."
+	},
+	"promoSectionRemoved" : {"en" :"Promotion section removed.",
+				"fr" : "Section promotion supprimée."
+	},
+	"actingSectionRemoved" : {"en" : "Acting section removed.",
+				"fr" : "Section intérimaire supprimée."
+	},
+	"lwopSectionRemoved" : {"en" : "Leave Without Pay section removed.",
+				"fr" : "Section congé non payé supprimée."
+	},
+	"OTSectionRemoved" : {"en" : "Overtime section removed.",
+			"fr" : "Section des heures supplémentaires supprimée."
+	},
+	"lumpSumSectionRemoved" : {"en" : "Lump sum section removed.",
+					"fr" : "Section paiement forfaitaire supprimée."
+	},
+	"resultsShownBelow" : {"en" : "Results shown below.",
+		"fr" : "Résultats présentés ci-dessous."
+	},
+	"startDateErrorMsg" : {"en" : "Please enter the date at which you started at the level you were at on December 22, 2021. If you weren't an IT at that time, enter the date you started as an IT. All dates must be in the format of YYYY-MM-DD.",
+				"fr" : "Veuillez saisir la date à laquelle vous avez commencé au niveau auquel vous étiez le 22 décembre 2021. Si vous n'étiez pas TI à cette date, saisissez la date à laquelle vous avez commencé en tant que TI. Toutes les dates doivent être dans le format AAAA-MM-JJ."
+	},
+	"hourly" : {"en" : "Hourly",
+		"fr" : "Horaire"
+	},
+	"OTPayment" : {"en" : "Overtime Payment x",
+		"fr" : "Paiement des heures supplémentaires x"
+	},
+	"total" : {"en" : "Total",
+		"fr" : "Total"
+	},
+	"Contractual Increase" : {"en" : "Contractual Increase",
+			"fr" : "Augmentation contractuelle"
+	},
+	"Fiscal New Year" : {"en" : "Fiscal New Year",
+			"fr" : "Nouvelle année financière"
+	},
+	"Contract Signed" : {"en" : "Contract Signed",
+			"fr" : "Contrat signé"
+	},
+	"end" : {"en" : "end",
+		"fr" : "fin"
+	},
+	"Anniversary Increase" : {"en" : "Anniversary Increase",
+				"fr" : "Anniversaire de la promotion"
+	},
+	"Starting" : {"en" : "Starting",
+			"fr" : "Débutant"
+	},
+	"Acting Anniversary" : {"en" : "Acting Anniversary",
+			"fr" : "Anniversaire de l’intérimaire"
+	},
+	"Acting Start" : {"en" : "Acting Start",
+			"fr" : "Début de l'intérimaire"
+	},
+	"Acting Finished" : {"en" : "Acting Finished",
+			"fr" : "Fin de l'intérimaire"
+	},
+	"LWoP Start" : {"en" : "LWoP Start",
+			"fr" : "Début du congé non payé"
+	},
+	"LWoP Finished" : {"en" :"LWoP Finished",
+			"fr" : "Fin du congé non payé"
+	},
+	"Overtime" : {"en" : "Overtime",
+			"fr" : "Heures supplémentaires"
+	},
+	"lumpSumPayment" : {"en" : "Lump Sum Payment",
+			"fr" : "Paiement forfaitaire"
+	},
+	"paySectHeading" : {"en" : "Pay Rates",
+				"fr" : "Taux de rémunération"
+	},
+	"annual" : {"en" : "Annual",
+			"fr" : "Annuel"
+	},
+	"daily" : {"en" : "Daily",
+		"fr" : "Journalier"
+	},
+	"show" : {"en" : "Show",
+		"fr" : "Montrer"
+	},
+	"current" : {"en" : "Current",
+		"fr" : "Actuel"
+	},
+	"weekly" : {"en" : "Weekly",
+		"fr" : "Hebdomadaire"
+	},
+	"hours" : {"en" : "Hours",
+		"fr" : "Heures"
+	},
+	"onlwop" : {"en" : "On Leave without pay",
+		"fr" : "En congé sans solde"
+	}
+}

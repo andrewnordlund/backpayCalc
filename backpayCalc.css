@@ -1,118 +1,445 @@
-.helper {
-	font-size: 80%;
-	display: block;
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: lightgray;
+    color: #333;
+    font-size: 16px;
 }
 
-table {
-	border: thin solid #808080;
-}
-caption {
-	font-weight: bold;
-}
-th, td {
-	border: thin inset #808080;
-	padding: .25em .5em; 
-}
-legend {
-	font-size: 120%;
-	padding: .1em .4em;
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-footer {
-	border-top: thin solid #808080;
-	width: 100%;
-	font-size: 80%;
+/* Header Styles */
+header h1 {
+    text-align: left;
+    color: #0056b3;
+    font-size: 2em;
+    margin-bottom: 0.5em;
 }
 
-#resultsDiv {
-	max-width: 95%;
-overflow-x: scroll;
-margin: 0;
-padding: 2em 1%;
+/* Consistent h2 Styling for Forms */
+form h2 {
+    color: #d35400; /* Maintain the orange color */
+    font-size: 1.2em; /* Slightly larger font size */
+    margin-bottom: 15px;
 }
+
+/* Form Styles */
+form {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px
+}
+
+.formRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.formRow fieldset {
+    flex: 1;
+    min-width: 200px; /* Minimum width before wrapping */
+    padding: 20px; /* Optional for spacing */
+    box-sizing: border-box; /* To include padding in width calculation */
+}
+
 .fieldHolder {
-	margin: .5em .5em;
+    flex-grow: 1;
+    min-width: 150px;
 }
+
 .fieldHolder label {
-	font-weight: bold;
-display: block;
+    color: #0056b3;
+    display: block;
+    margin-top: 5pm;
+    margin-bottom: 5px;
+    font-size: 1.1em;
+    text-align: center;
 }
-.fieldHolder input, .fieldHolder select {
-	margin: .5em .2em;
+
+.fieldHolder select, 
+.fieldHolder input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    text-align: center;
+    border-radius: 10px;
+    font-size: 1.2em;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
-.small {
-	font-size: 80%;
+ 
+.fieldHolder .buttoncalc {
+    margin-top: 20px;
+    /*background-image: linear-gradient(to bottom, #55b72d, #3d7e1e); /* Green metallic gradient */
+    background-color: #297f1c;
+    color: white;
+    padding: 15px 30px;
+    border: 1px solid #297f1c;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 25px;
+   /* box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 6px 6px rgba(0, 0, 0, 0.2); /* Enhanced shadow for 3D effect */
+    transition: all 0.3s ease; /* Smooth transition for all changes */
+    /* 3D Perspective */
+    transform: perspective(1px) translateZ(0);
+    backface-visibility: hidden;
 }
-#promotionsDiv {
-	/*border: thin solid blue;*/
+
+/* Hover Effect */
+.fieldHolder .buttoncalc:hover {
+    transform: translateY(-3px) scale(1.01); /* Lift and slightly enlarge the button */
+    box-shadow: 0 15px 30px rgba(0, 255, 0, 0.4), 0 10px 10px rgba(0, 0, 0, 0.2); /* Enhanced shadow for lifted effect */
 }
-.error span, .error p {
-	border: 2px solid #AA0000;
-	padding: 0.25em .2em;
-	margin: .5em 0;
-	/*display: block-inline;*/
-	color: #AA0000;
-	font-weight: bold;
+
+/* Dynamic Click Effect */
+@keyframes click-animation {
+    0% { transform: translateY(-3px) scale(1.05); }
+    50% { transform: translateY(-2px) scale(0.95); }
+    100% { transform: translateY(-3px) scale(1.05); }
 }
-.invisibleStuff {
-	position: absolute;
-	height: 1px;
-	width: 1px;
-	clip: rect(1px, 1px, 1px, 1px);
-	overflow: hidden;
-	margin: 0;
+
+.fieldHolder .buttoncalc:active {
+    animation: click-animation 0.3s ease;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2), 0 2px 2px rgba(0, 0, 0, 0.1); /* Reduced shadow for pressed effect */
 }
-.summary {
-	display: inline;
-	font-size: 150%;
+.arrow-container {
+    display: none; /* Hidden by default */
+    text-align: center;
+    margin-top: 0px;
+    font-size: 3em;
 }
+
+.arrow-container::after {
+    content: '↓   ↓   ↓   ↓';
+    font-size: 1em;
+    color: #0056b3;
+    animation: flashArrow 1s infinite;
+}
+
+@keyframes flashArrow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+
+
+/* Button Styling */
+.button {
+    background-color: lightgreen;
+    color: #003d66;
+    padding: .9em .9em .9em .9em;
+    border: none;
+    border-radius: 10px; /* Rounded corners for buttons */
+    cursor: pointer;
+    font-size: 1em;
+    width: 15em;
+    text-align: justify;
+}
+
+.button:hover {
+    background-color: #003d66;
+    color: lightgreen;
+}
+
+.buttoncalc:hover {
+    background-color: darkgreen;
+}
+
+/* Fieldset and ` Styling */
+fieldset {
+    border-radius: 8px; /* Rounded corners for fieldsets */
+    padding: 10px;
+    border: 3px solid #ccc;
+    color: #d35400
+}
+
+
+legend {
+    padding: 0px 10px; /* Padding for legend */
+    background-color: #f4f4f4; /* Background color for legend */
+    border-radius: 4px; /* Rounded corners for legend */
+}
+
+/* Results Section */
+#resultsDiv {  
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    overflow-x:auto; /* Allows horizontal scrolling if needed */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px; /* Adjust padding as needed */
+    margin-top: 20px; /* Adjust margin as needed */
+    max-width: 100%;
+}
+
+#resultsDiv h2 {  
+    color: #d35400; /* Maintain the orange color */
+    font-size: 1.2em; /* Slightly larger font size */
+    margin-bottom: 15px;
+}
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.table th, .table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+.table th {
+    background-color: #0056b3;
+    color: white;
+    text-align: center;
+}
+
+/* Footer Styles */
+footer {
+    margin-top: 20px;
+    text-align: left;
+    font-size: 0.9em;
+    color: #777;
+}
+
+/* Details/Summary Styles */
 details {
-    border: thin solid #c0c0c0;
-    padding: 0.5em;
-    margin: 0 5em 1.35em 0;
-}
-dl dt{
-	display: inline-block;
-	min-width: 100px;
-	font-weight: bold;
-}
-dl dd {
-	display: inline;
-	margin: 0 0 0 1em;
-}
-dl dd:after{
-	display: block;
-	content: '';
+    background-color: #f8f8f8;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    text-align: left; /* Aligns all text inside <details> to the left */
 }
 
-#skipLinks {
-	display: block;
-	margin: 0;
-	padding: 0;
-	list-style-type: none;
-}
-#skipLinks > li {
-	left: 0;
-	position: absolute;
-	text-align: center;
-	top: 10px;
-	width: 100%;
-	z-index: 3;
+summary {
+    font-weight: bold;
+    cursor: pointer;
 }
 
-#skipLinks > li > a {
-	clip: rect(1px,1px,1px,1px);
-	height: 1px;
-	margin: 0;
-	overflow: hidden;
-	position: absolute;
-	width: 1px;
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+        text-align: center;
+    }
+
+    form h2 {
+        font-size: 1.1em; /* Adjust font size for smaller screens */
+    }
+
+    .formRow {
+        flex-direction: column; /* Stack fields vertically on small screens */
+        text-align: center;
+    }
 }
-#skipLinks > li > a:focus {
-	clip: rect(auto,auto,auto,auto);
-	height: inherit;
-	margin: inherit;
-	overflow: inherit;
-	position: static;
-	width: inherit;
+
+#resultsTable {
+    border-collapse: collapse;
+    width: 100%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* subtle shadow */
+    text-align: center;
+    max-width: 100%; /* Ensures table doesn't exceed the container width */
+    overflow-x: auto; /* Allows horizontal scrolling for smaller screens */
+    table-layout: auto;
 }
+
+#resultsTable th, #resultsTable td {
+    padding: 0.1em; /* Relative unit */
+    text-align: center;
+    font-size: 0.9em;
+}
+
+#resultsTable thead {
+    background-color: #e7f1ff; /* Light blue header */
+    color: #333;
+}
+
+#resultsTable tbody tr:nth-child(odd) {
+    background-color:#e7f1ff/* Zebra striping for rows */
+}
+
+#resultsTable tfoot {
+    background-color: #cce5ff; /* Different shade for footer */
+    font-weight: bold;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    #resultsTable thead, #resultsTable tbody, #resultsTable th, #resultsTable td, #resultsTable tr {
+        display: block;
+        border-radius: 10px;
+        font-size: 1.0em;
+    }
+
+    #resultsTable thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    #resultsTable tr { 
+        margin: 0 0 1rem 0;
+
+    }
+
+    #resultsTable td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+        word-wrap: break-word; /* Allows long words to be broken and wrapped to the next line */
+        white-space: normal; /* Allows content to wrap as needed */
+    }
+
+    #resultsTable td:before {
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+    }
+
+    /* Labelling the pseudo-elements with the respective column headers */
+    #resultsTable td:before { content: attr(data-label); }
+
+    #resultsTable td:nth-of-type(1):before { content: "Period: "; }
+    #resultsTable td:nth-of-type(2):before { content: "Amount Paid: "; }
+    #resultsTable td:nth-of-type(3):before { content: "Amount Entitled: "; }
+    #resultsTable td:nth-of-type(4):before { content: "Backpay Owed: "; }
+    #resultsTable td:nth-of-type(5):before { content: "Level: "; }
+    #resultsTable td:nth-of-type(6):before { content: "Step: "; }
+    #resultsTable td:nth-of-type(7):before { content: "There? "; }
+    #resultsTable td:nth-of-type(8):before { content: "Salary: "; }
+    #resultsTable td:nth-of-type(9):before { content: "Working Days: "; }
+
+}
+
+/* Specific responsive styles for the .total row */
+@media screen and (max-width: 768px) {
+    #resultsTable .total th, 
+    #resultsTable .total td {
+        display: block;
+        text-align: left;
+        position: relative; /* For positioning the pseudo-elements */
+        padding-left: 50%;
+        border-radius: 10px;
+    }
+
+    #resultsTable .total th:before, 
+    #resultsTable .total td:not([colspan]):before {
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        table-layout: auto;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+        content: attr(data-label); /* Use data-label for content */
+    }
+
+    /* Custom labels for the .total row */
+    #resultsTable .total th[data-label]:before { content: attr(data-label); }
+    #resultsTable .total td[data-label]:before { content: attr(data-label); }
+
+    /* Handling the colspan cell */
+    #resultsTable .total td[colspan="5"] {
+        display: none; /* Hide this cell or adjust as needed */
+    }
+}
+.highlight-cell {
+    font-size: 1.5em !important;
+    background-color: black; /* or any high contrast color */
+    color: white; /* or a color that contrasts with the background */
+    font-weight: bold;
+    /* Add any other styling you desire */
+}
+
+.removeButton, .addButton {
+    margin-top: 20px;
+    background-color: #C24641;/* NOTE:addButton changed below */
+    color: white;
+    cursor: pointer;
+    font-size: 0.8em !important;
+    padding: 5px 10px; /* Adjust padding as needed */
+    border: none; /* remove button border */
+    border-radius: 50px1; /*rounded corners */
+    width: 12em !important; /* or a specific width like 80px */
+    height: auto; /* or a specific height like 30px */
+    display: inline-block; /* or 'block' if you want the button to be on its own line */
+}
+
+.addButton {
+    background-color: forestgreen; /* Specific to addButton */
+}
+
+/* Existing Tooltip Styles */
+.tooltip {
+    display: inline-block;
+    position: relative;
+    cursor: help;
+}
+
+.tooltip .question-mark {
+    display: inline-block;
+    margin-left: 5px;
+    color: #0056b3;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: cornflowerblue;
+    color: white;
+    text-align: left;
+    border-radius: 6px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: -5px;
+    left: 110%;
+    margin-left: -60px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+/* Responsive Adjustments for Tooltips on Mobile Devices */
+@media screen and (max-width: 768px) {
+    .tooltip .tooltiptext {
+        position: absolute; /* Absolute positioning for dynamic placement */
+        /* Remove width constraints to allow natural sizing */
+        left: 50%; /* Start at the center */
+        transform: translateX(-50%); /* Center horizontally */
+        white-space: normal; /* Allow text wrapping */
+        visibility: hidden; /* Initially hidden */
+        opacity: 0; /* Fully transparent initially */
+        transition: opacity 0.5s linear; /* Smooth fade-in effect */
+        z-index: 100; /* Ensure it's above other elements */
+    }
+
+    .tooltip:hover .tooltiptext,
+    .tooltip:active .tooltiptext {
+        visibility: visible; /* Show tooltip on hover/touch */
+        opacity: 1; /* Fully opaque */
+    }
+}
+    
