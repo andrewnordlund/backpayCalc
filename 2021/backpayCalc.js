@@ -86,301 +86,367 @@
  */
  //var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
  //var days = [31, 29, 31
- function init() {
-	 if (dbug) console.log("Initting");
-	 //lang = document.documentElement.lang;
-	 //if (lang == "fr") langFormat = "fr-CA";
-	 //saveValues = new Map();
-	 var calcBtn = document.getElementById("calcBtn");
-	 levelSel = document.getElementById("levelSelect");
-	 //if (updateHash) levelSel.addEventListener("change", saveValue, false);
-	 stepSelect = document.getElementById("stepSelect");
-	 //if (updateHash) stepSelect.addEventListener("change", saveValue, false);
-	 mainForm = document.getElementById("mainForm");
-	 resultsDiv = document.getElementById("resultsDiv");
-	 startDateTxt = document.getElementById("startDateTxt");
-	 //if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
-	 endDateTxt = document.getElementById("endDateTxt");
-	 //if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
-	 calcStartDate = document.getElementById("calcStartDate");
-	 addPromotionBtn = document.getElementById("addPromotionBtn");
-	 addActingBtn = document.getElementById("addActingBtn");
-	 addOvertimeBtn = document.getElementById("addOvertimeBtn");
-	 addLwopBtn = document.getElementById("addLwopBtn");
-	 addLumpSumBtn = document.getElementById("addLumpSumBtn");
-	 resultsBody = document.getElementById("resultsBody");
-	 resultsFoot = document.getElementById("resultsFoot");
-	 resultsTheadTR = document.getElementById("resultsTheadTR");
-	 resultStatus = document.getElementById("resultStatus");
-	 lastModTime = document.getElementById("lastModTime");
- 
-	 let langSwitchA = null;
-	 langSwitchA = document.getElementById("langSwitchA");
-	 if (langSwitchA) {
-		 if (dbug) console.log("init::lang link thingy: lang: " + lang + "; href: " + window.location.href + ".");
-		 langSwitchA.href = (lang == "en" ? window.location.href.replace("backpayCalc.html", "arrDeSalCalc.html") : window.location.href.replace("arrDeSalCalc.html", "backpayCalc.html"));
-	 }
- 
-	 if (lastModTime) {
-		 lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0, 10));
-		 lastModTime.innerHTML = lastModified.toLocaleString(lang + "-CA", { year: 'numeric', month: 'long', day: 'numeric' });
-	 }
-	 if (dbug || showExtraCols) {
-		 var ths = resultsTheadTR.getElementsByTagName("th");
-		 if (ths.length == 4) {
-			 createHTMLElement("th", { "parentNode": resultsTheadTR, "scope": "col", "textNode": i18n["level"][lang] });
-			 createHTMLElement("th", { "parentNode": resultsTheadTR, "scope": "col", "textNode": i18n["step"][lang] });
-			 createHTMLElement("th", { "parentNode": resultsTheadTR, "scope": "col", "textNode": i18n["there"][lang] + "?" });
-			 createHTMLElement("th", { "parentNode": resultsTheadTR, "scope": "col", "textNode": i18n["salary"][lang] });
-			 createHTMLElement("th", { "parentNode": resultsTheadTR, "scope": "col", "textNode": i18n["workingDays"][lang] });
-		 }
-	 }
-	 /*for (var r in results) {
-		 results[r] = document.getElementById(r);
-	 }*/
-	 if (dbug) console.log("init::MainForm is " + mainForm + ".");
-	 if (levelSel && stepSelect && mainForm && startDateTxt && calcBtn && addActingBtn && addPromotionBtn) {
-		 if (dbug) console.log("Adding change event to calcBtn.");
-		 levelSel.addEventListener("change", populateSalary, false);
-		 if (levelSel.value.match(/[1-5]/)) populateSalary();
-		 startDateTxt.addEventListener("change", selectSalary, false);
-		 if (startDateTxt.value.replace(/[^-\d]/, "").match(/YYYY-MM-DD/)) populateSalary();
- 
-		 calcBtn.addEventListener("click", startProcess, false);
-		 addActingBtn.addEventListener("click", addActingHandler, false);
-		 addLwopBtn.addEventListener("click", addLWoPHandler, false);
-		 addOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
-		 addLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
-		 addPromotionBtn.addEventListener("click", addPromotionHandler, false);
-	 } else {
-		 if (dbug) console.error("Couldn't get levelSelect.");
-	 }
-	 handleHash();
- } // End of init
- 
- 
- // Check the document location for saved things
- function handleHash() {
-	 let hasHash = false;
-	 let thisURL = new URL(document.location);
-	 let params = thisURL.searchParams;
- 
-	 //let hash = thisURL.hash;
-	 let toCalculate = 0;
-	 if (params.has("dbug")) {
-		 if (params.get("dbug") == "true") dbug = true;
-	 }
- 
-	 if (params.has("lvl")) {
-		 let lvl = params.get("lvl").replace(/\D/g, "");
-		 levelSel.selectedIndex = lvl;
-		 toCalculate = toCalculate + 1;
-		 populateSalary();
-		 hasHash = true;
-	 }
-	 if (params.has("strtdt")) {
-		 let sd = params.get("strtdt");
-		 if (sd.match(/\d\d\d\d-\d\d-\d\d/)) {
-			 startDateTxt.value = sd;
-			 toCalculate = toCalculate | 2;
-		 }
-		 hasHash = true;
-	 }
-	 if (params.has("stp")) {
-		 let stp = params.get("stp").replace(/\D/g, "");
-		 stepSelect.selectedIndex = (parseInt(stp) + parseInt(1));
-		 toCalculate = toCalculate | 4;
-		 hasHash = true;
-	 }
- 
-	 if (params.get("enddt")) {
-		 let ed = params.get("enddt");
-		 if (ed.match(/\d\d\d\d-\d\d-\d\d/)) {
-			 endDateTxt.value = ed;
-			 toCalculate = toCalculate | 8;
-		 }
-		 hasHash = true;
-	 }
- 
-	 // Promotions
-	 let looking = true;
-	 for (i = 0; i < 5 && looking; i++) {
-		 if (params.has("pdate" + i) && params.has("plvl" + i)) {
-			 addPromotionHandler(null, { "date": params.get("pdate" + i), "level": params.get("plvl" + i), "toFocus": false });
-			 hasHash = true;
-		 } else {
-			 looking = false;
-		 }
-	 }
- 
-	 // Actings
-	 looking = true;
-	 let acl = 0;
-	 //dbug = true;
-	 while (looking) {
-		 // afrom0=2020-01-05&ato0=2020-02-06&alvl0=3&afrom1=2020-04-04&ato1=2020-05-06&alvl1=3
-		 if (params.has("afrom" + acl) || params.has("ato" + acl) || params.has("alvl" + acl)) {
-			 if (params.has("afrom" + acl) && params.has("ato" + acl) && params.has("alvl" + acl)) {
-				 addActingHandler(null, { "from": params.get("afrom" + acl), "to": params.get("ato" + acl), "level": params.get("alvl" + acl), "toFocus": false });
-				 hasHash = true;
-			 }
-		 } else {
-			 looking = false;
-		 }
-		 acl++;
-	 }
-	 //dbug = false;
- 
-	 // LWoPs
-	 looking = true;
-	 let ls = 0;
-	 while (looking) {
-		 if (params.has("lfrom" + ls) || params.has("lto" + ls)) {
-			 if (params.has("lfrom" + ls) && params.has("lto" + ls)) {
-				 addLWoPHandler(null, { "from": params.get("lfrom" + ls), "to": params.get("lto" + ls), "toFocus": false });
-				 hasHash = true;
-			 }
-		 } else {
-			 looking = false;
-		 }
-		 ls++;
-	 }
- 
-	 // Overtimes/Standbys
-	 looking = true;
-	 let ots = 0;
-	 while (looking) {
-		 if (params.has("otdate" + ots) || params.has("otamt" + ots) || params.has("otrt" + ots)) {
-			 if (params.has("otdate" + ots) && params.has("otamt" + ots) && params.has("otrt" + ots)) {
-				 addOvertimeHandler(null, { "date": params.get("otdate" + ots), "hours": params.get("otamt" + ots), "rate": params.get("otrt" + ots), "toFocus": false });
-				 hasHash = true;
-			 }
-		 } else {
-			 looking = false;
-		 }
-		 ots++;
-	 }
- 
-	 // Lump Sum Payments
-	 looking = true;
-	 let lss = 0;
-	 while (looking) {
-		 if (params.has("lsdate" + lss) || params.has("lsamt" + lss) || params.has("lsrt" + lss)) {
-			 if (params.has("lsdate" + lss) && params.has("lsamt" + lss)) {
-				 addLumpSumHandler(null, { "date": params.get("lsdate" + lss), "hours": params.get("lsamt" + lss), "toFocus": false });
-				 hasHash = true;
-			 }
-		 } else {
-			 looking = false;
-		 }
-		 lss++;
-	 }
- 
-	 if (dbug) console.log("toCalculate: " + toCalculate + ": " + toCalculate.toString(2) + ".");
-	 if (hasHash) {
-		 //calcBtn.focus();
-		 let clickEv = new Event("click");
-		 calcBtn.dispatchEvent(clickEv);
- 
-	 }
- 
- 
- } // End of handleHash
- 
- function saveValue(e) {
-	 let ot = e.originalTarget;
-	 let key = ot.id;
-	 let value = (ot.toString().match(/HTMLSelect/) ? ot.selectedIndex : ot.value);
- 
-	 if (updateHash) setURL();
- } // End of saveValue
- 
- // set the URL
- function setURL() {
-	 let url = new URL(document.location);
-	 let newURL = url.toString().replace(/#.*$/, "");
-	 newURL = newURL.replace(/\?.*$/, "");
- 
-	 newURL += "?";
- 
-	 newURL += saveValues.join("&");
- 
-	 history.pushState({}, document.title, newURL);
- 
- 
- } // End of setURL
- 
- 
- 
- 
- /*
-	Populates the Salary Select basedon the IT-0x level selected
- */
- function populateSalary() {
-	 removeChildren(stepSelect);
-	 if (levelSel.value > 0 && levelSel.value <= 5) {
-		 createHTMLElement("option", { "parentNode": stepSelect, "value": "-1", "textNode": i18n["selectSalaryLbl"][lang] });
-		 for (var i = 0; i < salaries[(levelSel.value - 1)].length; i++) {
-			 createHTMLElement("option", { "parentNode": stepSelect, "value": i, "textNode": i18n["step"][lang] + " " + (+i + 1) + " - " + formatter.format(salaries[levelSel.value - 1][i]) });
-		 }
-	 }
-	 if (startDateTxt.value.replace(/[^-\d]/, "").match(/(\d\d\d\d)-(\d\d)-(\d\d)/)) selectSalary();
- } // End of populateSalary
- 
- // Once an IT-level and startDate have been selected, select the most likely salary from the dropdown
- // Called from init when startDateTxt has changed, and from populateSalary if startDateTxt is a date (####-##-##)
- 
- // I don't get it.  What's the difference btween selectSalary and getSalary?
- // They both start the same way: get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
- function selectSalary() {
-	 //if (!(levelSelect.value > 0 && levelSelect.value <= 5))
-	 if (parts && levelSel.value > 0 && levelSel.value <= 5) {	// if you have a start date, and an IT-0x level
-		 let startDate = getStartDate();
-		 startDateTxt.value = startDate.toISOString().substr(0, 10)
-		 let timeDiff = (TABegin - startDate) / day;
-		 let years = Math.floor(timeDiff / 365);
- 
-		 if (dbug) console.log("TimeDiff between " + TABegin.toString() + " and " + startDate.toString() + ": " + timeDiff + ".");
- 
-		 if (timeDiff < 0) {
-			 // You started after the CA started
-			 calcStartDate.setAttribute("datetime", startDate.toISOString().substr(0, 10));
-			 calcStartDate.innerHTML = startDate.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });
- 
-			 step = 1;
-		 } else {
-			 // You started after the CA started
-			 calcStartDate.setAttribute("datetime", TABegin.toISOString().substr(0, 10));
-			 calcStartDate.innerHTML = TABegin.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });
- 
-			 var step = Math.ceil(years, salaries[levelSel.value].length - 1) + 1;
-		 }
-		 if (dbug) console.log("Your step would be " + step + ".");
-		 if (step > salaries[levelSel.value].length) step = salaries[levelSel.value].length;
-		 if (dbug) console.log("But there ain't that many steps.  so you're step " + step + ".");
- 
-		 stepSelect.selectedIndex = step;
- 
-	 }
- } // End of selectSalary
- 
- function getStartDate() {
-	 let dparts = null;
-	 startDateTxt.value = startDateTxt.value.replace(/[^-\d]/, "");
-	 dparts = startDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-	 if (dbug) console.log("Got startDateTxt " + startDateTxt.value + ".");
-	 if (dbug) console.log("Got dparts " + dparts + ".");
-	 // Leap years
-	 if (dparts[2] == "02" && dparts[3] > "28") {
-		 if (parseInt(dparts[1]) % 4 === 0 && dparts[3] == "29") {
-			 // Do nothing right now
-		 } else {
-			 dparts[3] = (parseInt(dparts[1]) % 4 === 0 ? "29" : "28");
-		 }
-	 }
-	 return new Date(dparts[1], dparts[2] - 1, dparts[3]);
- 
- } // End of getStartDate
+function init () {
+	if (dbug) console.log ("Initting");
+	lang = document.documentElement.lang;
+	if (lang == "fr") langFormat = "fr-CA";
+	//saveValues = new Map();
+	var calcBtn = document.getElementById("calcBtn");
+	levelSel = document.getElementById("levelSelect");
+	//if (updateHash) levelSel.addEventListener("change", saveValue, false);
+	stepSelect = document.getElementById("stepSelect");
+	//if (updateHash) stepSelect.addEventListener("change", saveValue, false);
+	mainForm = document.getElementById("mainForm");
+	resultsDiv = document.getElementById("resultsDiv");
+	startDateTxt = document.getElementById("startDateTxt");
+	//if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
+	endDateTxt = document.getElementById("endDateTxt");
+	//if (updateHash) startDateTxt.addEventListener("change", saveValue, false);
+	calcStartDate = document.getElementById("calcStartDate");
+	addPromotionBtn = document.getElementById("addPromotionBtn");
+	addActingBtn = document.getElementById("addActingBtn");
+	addOvertimeBtn = document.getElementById("addOvertimeBtn");
+	addLwopBtn = document.getElementById("addLwopBtn");
+	addLumpSumBtn = document.getElementById("addLumpSumBtn");
+	resultsBody = document.getElementById("resultsBody");
+	resultsFoot = document.getElementById("resultsFoot");
+	resultsTheadTR = document.getElementById("resultsTheadTR");
+	resultStatus = document.getElementById("resultStatus");
+	lastModTime = document.getElementById("lastModTime");
+
+	let langSwitchA = null;
+	langSwitchA = document.getElementById("langSwitchA");
+	if (langSwitchA) {
+		if (dbug) console.log ("init::lang link thingy: lang: " + lang + "; href: " + window.location.href + ".");
+		langSwitchA.href = (lang == "en" ? window.location.href.replace("backpayCalc.html", "arrDeSalCalc.html") : window.location.href.replace("arrDeSalCalc.html", "backpayCalc.html"));
+	}
+	
+	// These next two lines, down the road, should allow for other bargaining groups and CAs to be added.
+	classification = getClassification();
+	CAName = getCAName();
+
+	getData(classification, CAName);
+
+	genRates ();
+	genTables ();
+
+	if (lastModTime) {
+		lastModTime.setAttribute("datetime", lastModified.toISOString().substr(0,10));
+		lastModTime.innerHTML = lastModified.toLocaleString(lang + "-CA", { year: 'numeric', month: 'long', day: 'numeric' });	
+	}
+	if (dbug || showExtraCols) {
+		var ths = resultsTheadTR.getElementsByTagName("th");
+		if (ths.length == 4) {
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["level"][lang]});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["step"][lang]});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["onlwop"][lang] + "?"});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["salary"][lang]});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["workingDays"][lang]});
+		}
+	}
+	/*for (var r in results) {
+		results[r] = document.getElementById(r);
+	}*/
+	if (dbug) console.log("init::MainForm is " + mainForm + ".");
+	if (levelSel && stepSelect && mainForm && startDateTxt && calcBtn && addActingBtn && addPromotionBtn) {
+		if (dbug) console.log ("Adding change event to calcBtn.");
+		levelSel.addEventListener("change", populateSalary, false);
+		if (levelSel.value.match(/[1-5]/)) populateSalary();
+		startDateTxt.addEventListener("change", selectSalary, false);
+		if (startDateTxt.value.replace(/[^-\d]/, "").match(/YYYY-MM-DD/)) populateSalary();
+	
+		calcBtn.addEventListener("click", startProcess, false);
+		addActingBtn.addEventListener("click", addActingHandler, false);
+		addLwopBtn.addEventListener("click", addLWoPHandler, false);
+		addOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
+		addLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
+		addPromotionBtn.addEventListener("click", addPromotionHandler, false);
+	} else {
+		if (dbug) console.error ("Couldn't get levelSelect.");
+	}
+	handleHash ();
+} // End of init
+
+function getClassification () {
+	return classification;
+} // End of getClassification
+
+function getCAName() {
+	return CAName;
+} // End of getCAName
+
+
+// Check the document location for saved things
+function handleHash () {
+	let hasHash = false;
+	let thisURL = new URL(document.location);
+	let params = thisURL.searchParams;
+
+	//let hash = thisURL.hash;
+	let toCalculate = 0;
+	if (params.has("dbug")) {
+		if (params.get("dbug") == "true") dbug= true;
+	}
+
+	if (params.has("lvl")) {
+		let lvl = params.get("lvl").replace(/\D/g, "");
+		levelSel.selectedIndex = lvl;
+		toCalculate = toCalculate + 1;
+		populateSalary();
+		hasHash = true;
+	}
+	if (params.has("strtdt")) {
+		let sd = params.get("strtdt");
+		if (sd.match(/\d\d\d\d-\d\d-\d\d/)) {
+			startDateTxt.value = sd;
+			toCalculate = toCalculate | 2;
+		}
+		hasHash = true;
+	}
+	if (params.has("stp")) {
+		let stp = params.get("stp").replace(/\D/g, "");
+		stepSelect.selectedIndex = (parseInt(stp) + parseInt(1));
+		toCalculate = toCalculate | 4;
+		hasHash = true;
+	}
+	/*
+	setTimeout (function () {
+		console.log ("Gonna try and set step now");
+		if (params.get("stp")) {
+			let stp = params.get("stp").replace(/\D/g, "");
+			console.log ("And gonna set it now to " + stp + ".");
+			stepSelect.selectedIndex = stp;
+			toCalculate = toCalculate | 4;
+		}}, 0);
+	*/
+	if (params.get("enddt")) {
+		let ed = params.get("enddt");
+		if (ed.match(/\d\d\d\d-\d\d-\d\d/)) {
+			endDateTxt.value = ed;
+			toCalculate = toCalculate | 8;
+		}
+		hasHash = true;
+	}
+	
+	// Promotions
+	let looking = true;
+	for (i = 0; i<5 && looking; i++) {
+		if (params.has("pdate" + i) && params.has("plvl"+i)) {
+			addPromotionHandler(null, {"date" : params.get("pdate" + i), "level" : params.get("plvl" + i), "toFocus" : false});
+			hasHash = true;
+		} else {
+			looking = false;
+		}
+	}
+
+	// Actings
+	looking = true;
+	let acl = 0;
+	//dbug = true;
+	while (looking) {
+		// afrom0=2020-01-05&ato0=2020-02-06&alvl0=3&afrom1=2020-04-04&ato1=2020-05-06&alvl1=3
+		if (params.has("afrom" + acl) || params.has("ato"+acl) || params.has("alvl"+acl)) {
+			if (params.has("afrom" + acl) && params.has("ato"+acl) && params.has("alvl"+acl)) {
+				addActingHandler(null, {"from" : params.get("afrom" + acl), "to" : params.get("ato" + acl), "level" : params.get("alvl" + acl), "toFocus" : false});
+				hasHash = true;
+			}
+		} else {
+			looking = false;
+		}
+		acl++;
+	}
+	//dbug = false;
+
+	// LWoPs
+	looking = true;
+	let ls = 0;
+	while (looking) {
+		if (params.has("lfrom" + ls) || params.has("lto"+ls)) {
+			if (params.has("lfrom" + ls) && params.has("lto"+ls)) {
+				addLWoPHandler(null, {"from" : params.get("lfrom" + ls), "to" : params.get("lto" + ls), "toFocus" : false});
+				hasHash = true;
+			}
+		} else {
+			looking = false;
+		}
+		ls++;
+	}
+
+	// Overtimes/Standbys
+	looking = true;
+	let ots = 0;
+	while (looking) {
+		if (params.has("otdate" + ots) || params.has("otamt"+ots) || params.has("otrt"+ots)) {
+			if (params.has("otdate" + ots) && params.has("otamt"+ots) && params.has("otrt"+ots)) {
+				addOvertimeHandler(null, {"date" : params.get("otdate" + ots), "hours" : params.get("otamt" + ots), "rate" : params.get("otrt" + ots), "toFocus" : false});
+				hasHash = true;
+			}
+		} else {
+			looking = false;
+		}
+		ots++;
+	}
+
+	// Lump Sum Payments
+	looking = true;
+	let lss = 0;
+	while (looking) {
+		if (params.has("lsdate" + lss) || params.has("lsamt"+lss) || params.has("lsrt"+lss)) {
+			if (params.has("lsdate" + lss) && params.has("lsamt"+lss)) {
+				addLumpSumHandler(null, {"date" : params.get("lsdate" + lss), "hours" : params.get("lsamt" + lss), "toFocus" : false});
+				hasHash = true;
+			}
+		} else {
+			looking = false;
+		}
+		lss++;
+	}
+
+	if (dbug) console.log ("toCalculate: " + toCalculate + ": " + toCalculate.toString(2) + ".");
+	if (hasHash) {
+		//calcBtn.focus();
+		let clickEv = new Event("click");
+		calcBtn.dispatchEvent(clickEv);
+
+	}
+
+
+} // End of handleHash
+
+function saveValue (e) {
+	let ot = e.originalTarget;
+	let key = ot.id;
+	let value = (ot.toString().match(/HTMLSelect/) ? ot.selectedIndex : ot.value);
+	//saveValues[key] = value;
+	//saveValues.set(key, value);
+
+	
+
+	if (updateHash) setURL();
+} // End of saveValue
+
+// set the URL
+function setURL () {
+	let url = new URL(document.location);
+	let newURL = url.toString().replace(/#.*$/, "");
+	newURL = newURL.replace(/\?.*$/, "");
+	//let params = [];
+	/*for (let id in filters) {
+		if (!filters[id].checked) {
+			params.push(id.replace("Chk", ""));
+			if (id.match(/levelA/)) {
+				params[params.length-1] += "$";
+			}
+		}
+	}*/
+	/*
+	if (levelSel) saveValues["lvl"] = levelSel.selectedIndex);
+	if (startDateTxt.value) ("strtdt=" +  startDateTxt.value);
+	if (stepSelect) params.push("stp=" +  stepSelect.selectedIndex);
+	if (endDateTxt.value) params.push("enddt=" +  endDateTxt.value);
+
+	newURL += "?" + params.join("&");
+	*/
+	newURL += "?";
+	/*saveValues.forEach(function (val, key, saveValues) {
+		console.log ("adding " + key + "=" + val);
+		newURL += key + "=" + val + "&";
+		});
+	newURL = newURL.substring(0, newURL.length - 1);
+	*/
+	newURL += saveValues.join("&");
+	/*
+	if (params.length > 0) {
+		newURL += "?filters=" + params.join(sep) + (selectedTab != "" ? "&" + selectedTab : "") + url.hash;
+	} else {
+		newURL += (selectedTab != "" ? "?" + selectedTab : "") + url.hash;
+	}
+	*/
+	history.pushState({}, document.title, newURL);
+	
+
+} // End of setURL
+
+
+
+
+/*
+   Populates the Salary Select basedon the IT-0x level selected
+*/
+function populateSalary () {
+	removeChildren(stepSelect);
+	if (levelSel.value >0 && levelSel.value <= 5) {
+		createHTMLElement("option", {"parentNode":stepSelect, "value":"-1", "textNode":i18n["selectSalaryLbl"][lang]});
+		for (var i = 0; i < salaries[(levelSel.value-1)].length; i++) {
+			createHTMLElement("option", {"parentNode":stepSelect, "value":i, "textNode": i18n["step"][lang] + " " + (+i+1) + " - " + formatter.format(salaries[levelSel.value-1][i])});
+		}
+	}
+	if (startDateTxt.value.replace(/[^-\d]/, "").match(/(\d\d\d\d)-(\d\d)-(\d\d)/)) selectSalary();
+} // End of populateSalary
+
+// Once an IT-level and startDate have been selected, select the most likely salary from the dropdown
+// Called from init when startDateTxt has changed, and from populateSalary if startDateTxt is a date (####-##-##)
+
+// I don't get it.  What's the difference btween selectSalary and getSalary?
+// They both start the same way: get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
+function selectSalary () {
+	//if (!(levelSelect.value > 0 && levelSelect.value <= 5))
+	if (parts && levelSel.value >0 && levelSel.value <= 5) {	// if you have a start date, and an IT-0x level
+		let startDate = getStartDate();
+		startDateTxt.value = startDate.toISOString().substr(0,10)
+		let timeDiff = (TABegin - startDate) / day;
+		let years = Math.floor(timeDiff/365);
+
+		if (dbug) console.log ("TimeDiff between " + TABegin.toString() + " and " + startDate.toString() + ": "  + timeDiff + ".");
+
+		if (timeDiff < 0) {
+			// You started after the CA started
+			calcStartDate.setAttribute("datetime", startDate.toISOString().substr(0,10));
+			calcStartDate.innerHTML = startDate.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });
+
+			step = 1;
+		} else {
+			// You started after the CA started
+			calcStartDate.setAttribute("datetime", TABegin.toISOString().substr(0,10));
+			calcStartDate.innerHTML = TABegin.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });
+
+			var step = Math.ceil(years, salaries[levelSel.value].length-1) + 1;
+		}
+		if (dbug) console.log ("Your step would be " + step + ".");
+		if (step > salaries[levelSel.value].length) step = salaries[levelSel.value].length;
+		if (dbug) console.log ("But there ain't that many steps.  so you're step " + step +".");
+
+		stepSelect.selectedIndex=step;
+		//step = Math.min(years, salaries[levelSel.value].length);
+
+		/*
+		var opts = stepSelect.getElementsByTagName("option");
+		for (var i = 0; i < opts.length; i++) {
+			if (opts[i].hasAttribute("selected")) opts[i].removeAttribute("selected");
+			if (i == step) opts[i].setAttribute("selected", "selected");
+		}
+		*/
+
+	}
+} // End of selectSalary
+
+function getStartDate () {
+	let dparts = null;
+	startDateTxt.value = startDateTxt.value.replace(/[^-\d]/, "");
+	dparts = startDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+	if (dbug) console.log ("Got startDateTxt " + startDateTxt.value + ".");
+	if (dbug) console.log ("Got dparts " + dparts + ".");
+	// Leap years
+	if (dparts[2] == "02" && dparts[3] > "28") {
+		if (parseInt(dparts[1]) % 4 === 0 && dparts[3] == "29") {
+			// Do nothing right now
+		} else {
+			dparts[3]=(parseInt(dparts[1]) % 4 === 0? "29" : "28");
+		}
+	}
+	return new Date(dparts[1], dparts[2]-1, dparts[3]);
+
+} // End of getStartDate
  
  function startProcess() {
 	 resetPeriods();
