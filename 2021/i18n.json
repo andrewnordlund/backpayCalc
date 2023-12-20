@@ -202,5 +202,29 @@
 	},
 	"lumpSumPayment" : {"en" : "Lump Sum Payment",
 			"fr" : "Paiement forfaitaire"
+	},
+	"paySectHeading" : {"en" : "Pay Rates",
+				"fr" : "Taux de rémunération"
+	},
+	"annual" : {"en" : "Annual",
+			"fr" : "Annuel"
+	},
+	"daily" : {"en" : "Daily",
+		"fr" : "Journalier"
+	},
+	"show" : {"en" : "Show",
+		"fr" : "Montrer"
+	},
+	"current" : {"en" : "Current",
+		"fr" : "Actuel"
+	},
+	"weekly" : {"en" : "Weekly",
+		"fr" : "Hebdomadaire"
+	},
+	"hours" : {"en" : "Hours",
+		"fr" : "Heures"
+	},
+	"onlwop" : {"en" : "On Leave without pay",
+		"fr" : "En congé sans solde"
 	}
 }
