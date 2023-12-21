@@ -13,7 +13,7 @@
  */
 
 var dbug = false;
-var version = "3.2.0";
+var version = "3.3.0-a1";
 var lang = "en";
 var langFormat = "en-CA";
 var updateHash = true;
@@ -37,7 +37,8 @@ var resultStatus = null;
 var calcStartDate = null;
 var endDateTxt = "2021-04-15";
 var TABegin = new Date("2021", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
-var EndDate = new Date("2024", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+var DefEndDate = new Date("2024", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+var EndDate = new Date(DefEndDate.getTime());		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var day = (1000 * 60 * 60 * 24);
 var parts = [];
 var resultsBody = null;
@@ -64,7 +65,7 @@ var classification = "IT";
 var CAName = "2021-2025";
 let payload = {};
 	
-const wiy = 52.17604859194648;
+const wiy = 52.176;
 
 // taken from http://www.tbs-sct.gc.ca/agreements-conventions/view-visualiser-eng.aspx?id=1#toc377133772
 /*
@@ -396,6 +397,7 @@ function populateSalary () {
 
 // I don't get it.  What's the difference btween selectSalary and getSalary?
 // They both start the same way: get the startDateText date, check for leapyear, set the startDateTxt value, figure out your step, select the step
+// Answer:  selectSalary is triggered on the change of startDateTxt.  getSalary is part of startProcess.
 function selectSalary () {
 	//if (!(levelSelect.value > 0 && levelSelect.value <= 5))
 	if (parts && levelSel.value >0 && levelSel.value <= 5) {	// if you have a start date, and an IT-0x level
@@ -443,15 +445,21 @@ function getStartDate () {
 	dparts = startDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 	if (dbug) console.log ("Got startDateTxt " + startDateTxt.value + ".");
 	if (dbug) console.log ("Got dparts " + dparts + ".");
-	// Leap years
-	if (dparts[2] == "02" && dparts[3] > "28") {
-		if (parseInt(dparts[1]) % 4 === 0 && dparts[3] == "29") {
-			// Do nothing right now
-		} else {
-			dparts[3]=(parseInt(dparts[1]) % 4 === 0? "29" : "28");
+	if (dparts) {
+		// Leap years
+		if (dparts[2] == "02" && dparts[3] > "28") {
+			if (parseInt(dparts[1]) % 4 === 0 && dparts[3] == "29") {
+				// Do nothing right now
+			} else {
+				dparts[3]=(parseInt(dparts[1]) % 4 === 0? "29" : "28");
+			}
 		}
+		return new Date(dparts[1], dparts[2]-1, dparts[3]);
+	} else {
+		// Add an error
+		//addErrorMessage(startDateTxt.id, i18n["startDateErrorMsg"][lang]);
+		return false;
 	}
-	return new Date(dparts[1], dparts[2]-1, dparts[3]);
 
 } // End of getStartDate
 
@@ -473,7 +481,8 @@ function startProcess () {
 		resultsFoot = createHTMLElement("tfoot", {"parentNode":resultsTable, "id":"resultsFoot"});
 	}
 
-	var errorDivs = document.querySelectorAll(".error");
+	// Remove any existing error messages
+	let errorDivs = document.querySelectorAll(".error");
 	if (dbug && errorDivs.length > 0) console.log ("Found " + errorDivs.length + " errorDivs.");
 	for (var i = 0; i < errorDivs.length; i++) {
 		if (errorDivs[i].hasAttribute("id")) {
@@ -489,6 +498,8 @@ function startProcess () {
 		}
 		errorDivs[i].parentNode.removeChild(errorDivs[i]);
 	}
+
+	initErrorHandling();
 
 	// get salary?
 	//dbug = true;
@@ -508,8 +519,20 @@ function startProcess () {
 	// Add Lump Sums
 	getLumpSums ();
 
-	setURL();
-	calculate();
+	errorDivs = document.querySelectorAll(".error");
+
+	if (errorDivs.length == 0 ) {
+		setURL();
+		calculate();
+	} else {
+		let firstErrorMessageID = errorDivs[0].id;
+		console.log ("First error Message ID: " + firstErrorMessageID + ".");
+		let selector = "*[aria-describedby~=" + firstErrorMessageID + "]";
+		console.log ("Using selector "+ selector + ".");
+		let firstErrInput = document.querySelector(selector);
+		console.log ("Got first error input: "  + firstErrInput.id + ".");
+		if (firstErrInput) firstErrInput.focus();
+	}
 
 } // End of startProcess
 
@@ -524,27 +547,96 @@ function resetPeriods () {
 	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
 } // End of resetPeriods
 
+
+// Check the initial inputs for errors.  Check the promtions, actings, etc. later.
+function initErrorHandling () {
+	// Check Level
+	let levelSelect = document.getElementById("levelSelect");
+	let lvl = levelSelect.value.replace(/\D/, "");
+	if (dbug) console.log ("Got level " + lvl + "."); // and start date of " + startDate + ".");
+
+	// Check Start Date
+
+	// Check Step/Salary
+
+	// Check End Date
+
+
+} // End of initErrorHandling
+
 // getSalary called during startProcess.  "guess" isn't really a good word for this, so I changed it to "get"
 
 // I don't get it.  What's the difference btween selectSalary and getSalary?
 // This ones starts: get the IT-0level, get the startDateTxt date, check for leapyear, set the startDateTxt value, figure out your step, select the step
+// Answer:  selectSalary is triggered on the change of startDateTxt.  getSalary is part of startProcess.
 function getSalary () {
+
+	// Check Level
 	var levelSelect = document.getElementById("levelSelect");
 	var lvl = levelSelect.value.replace(/\D/, "");
 	if (dbug) console.log ("Got level " + lvl + "."); // and start date of " + startDate + ".");
-	if (lvl < 1 || lvl > 5) {	// Should only happen if someone messes with the querystring
+	if (lvl < 1 || lvl > levels.length) {	// Should only happen if someone messes with the querystring
 		if (dbug) console.log ("getSalary::Error:  lvl is -1.");
-		var errDiv = createHTMLElement("div", {"parentNode":levelSelect.parentNode, "id":"levelSelectError", "class":"error"});
-		createHTMLElement("span", {"parentNode":errDiv, "nodeText":i18n["levelSelectError"][lang]});
-		levelSelect.setAttribute("aria-describedby", "levelSelectError");
-		levelSelect.focus();
+		addErrorMessage(levelSelect.id, i18n["levelSelectError"][lang]);
+		//let errDiv = createHTMLElement("div", {"parentNode":levelSelect.parentNode, "id":"levelSelectError", "class":"error"});
+		//createHTMLElement("span", {"parentNode":errDiv, "nodeText":i18n["levelSelectError"][lang]});
+		//levelSelect.setAttribute("aria-describedby", "levelSelectError");
+		//levelSelect.focus();
 		//return;
 	} else {
 		saveValues.push("lvl="+lvl);
 	}
 	level = ((lvl > 0 && lvl < salaries.length+1) ? lvl : null);
 
+	// Check Start Date
 	let startDate = getStartDate();
+
+	// Check if Salary/Step is populated.  this is likely a Level error
+	if (stepSelect.options.length == 0 || stepSelect.value == "-1") {
+		// Somehow the stepSelect never got populated. This is most likely because a Level was never selected, Javascript is turned off, or there was a Javascript error.
+		if (dbug) console.log ("getSalary::Error:  stepSelect.option.length is " + stepSelect.options.length + ".");
+		addErrorMessage(stepSelect.id, i18n["stepSelectEmptyError"][lang]);
+		//let errDiv = createHTMLElement("div", {"parentNode":stepSelect.parentNode, "id":"stepSelectError", "class":"error"});
+		//createHTMLElement("span", {"parentNode":errDiv, "nodeText":i18n["stepSelectEmptyError"][lang]});
+		//stepSelect.setAttribute("aria-describedby", "stepSelectError");
+		//stepSelect.focus();
+	}
+	
+
+	// Check End Date
+	let dparts = null;
+	dparts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+	let endDateGood = true;
+	if (dparts) {
+		EndDate = new Date(dparts[1], (dparts[2]-1), dparts[3]);
+		EndDate.setDate(EndDate.getDate() + parseInt(1));
+		if (startDate - EndDate >= 0) {
+			//EndDate = new Date(DefEndDate.getTime());
+			// Add error message about how End Date must be after Start Date
+			if (dbug) console.log ("getSalary::Error:  EndDate is " + EndDate.toISOString().substr(0,10) + " which is <= " + startDate.toISOString().substr(0,10) + ".");
+			addErrorMessage(endDateTxt.id, i18n["endDateTxtError"][lang]);
+			endDateGood = false;
+			//let errDiv = createHTMLElement("div", {"parentNode":endDateTxt.parentNode, "id":"endDateTxtError", "class":"error"});
+			//createHTMLElement("span", {"parentNode":errDiv, "nodeText":i18n["endDateTxtEmptyError"][lang]});
+			//endDateTxt.setAttribute("aria-describedby", endDateTxt.getAttribute("aria-describedby") + " endDateTxtError");
+		}
+		if (dbug) console.log ("getSalary::Got EndDateTxt as " + endDateTxt.value + ".");
+		//if (dbug) console.log ("Got EndDate as " + EndDate.toISOString().substr(0, 10) + ".");
+	} else {
+		// Prolly should check
+		//EndDate = new Date(DefEndDate.getTime());
+		//let endDateStr = EndDate.toISOString().substr(0, 10);
+		//if (dbug) console.log ("getSalary::Setting EndDateTxt as " + endDateStr + ".");
+		//endDateTxt.value = endDateStr;
+		addErrorMessage(endDateTxt.id, i18n["endDateTxtError"][lang]);
+		endDateGood = false;
+	}
+	//This used to be below adding anniversaries, but some anniversaries were being missed
+	if (endDateGood) {
+		if (dbug) console.log ("getSalary::About to set EndDate to " + EndDate.toISOString().substr(0, 10) + ".");
+		addPeriod ({"startDate" : EndDate.toISOString().substr(0, 10), "increase":0, "reason":"end", "multiplier" : 1});
+	}
+
 	if (level && startDate) {
 		
 		level -= 1;
@@ -553,14 +645,14 @@ function getSalary () {
 			
 		let timeDiff = (TABegin - startDate) / day;
 
-
+		
 		if (stepSelect.value && stepSelect.value >= 0 && stepSelect.value < salaries[level].length) {
 			step = stepSelect.value;
 			if (dbug) console.log ("getSalary::Got step from the stepSelect.  And it's " + step + ".");
 		} else {
 			if (dbug) console.log ("getSalary::Couldn't get step from the stepSelect. Gotta guess. stepSelect.value: " + stepSelect.value + ".");
 			if (dbug) console.log ("getSalary::TimeDiff: "  + timeDiff + ".");
-		
+			
 			let years = Math.floor(timeDiff/365);
 			step = Math.min(years, salaries[level].length-1);
 			if (dbug) console.log ("getSalary::Your step would be " + step + ".");
@@ -570,18 +662,6 @@ function getSalary () {
 		saveValues.push("stp="+stp);
 		saveValues.push("strtdt="+startDateTxt.value);
 		saveValues.push("enddt="+endDateTxt.value);
-
-		let dparts = null;
-		dparts = endDateTxt.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
-		if (dparts) {
-			EndDate = new Date(dparts[1], (dparts[2]-1), dparts[3]);
-			EndDate.setDate(EndDate.getDate() + parseInt(1));
-			if (dbug) console.log ("getSalary::Got EndDateTxt as " + endDateTxt.value + ".");
-			//if (dbug) console.log ("Got EndDate as " + EndDate.toISOString().substr(0, 10) + ".");
-		}
-		//This used to be below adding anniversaries, but some anniversaries were being missed
-		if (dbug) console.log ("getSalary::About to set EndDate to " + EndDate.toISOString().substr(0, 10) + ".");
-		addPeriod ({"startDate" : EndDate.toISOString().substr(0, 10), "increase":0, "reason":"end", "multiplier" : 1});
 
 		//add anniversarys
 		//dbug = true;
@@ -637,8 +717,9 @@ function getSalary () {
 
 	} else {
 		if (dbug) console.log ("getSalary::Something's not valid.  Lvl: " + level + ", startDate: " + startDate + ".");
-		addStartDateErrorMessage();
+		addErrorMessage("startDateTxt", i18n["startDateErrorMsg"][lang]);
 	}
+
 } // End of getSalary
 
 function addPromotions () {
@@ -1832,13 +1913,45 @@ function isValidDate (d) {
 	return rv;
 } // End of isValidDate
 
-function addStartDateErrorMessage () {
-	if (dbug) console.log ("Error:  st is " + startDateTxt.value + ".");
-	var errDiv = createHTMLElement("div", {"parentNode":startDateTxt.parentNode, "id":"startDateError", "class":"error"});
-	createHTMLElement("p", {"parentNode":errDiv, "nodeText": i18n["startDateErrorMsg"][lang]});
-	levelSel.setAttribute("aria-describedby", "startDateError");
-	return;
-}
+function addErrorMessage (inID, errMsg) {
+	let el, errDiv = null;
+	el = document.getElementById(inID);
+	if (el) {
+		if (dbug) console.log ("addErrorMessage::value of " + inID + " is " + inID.value + ". Adding errorMessage: " + errMsg + ".");
+		errDiv = document.getElementById(inID + "Error");
+
+		if (!errDiv) errDiv = createHTMLElement("div", {"parentNode" : el.parentNode, "id":inID + "Error", "class" : "error"});
+		createHTMLElement("p", {"parentNode" : errDiv, "nodeText" : errMsg});
+		if (el.hasAttribute("aria-describedby")) {
+			el.setAttribute("aria-describedby", el.getAttribute("aria-describedby") + " " + inID + "Error");
+		} else {
+			el.setAttribute("aria-describedby", inID + "Error");
+		}
+	} else {
+		console.error ("addErrorMessage::Couldn't get element " + inID);
+	}
+} // End of addErrorMessage
+
+function removeErrorMessage (inID) {
+	let inEL, errEl = null;
+	inEL = document.getElementById(inID);
+	errEL = document.getElementById(inID + "Error");
+	if (inEL && errEL) {
+		if (inEL.hasAttribute("aria-describedby")) {
+			let inELDB = inEL.getAttribute("aria-describedby");
+			if (inELDB == inID + "Error") {
+				inEL.removeAttribute("aria-describedby");
+			} else {
+				inELDB = inELDB.replace(inID + "Error", "").trim();
+				inEL.setAttribute("aria-describedby", inELDB);
+			}
+		}
+		errEL.parentNode.removeChild(errEl);
+	} else {
+		if (!(inEL)) console.error ("removeErrorMessage::Couldn't get element " + inID +".");
+		if (!(errEL)) console.error ("removeErrorMessage::Couldn't get element " + inID + "Error.");
+	}
+} // End of removeErrorMessage
 	
 lang = document.documentElement.lang;
 if (lang == "fr") langFormat = "fr-CA";
@@ -1894,13 +2007,13 @@ function createHTMLElement (type, attribs) {
 		}
 	}
 	return newEl;
-}
+} // End of createHTMLElement
 function removeChildren (el) {
 	var dbug = (arguments.length == 2 && arguments[1] != null && arguments[1] != false ? true : false);
 	while (el.firstChild) {	
 		el.removeChild(el.firstChild);
 	}
-}
+} // End of removeChildren
 
 function getWeekly (an) {
 	return (an/wiy);
