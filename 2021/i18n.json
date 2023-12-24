@@ -232,5 +232,17 @@
 	},
 	"endDateTxtError" : {"en" : "This date should be the date on which the new pay rates take effect, must be after the date at which you started at your level (above), and must be of format YYYY-MM-DD",
 		"fr" : "Cette date doit être la date à laquelle les nouveaux taux de rémunération entrent en vigueur, doit être postérieure à la date à laquelle vous avez commencé à votre niveau (ci-dessus) et doit être au format AAAA-MM-JJ."
+	},
+	"promoTooEarlyError" : {"en" : "Promotions must be after {{startDate}}",
+		"fr" : ""
+	},
+	"promoTooLateError" : {"en" : "Promotions must be before {{endDate}}",
+		"fr" : ""
+	},
+	"promoTooLowError" : {"en" : "Invalid Level",
+		"fr" : ""
+	},
+	"promoTooHighError" : {"en" : "Invalid Level",
+		"fr" : ""
 	}
 }

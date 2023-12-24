@@ -145,11 +145,11 @@ function init () {
 	if (dbug || showExtraCols) {
 		var ths = resultsTheadTR.getElementsByTagName("th");
 		if (ths.length == 4) {
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["level"][lang]});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["step"][lang]});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["onlwop"][lang] + "?"});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["salary"][lang]});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":i18n["workingDays"][lang]});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("level")});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("step")});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("onlwop") + "?"});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("salary")});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("workingDays")});
 		}
 	}
 	/*for (var r in results) {
@@ -383,10 +383,10 @@ function setURL () {
 */
 function populateSalary () {
 	removeChildren(stepSelect);
-	if (levelSel.value >0 && levelSel.value <= 5) {
-		createHTMLElement("option", {"parentNode":stepSelect, "value":"-1", "textNode":i18n["selectSalaryLbl"][lang]});
+	if (levelSel.value >0 && levelSel.value <= levels) {
+		createHTMLElement("option", {"parentNode":stepSelect, "value":"-1", "textNode":getStr("selectSalaryLbl")});
 		for (var i = 0; i < salaries[(levelSel.value-1)].length; i++) {
-			createHTMLElement("option", {"parentNode":stepSelect, "value":i, "textNode": i18n["step"][lang] + " " + (+i+1) + " - " + formatter.format(salaries[levelSel.value-1][i])});
+			createHTMLElement("option", {"parentNode":stepSelect, "value":i, "textNode": getStr("step") + " " + (+i+1) + " - " + formatter.format(salaries[levelSel.value-1][i])});
 		}
 	}
 	if (startDateTxt.value.replace(/[^-\d]/, "").match(/(\d\d\d\d)-(\d\d)-(\d\d)/)) selectSalary();
@@ -409,7 +409,7 @@ function selectSalary () {
 		if (dbug) console.log ("TimeDiff between " + TABegin.toString() + " and " + startDate.toString() + ": "  + timeDiff + ".");
 
 		if (timeDiff < 0) {
-			// You started after the CA started
+			// You started before the CA started
 			calcStartDate.setAttribute("datetime", startDate.toISOString().substr(0,10));
 			calcStartDate.innerHTML = startDate.toLocaleString("en-CA", { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -457,7 +457,7 @@ function getStartDate () {
 		return new Date(dparts[1], dparts[2]-1, dparts[3]);
 	} else {
 		// Add an error
-		//addErrorMessage(startDateTxt.id, i18n["startDateErrorMsg"][lang]);
+		//addErrorMessage(startDateTxt.id, getStr("startDateErrorMsg"));
 		return false;
 	}
 
@@ -575,11 +575,11 @@ function getSalary () {
 	var levelSelect = document.getElementById("levelSelect");
 	var lvl = levelSelect.value.replace(/\D/, "");
 	if (dbug) console.log ("Got level " + lvl + "."); // and start date of " + startDate + ".");
-	if (lvl < 1 || lvl > levels.length) {	// Should only happen if someone messes with the querystring
+	if (lvl < 1 || lvl > levels) {	// Should only happen if someone messes with the querystring
 		if (dbug) console.log ("getSalary::Error:  lvl is -1.");
-		addErrorMessage(levelSelect.id, i18n["levelSelectError"][lang]);
+		addErrorMessage(levelSelect.id, getStr("levelSelectError"));
 		//let errDiv = createHTMLElement("div", {"parentNode":levelSelect.parentNode, "id":"levelSelectError", "class":"error"});
-		//createHTMLElement("span", {"parentNode":errDiv, "nodeText":i18n["levelSelectError"][lang]});
+		//createHTMLElement("span", {"parentNode":errDiv, "nodeText":getStr("levelSelectError")});
 		//levelSelect.setAttribute("aria-describedby", "levelSelectError");
 		//levelSelect.focus();
 		//return;
@@ -595,9 +595,9 @@ function getSalary () {
 	if (stepSelect.options.length == 0 || stepSelect.value == "-1") {
 		// Somehow the stepSelect never got populated. This is most likely because a Level was never selected, Javascript is turned off, or there was a Javascript error.
 		if (dbug) console.log ("getSalary::Error:  stepSelect.option.length is " + stepSelect.options.length + ".");
-		addErrorMessage(stepSelect.id, i18n["stepSelectEmptyError"][lang]);
+		addErrorMessage(stepSelect.id, getStr("stepSelectEmptyError"));
 		//let errDiv = createHTMLElement("div", {"parentNode":stepSelect.parentNode, "id":"stepSelectError", "class":"error"});
-		//createHTMLElement("span", {"parentNode":errDiv, "nodeText":i18n["stepSelectEmptyError"][lang]});
+		//createHTMLElement("span", {"parentNode":errDiv, "nodeText":getStr("stepSelectEmptyError")});
 		//stepSelect.setAttribute("aria-describedby", "stepSelectError");
 		//stepSelect.focus();
 	}
@@ -614,10 +614,10 @@ function getSalary () {
 			//EndDate = new Date(DefEndDate.getTime());
 			// Add error message about how End Date must be after Start Date
 			if (dbug) console.log ("getSalary::Error:  EndDate is " + EndDate.toISOString().substr(0,10) + " which is <= " + startDate.toISOString().substr(0,10) + ".");
-			addErrorMessage(endDateTxt.id, i18n["endDateTxtError"][lang]);
+			addErrorMessage(endDateTxt.id, getStr("endDateTxtError"));
 			endDateGood = false;
 			//let errDiv = createHTMLElement("div", {"parentNode":endDateTxt.parentNode, "id":"endDateTxtError", "class":"error"});
-			//createHTMLElement("span", {"parentNode":errDiv, "nodeText":i18n["endDateTxtEmptyError"][lang]});
+			//createHTMLElement("span", {"parentNode":errDiv, "nodeText":getStr("endDateTxtEmptyError")});
 			//endDateTxt.setAttribute("aria-describedby", endDateTxt.getAttribute("aria-describedby") + " endDateTxtError");
 		}
 		if (dbug) console.log ("getSalary::Got EndDateTxt as " + endDateTxt.value + ".");
@@ -628,7 +628,7 @@ function getSalary () {
 		//let endDateStr = EndDate.toISOString().substr(0, 10);
 		//if (dbug) console.log ("getSalary::Setting EndDateTxt as " + endDateStr + ".");
 		//endDateTxt.value = endDateStr;
-		addErrorMessage(endDateTxt.id, i18n["endDateTxtError"][lang]);
+		addErrorMessage(endDateTxt.id, getStr("endDateTxtError"));
 		endDateGood = false;
 	}
 	//This used to be below adding anniversaries, but some anniversaries were being missed
@@ -717,7 +717,7 @@ function getSalary () {
 
 	} else {
 		if (dbug) console.log ("getSalary::Something's not valid.  Lvl: " + level + ", startDate: " + startDate + ".");
-		addErrorMessage("startDateTxt", i18n["startDateErrorMsg"][lang]);
+		addErrorMessage("startDateTxt", getStr("startDateErrorMsg"));
 	}
 
 } // End of getSalary
@@ -733,7 +733,7 @@ function addPromotions () {
 		var promoDate  = promotions[i].getElementsByTagName("input")[0].value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 		if (dbug) console.log("addPromotions::promoDate " + i + ": " + promoDate[0] + ".");
 		if (promoDate) {
-			if (promoDate[0] > TABegin.toISOString().substr(0,10) && promoDate[0] < EndDate.toISOString().substr(0, 10) && promoLevel > 0 && promoLevel <=5) {
+			if (promoDate[0] > TABegin.toISOString().substr(0,10) && promoDate[0] < EndDate.toISOString().substr(0, 10) && promoLevel > 0 && promoLevel <=levels) {
 				if (dbug) console.log ("addPromotions::Adding a promotion on " + promoDate[0] + " at level " + promoLevel +".");
 				// add the promo period
 				var j = addPeriod ({"startDate":promoDate[0],"increase":0, "reason":"promotion", "multiplier":1, "level":(promoLevel-1)});
@@ -754,12 +754,12 @@ function addPromotions () {
 				saveValues.push("plvl" + i + "=" + promoLevel);
 
 			} else {
-				if (dbug) {
-					if (promoDate[0] > TABegin.toISOString().substr(0,10)) console.log ("addPromotions::It's after the beginning.");
-					if (promoDate[0] < EndDate.toISOString().substr(0, 10)) console.log ("addPromotions::It's before the end.");
-					if (promoLevel > 0) console.log ("addPromotions::It's greater than 0.");
-					if (promoLevel < 5) console.log ("addPromotions::It's less than or equal to 5.");
-				}
+				let errMsg = null;
+				if (promoDate[0] < startDate.toISOString().substr(0,10)) errMsg = getStr("promoTooEarlyError");
+				if (promoDate[0] > EndDate.toISOString().substr(0,10)) errMsg = getStr("promoTooLateError");
+				if (promoLevel < 1) errMsg = getStr("promoTooLowError"); //console.log ("addPromotions::It's greater than 0.");
+				if (promoLevel > levels) errMsg = getStr("promoTooHighError"); //console.log ("addPromotions::It's less than or equal to 5.");
+				if (dbug && errMsg) console.log ("addPromotion::Error: " + errMsg + ".");
 			}
 		} else {
 			if (dbug) console.log("addPromotions::Didn't get promoDate.");
@@ -1070,17 +1070,17 @@ function addPromotionHandler (e, o) {
 	}
 
 	let newPromotionFS = createHTMLElement("fieldset", {"parentNode":promotionsDiv, "class":"fieldHolder promotions border border-black p-2 m-2", "id" :"promo" + id});
-	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":i18n["promotion"][lang] + " " + (id+1)});
+	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":getStr("promotion") + " " + (id+1)});
 
-	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "class":"form-label", "for":"promoDate" + id, "nodeText": i18n["dateOfPromotion"][lang] + " "});
+	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "class":"form-label", "for":"promoDate" + id, "nodeText": getStr("dateOfPromotion") + " "});
 	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "class":"form-control", "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat", "value":(pdate ? pdate : null)});
 	if (toFocus) newPromoDate.focus();
 	//newPromoDate.addEventListener("change", saveValue, false);
 
-	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "class":"form-label", "for":"promotionLevel" + id, "nodeText":i18n["promotedToLevel"][lang] + " "});
+	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "class":"form-label", "for":"promotionLevel" + id, "nodeText":getStr("promotedToLevel") + " "});
 	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, class:"form-select", "id":"promotionLevel" + id});
 	for (var j = 0; j < 6; j++) {
-		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n[classification][lang] + "-0" + j)});
+		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? getStr("selectLevel") : getStr(classification) + "-0" + j)});
 		if (plvl) {
 			if (plvl == j) newPromoOpt.setAttribute("selected", "selected");
 		} else {
@@ -1092,8 +1092,8 @@ function addPromotionHandler (e, o) {
 	let promoButtonsDiv = null;
 	if (id == 0) {
 		promoButtonsDiv = createHTMLElement("div", {"parentNode":newPromotionFS, "id":"promoButtonsDiv"});
-		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", class: "btn btn-warning", "value":i18n["remove"][lang], "id": "removePromotionBtn" + promotions});
-		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":i18n["addAnotherPromotion"][lang], "class":"promotionsBtn btn btn-success", "id": "addPromotionsBtnn" + id});
+		var newDelPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", class: "btn btn-warning", "value":getStr("remove"), "id": "removePromotionBtn" + promotions});
+		var newAddPromotionBtn = createHTMLElement("input", {"parentNode":promoButtonsDiv, "type":"button", "value":getStr("addAnotherPromotion"), "class":"promotionsBtn btn btn-success", "id": "addPromotionsBtnn" + id});
 		newAddPromotionBtn.addEventListener("click", addPromotionHandler, false);
 		newDelPromotionBtn.addEventListener("click", removePromotionDiv, false);
 	} else {
@@ -1104,7 +1104,7 @@ function addPromotionHandler (e, o) {
 	promotions++;
 
 
-	resultStatus.innerHTML=i18n["newPromoAdded"][lang];
+	resultStatus.innerHTML=getStr("newPromoAdded");
 } // End of addPromotionHandler
 
 function addActingHandler () {
@@ -1143,17 +1143,17 @@ function addActingHandler () {
 	}
 
 	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints border border-black p-2 m-2", "id":"acting"+id});
-	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode": i18n["actingStint"][lang] + " " + (id+1)});
+	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode": getStr("actingStint") + " " + (id+1)});
 
-	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "textNode":i18n["from"][lang], "for":"actingFrom" + id});
+	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "textNode":getStr("from"), "for":"actingFrom" + id});
 	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "class":"form-control", "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(afdate ? afdate : null)});
-	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "textNode":i18n["to"][lang], "for":"actingTo"+id});
+	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "textNode":getStr("to"), "for":"actingTo"+id});
 	var newActingToDate = createHTMLElement("input", {"parentNode":newActingFS, "class":"form-control", "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat", "value":(atdate ? atdate : null)});
 
-	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "for":"actingLevel" + id, "nodeText":i18n["actingLevel"][lang] + " "});
+	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "for":"actingLevel" + id, "nodeText":getStr("actingLevel") + " "});
 	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, class:"form-select", "id":"actingLevel" + id});
 	for (var j = 0; j < 6; j++) {
-		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? i18n["selectLevel"][lang] : i18n[classification][lang] + "-0" + j)});
+		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? getStr("selectLevel") : getStr(classification) + "-0" + j)});
 		if (alvl) {
 			if (alvl == j) newPromoOpt.setAttribute("selected", "selected");
 		} else {
@@ -1167,8 +1167,8 @@ function addActingHandler () {
 	let actingButtonsDiv = null;
 	if (id == 0) {
 		actingButtonsDiv = createHTMLElement("div", {"parentNode":newActingFS, "id":"actingButtonsDiv"});
-		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeActingBtn" + actings});
-		var newAddActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":i18n["addAnotherActing"][lang], "class":"actingBtn btn btn-success", "id": "addActingsBtn" + id});
+		var newDelActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "class":"btn btn-warning", "value":getStr("remove"), "id": "removeActingBtn" + actings});
+		var newAddActingBtn = createHTMLElement("input", {"parentNode":actingButtonsDiv, "type":"button", "value":getStr("addAnotherActing"), "class":"actingBtn btn btn-success", "id": "addActingsBtn" + id});
 		newAddActingBtn.addEventListener("click", addActingHandler, false);
 		newDelActingBtn.addEventListener("click", removeActingDiv, false);
 	} else {
@@ -1179,7 +1179,7 @@ function addActingHandler () {
 	if (toFocus) newActingFromDate.focus();
 
 	actings++;
-	resultStatus.innerHTML=i18n["newActingAdded"][lang];
+	resultStatus.innerHTML=getStr("newActingAdded");
 } // End of addActingHandler
 
 function addLWoPHandler () {
@@ -1212,18 +1212,18 @@ function addLWoPHandler () {
 	}
 
 	var newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints border border-black p-2 m-2", "id":"lwop"+id});
-	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":i18n["lwopStint"][lang] + " " + (id+1)});
+	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":getStr("lwopStint") + " " + (id+1)});
 
-	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "class":"form-label", "textNode":i18n["from"][lang], "for":"lwopFrom" + id});
+	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "class":"form-label", "textNode":getStr("from"), "for":"lwopFrom" + id});
 	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "class":"form-control", "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(lfrom ? lfrom : null)});
-	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "class":"form-label", "textNode":i18n["to"][lang], "for":"lwopTo"+id});
+	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "class":"form-label", "textNode":getStr("to"), "for":"lwopTo"+id});
 	var newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPFS, "class":"form-control", "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lto ? lto : null)});
 
 	let lwopButtonsDiv = null;
 	if (id == 0) {
 		lwopButtonsDiv = createHTMLElement("div", {"parentNode":newLWoPFS, "id":"lwopButtonsDiv"});
-		var newDelLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeLWoPBtn" + lwops});
-		var newAddLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":i18n["addAnotherLwop"][lang], "class":"lwopBtn btn btn-success", "id": "addLWoPsBtn" + id});
+		var newDelLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "class":"btn btn-warning", "value":getStr("remove"), "id": "removeLWoPBtn" + lwops});
+		var newAddLWoPBtn = createHTMLElement("input", {"parentNode":lwopButtonsDiv, "type":"button", "value":getStr("addAnotherLwop"), "class":"lwopBtn btn btn-success", "id": "addLWoPsBtn" + id});
 		newAddLWoPBtn.addEventListener("click", addLWoPHandler, false);
 		newDelLWoPBtn.addEventListener("click", removeLWoPDiv, false);
 	} else {
@@ -1234,7 +1234,7 @@ function addLWoPHandler () {
 	
 	lwops++;
 	if (toFocus) newLWoPFromDate.focus();
-	resultStatus.innerHTML=i18n["newLwopSection"][lang];
+	resultStatus.innerHTML=getStr("newLwopSection");
 } // End of lWoPHandler
 
 function addOvertimeHandler () {
@@ -1270,22 +1270,22 @@ function addOvertimeHandler () {
 		}
 	}
 	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes border border-black p-2 m-2", "id":"ot" + id});
-	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":i18n["otOrStby"][lang] + " " + (id+1)});
+	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":getStr("otOrStby") + " " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "class":"form-label", "textNode":i18n["dtOfOT"][lang], "for":"overtimeDate" + id});
+	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "class":"form-label", "textNode":getStr("dtOfOT"), "for":"overtimeDate" + id});
 	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "class":"form-control", "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat", "value":(otdate ? otdate : null)});
 
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":i18n["hrsOT"][lang], "for":"overtimeAmount" + id});
+	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":getStr("hrsOT"), "for":"overtimeAmount" + id});
 	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "class":"form-control", "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
 
 	var newRateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":i18n["OTRate"][lang], "for":"overtimeRate" + id});
+	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":getStr("OTRate"), "for":"overtimeRate" + id});
 	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, class:"form-select", "id":"overtimeRate"+id});
-	let rates = {"0" : i18n["selectOTRate"][lang], "0.125" : "1/8x - " + i18n["standby"][lang], "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
-	//createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":i18n["selectOTRate"][lang]});
+	let rates = {"0" : getStr("selectOTRate"), "0.125" : "1/8x - " + getStr("standby"), "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
+	//createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":getStr("selectOTRate")});
 	
 	for (let r in rates) {
 		let rt = createHTMLElement("option", {"parentNode":newOvertimeRate, "value":r, "nodeText": rates[r]});
@@ -1296,8 +1296,8 @@ function addOvertimeHandler () {
 	let otButtonsDiv = null;
 	if (id == 0) {
 		otButtonsDiv = createHTMLElement("div", {"parentNode":newOvertimeFS, "id":"otButtonsDiv"});
-		var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeOvertimeBtn" + overtimes});
-		var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":i18n["addAnotherOvertime"][lang], "class":"otBtn btn btn-success", "id": "addOvertimesBtn" + id});
+		var newDelOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "class":"btn btn-warning", "value":getStr("remove"), "id": "removeOvertimeBtn" + overtimes});
+		var newAddOvertimeBtn = createHTMLElement("input", {"parentNode":otButtonsDiv, "type":"button", "value":getStr("addAnotherOvertime"), "class":"otBtn btn btn-success", "id": "addOvertimesBtn" + id});
 		newAddOvertimeBtn.addEventListener("click", addOvertimeHandler, false);
 		newDelOvertimeBtn.addEventListener("click", removeOvertimeDiv, false);
 	} else {
@@ -1307,7 +1307,7 @@ function addOvertimeHandler () {
 	if (toFocus) newOvertimeDate.focus();
 	overtimes++;
 
-	resultStatus.innerHTML= i18n["newOTSection"][lang];
+	resultStatus.innerHTML= getStr("newOTSection");
 } // End of addOvertimeHandler
 
 function addLumpSumHandler () {
@@ -1339,22 +1339,22 @@ function addLumpSumHandler () {
 		}
 	}
 	var newLumpSumFS = createHTMLElement("fieldset", {"parentNode":LumpSumDiv, "class":"fieldHolder lumpSums border border-black p-2 m-2", "id":"lumpSum" + id});
-	var newLumpSumLegend = createHTMLElement("legend", {"parentNode":newLumpSumFS, "textNode": i18n["Lump Sum"][lang] + " " + (id+1)});
+	var newLumpSumLegend = createHTMLElement("legend", {"parentNode":newLumpSumFS, "textNode": getStr("Lump Sum") + " " + (id+1)});
 
 	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
-	var newLumpSumDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "class":"form-label", "textNode": i18n["dtPdOut"][lang], "for":"lumpSumDate" + id});
+	var newLumpSumDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "class":"form-label", "textNode": getStr("dtPdOut"), "for":"lumpSumDate" + id});
 	var newLumpSumDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "class":"form-control", "id":"lumpSumDate"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lsdate ? lsdate : null)});
 
 	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newLumpSumFS, "class":"fieldHolder"});
-	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode": i18n["hrsLumpSum"][lang], "for":"lumpSumAmount" + id});
+	var newLumpSumAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode": getStr("hrsLumpSum"), "for":"lumpSumAmount" + id});
 	var newLumpSumAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "class":"form-control", "id":"lumpSumAmount"+id, "type":"text", "value" : (lshours ? lshours : "")});
 
 
 	let lumpSumButtonsDiv = null;
 	if (id == 0) {
 		lumpSumButtonsDiv = createHTMLElement("div", {"parentNode":newLumpSumFS, "id":"lumpSumButtonsDiv"});
-		var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeLumpSumBtn" + lumpSums});
-		var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":i18n["addAnotherLumpSum"][lang], "class":"lumpSumBtn btn btn-success", "id": "addLumpSumsBtn" + id});
+		var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "class":"btn btn-warning", "value":getStr("remove"), "id": "removeLumpSumBtn" + lumpSums});
+		var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":lumpSumButtonsDiv, "type":"button", "value":getStr("addAnotherLumpSum"), "class":"lumpSumBtn btn btn-success", "id": "addLumpSumsBtn" + id});
 		newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 		newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 	} else {
@@ -1366,13 +1366,13 @@ function addLumpSumHandler () {
 
 
 	/*
-	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "class":"btn btn-warning", "value":i18n["remove"][lang], "id": "removeLumpSumBtn" + id});
+	var newDelLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "class":"btn btn-warning", "value":getStr("remove"), "id": "removeLumpSumBtn" + id});
 	var newAddLumpSumBtn = createHTMLElement("input", {"parentNode":newLumpSumFS, "type":"button", "value":"Add another Lump Sum period", "class":"lumpsumBtn btn btn-success", "id":"addLumpSumsBtn" + id});
 	newAddLumpSumBtn.addEventListener("click", addLumpSumHandler, false);
 	newDelLumpSumBtn.addEventListener("click", removeLumpSumDiv, false);
 	*/
 	lumpSums++;
-	resultStatus.innerHTML=i18n["newLumpSumSection"][lang];
+	resultStatus.innerHTML=getStr("newLumpSumSection");
 } // End of addLumpSum Handler
 
 function removePromotionDiv (e) {
@@ -1397,7 +1397,7 @@ function removePromotionDiv (e) {
 	rmPromoFS.parentNode.removeChild(rmPromoFS);
 	rmPromoFS = null;
 
-	resultStatus.innerHTML= i18n["promoSectionRemoved"][lang];
+	resultStatus.innerHTML= getStr("promoSectionRemoved");
 } // End of removePromotionDiv
 
 function removeActingDiv (e) {
@@ -1423,7 +1423,7 @@ function removeActingDiv (e) {
 	rmActingFS = null;
 
 
-	resultStatus.innerHTML= i18n["actingSectionRemoved"][lang];
+	resultStatus.innerHTML= getStr("actingSectionRemoved");
 } // End of removeActingDiv
 function removeLWoPDiv (e) {
 	let lwopButtonsDiv = null;
@@ -1446,7 +1446,7 @@ function removeLWoPDiv (e) {
 
 	rmLwopFS.parentNode.removeChild(rmLwopFS);
 	rmLwopFS = null;
-	resultStatus.innerHTML= i18n["lwopSectionRemoved"][lang];
+	resultStatus.innerHTML= getStr("lwopSectionRemoved");
 } // End of removeLWoPDiv
 
 function removeOvertimeDiv (e) {
@@ -1471,7 +1471,7 @@ function removeOvertimeDiv (e) {
 	rmOTFS.parentNode.removeChild(rmOTFS);
 	rmOTFS = null;
 
-	resultStatus.innerHTML= i18n["OTSectionRemoved"][lang];
+	resultStatus.innerHTML= getStr("OTSectionRemoved");
 } // End of removeOvertimeDiv
 
 function removeLumpSumDiv (e) {
@@ -1526,7 +1526,7 @@ function removeLumpSumDiv (e) {
 		}
 	}
 	*/
-	resultStatus.innerHTML= i18n["lumpSumSectionRemoved"][lang];
+	resultStatus.innerHTML= getStr("lumpSumSectionRemoved");
 } // End of removeLumpSumDiv
 
 
@@ -1769,17 +1769,17 @@ function calculate() {
 			let endDate = new Date(periods[i+1]["startDate"]);
 			endDate.setDate(endDate.getDate() -1);
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"] + " - " + endDate.toISOString().substr(0,10)});
-			var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + i18n[periods[i]["reason"]][lang] + ")", "class":"small"});
+			var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + getStr(periods[i]["reason"]) + ")", "class":"small"});
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["made"])}); //.toFixed(2)});
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["shouldHaveMade"])}); //.toFixed(2)});
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["backpay"])}); //.toFixed(2)});
 
 			if (dbug || showExtraCols) {
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n[classification][lang] + "-0" + (level +1)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getStr(classification) + "-0" + (level +1)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (Math.max(1, (parseInt(step)+1)))});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["no"][lang] : i18n["yes"][lang])});
-				//var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (step >=0 ? (daily[level][step] * periods[i]["multiplier"]).toFixed(2) + " -> " + (newDaily[level][step] * periods[i]["multiplier"]).toFixed(2) : "0") + " / " + i18n["day"][lang]});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "innerHTML": (step >=0 ? formatter.format(newRates["current"][level][step]["daily"] * periods[i]["multiplier"]) + " <span class=\"invisibleStuff\">" + i18n["to"][lang] + "</span><span aria-hidden=\"true\">-></span> " + formatter.format(newRates[theYear][level][step]["daily"] * periods[i]["multiplier"]) : "0") + " / " + i18n["day"][lang]});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? getStr("no") : getStr("yes"))});
+				//var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (step >=0 ? (daily[level][step] * periods[i]["multiplier"]).toFixed(2) + " -> " + (newDaily[level][step] * periods[i]["multiplier"]).toFixed(2) : "0") + " / " + getStr("day")});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "innerHTML": (step >=0 ? formatter.format(newRates["current"][level][step]["daily"] * periods[i]["multiplier"]) + " <span class=\"invisibleStuff\">" + getStr("to") + "</span><span aria-hidden=\"true\">-></span> " + formatter.format(newRates[theYear][level][step]["daily"] * periods[i]["multiplier"]) : "0") + " / " + getStr("day")});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": days});
 			}
 			
@@ -1797,18 +1797,18 @@ function calculate() {
 					
 					var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
-					var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode": "(" + i18n["OTPayment"][lang] + " " + rate + ")", "class":"small"});
+					var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode": "(" + getStr("OTPayment") + " " + rate + ")", "class":"small"});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
 
 					if (dbug || showExtraCols) {
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n[classification][lang] + "-0" + (level +1)});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getStr(classification) + "-0" + (level +1)});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["no"][lang] : i18n["yes"][lang])});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? getStr("no") : getStr("yes"))});
 						//var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + " * " + rate + "/hr"});
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "innerHTML": formatter.format(newRates["current"][level][step]["hourly"] * periods[i]["multiplier"]) + " <span class=\"invisibleStuff\">" + i18n["to"][lang] + "</span><span aria-hidden=\"true\">-></span> " + formatter.format(newRates[theYear][level][step]["hourly"] * periods[i]["multiplier"]) + " * " + rate + "/hr"});
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": overtimePeriods[periods[i]["startDate"]][rate] + " " + i18n["hours"][lang]});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "innerHTML": formatter.format(newRates["current"][level][step]["hourly"] * periods[i]["multiplier"]) + " <span class=\"invisibleStuff\">" + getStr("to") + "</span><span aria-hidden=\"true\">-></span> " + formatter.format(newRates[theYear][level][step]["hourly"] * periods[i]["multiplier"]) + " * " + rate + "/hr"});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": overtimePeriods[periods[i]["startDate"]][rate] + " " + getStr("hours")});
 					}
 	
 					periods[i]["made"] += made;
@@ -1829,19 +1829,19 @@ function calculate() {
 				
 				var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
-				var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + i18n["lumpSumPayment"][lang] + ")", "class":"small"});
+				var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + getStr("lumpSumPayment") + ")", "class":"small"});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
 
 				
 				if (dbug || showExtraCols) {
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n[classification][lang] + "-0" + (level +1)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getStr(classification) + "-0" + (level +1)});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? i18n["no"][lang] : i18n["yes"][lang])});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? getStr("no") : getStr("yes"))});
 					//var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + "/hr"});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(newRates[theYear][level][step]["hourly"] * periods[i]["multiplier"]) + "/hr"});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": i18n["hourly"][lang] + lumpSumPeriods[periods[i]["startDate"]]});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getStr("hourly") + lumpSumPeriods[periods[i]["startDate"]]});
 				}
 
 				periods[i]["made"] += made;
@@ -1884,12 +1884,12 @@ function calculate() {
 			total["backpay"] += preTotal["backpay"] + pTotal["backpay"];
 			*/
 			var totalTR = createHTMLElement("tr", {"parentNode":resultsFoot});
-			var totalTH = createHTMLElement("th", {"parentNode":totalTR, "scope":"row", "nodeText":i18n["total"][lang]});
+			var totalTH = createHTMLElement("th", {"parentNode":totalTR, "scope":"row", "nodeText":getStr("total")});
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["made"])});
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["shouldHaveMade"])});
 			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["backpay"])});
 		}
-		resultStatus.innerHTML = i18n["resultsShownBelow"][lang]; 
+		resultStatus.innerHTML = getStr("resultsShownBelow"); 
 	//} else {
 		//if (dbug) console.log ("Not the top of your level.  This should be difficult.");
 		
@@ -1966,6 +1966,29 @@ var formatter = new Intl.NumberFormat(langFormat, {
   // Taken from https://stackoverflow.com/questions/149055/how-to-format-numbers-as-currency-string
 });
 
+function getStr (str) {
+	let rv = null;
+
+	try {
+		rv = i18n[str][lang];
+		let repStr = null;
+		while (repStr = rv.match(/(\{\{(.*?)\}\})/)) {
+			if (repStr) {
+				if (repStr[2] == "startDate") {
+					rvStr = repStr.replace(repStr[1], calcStartDate.getAttribute("datetime"));
+				} else if (repStr[2] == "endDate") {
+					rvStr = repStr.replace(repStr[1], EndDate.toISOString().substr(0,10));
+				}
+			}
+		}
+
+	}
+	catch (ex) {
+		console.error ("Error getting Error Message String: " + ex.message);
+	}
+
+	return rv;
+} // End of getStr
 
 function createHTMLElement (type, attribs) {
 	var newEl = document.createElement(type);
@@ -2123,21 +2146,21 @@ function genTables() {
 		//console.log ("Did get payTablesSect.");
 	}
 	
-	//console.log ("Got payTablesSect and will now try to create an H3 with text " + i18n["paySectHeading"][lang] + ".");
-	let payTableH = createHTMLElement("h2", {"parentNode":payTablesSect, "textNode":i18n["paySectHeading"][lang]});
+	//console.log ("Got payTablesSect and will now try to create an H3 with text " + getStr("paySectHeading") + ".");
+	let payTableH = createHTMLElement("h2", {"parentNode":payTablesSect, "textNode":getStr("paySectHeading")});
 	let timeps = ["annual", "weekly", "daily", "hourly"];
 
 	/*
 	// Create Filters
 	let payTablesFiltersDetails = createHTMLElement("details", {"parentNode":payTablesSect});
-	let payTablesFiltersSummary = createHTMLElement("summary", {"parentNode":payTablesFiltersDetails, "textNode":i18n["payTablesFilterLegend"][lang]});
+	let payTablesFiltersSummary = createHTMLElement("summary", {"parentNode":payTablesFiltersDetails, "textNode":getStr("payTablesFilterLegend")});
 	let payTablesFiltersFS = createHTMLElement ("fieldset", {"parentNode":payTablesFiltersDetails, "id" : "payTablesFS"});
-	let payTableFiltersLengend = createHTMLElement ("legend", {"parentNode":payTablesFiltersFS, "textNode": i18n["show"][lang]});
+	let payTableFiltersLengend = createHTMLElement ("legend", {"parentNode":payTablesFiltersFS, "textNode": getStr("show")});
 
 	for (let i = 0; i<timeps.length; i++) {
 		let newDiv = createHTMLElement("div", {"parentNode" : payTablesFiltersFS, "class" : "checkboxHolderDiv"});
 		let checkbox = createHTMLElement("input", {"parentNode" : newDiv, "type":"checkbox", "id" : timeps[i] + "Chk", "checked":"checked"});
-		let lbl = createHTMLElement("label", { "parentNode":newDiv, "for": timeps[i] + "Chk", "textNode" : i18n[timeps[i]][lang]});
+		let lbl = createHTMLElement("label", { "parentNode":newDiv, "for": timeps[i] + "Chk", "textNode" : getStr(timeps[i])});
 	}
 	*/
 	//console.log ("levels:  " + levels + ".");
@@ -2146,11 +2169,11 @@ function genTables() {
 		let dl = "-0" + (i+1);
 		//let newDiv = createHTMLElement("div", {"parentNode" : payTablesFiltersFS, "class" : "checkboxHolderDiv"});
 		//let checkbox = createHTMLElement("input", {"parentNode" : newDiv, "type":"checkbox", "id" : "level" + i + "Chk", "checked":"checked"});
-		//let lbl = createHTMLElement("label", { "parentNode":newDiv, "for": timeps[i] + "Chk", "textNode" : i18n[classification][lang] + dl});
+		//let lbl = createHTMLElement("label", { "parentNode":newDiv, "for": timeps[i] + "Chk", "textNode" : getStr(classification) + dl});
 
 		let newSect = createHTMLElement("details", {"parentNode" : payTablesSect, "id" : "payrateSect " + i});
 		let newSum = createHTMLElement("summary", {"parentNode": newSect});
-		let newSectH = createHTMLElement("h3", {"parentNode":newSum, "textNode" : i18n[classification][lang] + dl});
+		let newSectH = createHTMLElement("h3", {"parentNode":newSum, "textNode" : getStr(classification) + dl});
 
 		// You need a table for each year)
 		//console.log ("Periods: " + initPeriods.length + ".");
@@ -2158,20 +2181,20 @@ function genTables() {
 		let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
 
 		let newTable = createHTMLElement("table", {"parentNode"  : respDiv, "class":"table caption-top"});
-		let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : i18n["current"][lang]});
+		let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : getStr("current")});
 
 		let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
 		let newTR = createHTMLElement("tr", {"parentNode" : newTHead});
 		let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode":""});
 
 		for (let stp = 0; stp < newRates["current"][i].length; stp++) {
-			let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : i18n["step"][lang] + "  " + (stp+1), "scope":"col"});
+			let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : getStr("step") + "  " + (stp+1), "scope":"col"});
 		}
 
 		let newTBody = createHTMLElement("tbody", {"parentNode" : newTable});
 		for (let t = 0; t<timeps.length; t++) {
 			let newTR = createHTMLElement("tr", {"parentNode" : newTBody});
-			let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode": i18n[timeps[t]][lang], "scope":"row"});
+			let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode": getStr(timeps[t]), "scope":"row"});
 			for (let stp = 0; stp < newRates["current"][i].length; stp++) {
 				let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : formatter.format(newRates["current"][i][stp][timeps[t]])});
 			}
@@ -2196,13 +2219,13 @@ function genTables() {
 
 				//console.log ("initPeriods[j]: " + initPeriods[j]["startDate"] +".");
 				for (let stp = 0; stp < newRates[j][i].length; stp++) {
-					let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : i18n["step"][lang] + "  " + (stp+1), "scope":"col"});
+					let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : getStr("step") + "  " + (stp+1), "scope":"col"});
 				}
 
 				let newTBody = createHTMLElement("tbody", {"parentNode" : newTable});
 				for (let t = 0; t<timeps.length; t++) {
 					let newTR = createHTMLElement("tr", {"parentNode" : newTBody});
-					let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode": i18n[timeps[t]][lang], "scope":"row"});
+					let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode": getStr(timeps[t]), "scope":"row"});
 					for (let stp = 0; stp < newRates[j][i].length; stp++) {
 						let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : formatter.format(newRates[j][i][stp][timeps[t]])});
 					}
