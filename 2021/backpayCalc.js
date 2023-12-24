@@ -727,13 +727,17 @@ function addPromotions () {
 	var promotions = document.querySelectorAll(".promotions");
 	var numOfPromotions = promotions.length;
 	if (dbug) console.log("addPromotions::Checking for " + numOfPromotions + " promotions.");
+	let startDate = calcStartDate.getAttribute("datetime");
 	for (var i = 0; i < promotions.length; i++) {
-		var promoLevel = promotions[i].getElementsByTagName("select")[0].value;
+		let promoLevelSel = promotions[i].getElementsByTagName("select")[0]; //.value;
+		let promoLevel = promoLevelSel.value;
 		if (dbug) console.log("addPromotions::promoLevel " + i + ": " + promoLevel + ".");
-		var promoDate  = promotions[i].getElementsByTagName("input")[0].value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+		let promoDateIn  = promotions[i].getElementsByTagName("input")[0]; 
+		let promoDate = promoDateIn.value.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 		if (dbug) console.log("addPromotions::promoDate " + i + ": " + promoDate[0] + ".");
 		if (promoDate) {
-			if (promoDate[0] > TABegin.toISOString().substr(0,10) && promoDate[0] < EndDate.toISOString().substr(0, 10) && promoLevel > 0 && promoLevel <=levels) {
+			if (promoDate[0] > startDate && promoDate[0] < EndDate.toISOString().substr(0, 10) && promoLevel > 0 && promoLevel <=levels) {
+			//if (promoDate[0] > TABegin.toISOString().substr(0,10) && promoDate[0] < EndDate.toISOString().substr(0, 10) && promoLevel > 0 && promoLevel <=levels) {
 				if (dbug) console.log ("addPromotions::Adding a promotion on " + promoDate[0] + " at level " + promoLevel +".");
 				// add the promo period
 				var j = addPeriod ({"startDate":promoDate[0],"increase":0, "reason":"promotion", "multiplier":1, "level":(promoLevel-1)});
@@ -755,10 +759,22 @@ function addPromotions () {
 
 			} else {
 				let errMsg = null;
-				if (promoDate[0] < startDate.toISOString().substr(0,10)) errMsg = getStr("promoTooEarlyError");
-				if (promoDate[0] > EndDate.toISOString().substr(0,10)) errMsg = getStr("promoTooLateError");
-				if (promoLevel < 1) errMsg = getStr("promoTooLowError"); //console.log ("addPromotions::It's greater than 0.");
-				if (promoLevel > levels) errMsg = getStr("promoTooHighError"); //console.log ("addPromotions::It's less than or equal to 5.");
+				if (promoDate[0] < startDate) {
+					errMsg = getStr("promoTooEarlyError");
+					addErrorMessage(promoDateIn.id, errMsg);
+				}
+				if (promoDate[0] >= EndDate.toISOString().substr(0,10)) {
+					errMsg = getStr("promoTooLateError");
+					addErrorMessage(promoDateIn.id, errMsg);
+				}
+				if (promoLevel < 1) {
+					errMsg = getStr("promoTooLowError"); //console.log ("addPromotions::It's greater than 0.");
+					addErrorMessage(promoLevelSel.id, errMsg);
+				}
+				if (promoLevel > levels) {
+					errMsg = getStr("promoTooHighError"); //console.log ("addPromotions::It's less than or equal to 5.");
+					addErrorMessage(promoLevelSel.id, errMsg);
+				}
 				if (dbug && errMsg) console.log ("addPromotion::Error: " + errMsg + ".");
 			}
 		} else {
@@ -1072,13 +1088,15 @@ function addPromotionHandler (e, o) {
 	let newPromotionFS = createHTMLElement("fieldset", {"parentNode":promotionsDiv, "class":"fieldHolder promotions border border-black p-2 m-2", "id" :"promo" + id});
 	let newPromotionLegend = createHTMLElement("legend", {"parentNode":newPromotionFS, "textNode":getStr("promotion") + " " + (id+1)});
 
-	var newPromoLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "class":"form-label", "for":"promoDate" + id, "nodeText": getStr("dateOfPromotion") + " "});
-	var newPromoDate = createHTMLElement("input", {"parentNode":newPromotionFS, "class":"form-control", "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat", "value":(pdate ? pdate : null)});
+	let newPromoDateDiv = createHTMLElement("div", {"parentNode":newPromotionFS, "class":"fieldHolder"});
+	let newPromoLbl = createHTMLElement("label", {"parentNode":newPromoDateDiv, "class":"form-label", "for":"promoDate" + id, "nodeText": getStr("dateOfPromotion") + " "});
+	let newPromoDate = createHTMLElement("input", {"parentNode":newPromoDateDiv, "class":"form-control", "type":"date", "id":"promoDate" + id, "aria-describedby":"dateFormat", "value":(pdate ? pdate : null)});
 	if (toFocus) newPromoDate.focus();
 	//newPromoDate.addEventListener("change", saveValue, false);
 
-	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromotionFS, "class":"form-label", "for":"promotionLevel" + id, "nodeText":getStr("promotedToLevel") + " "});
-	var newPromotionSel = createHTMLElement("select", {"parentNode":newPromotionFS, class:"form-select", "id":"promotionLevel" + id});
+	let newPromoLvlDiv = createHTMLElement("div", {"parentNode":newPromotionFS, "class":"fieldHolder"});
+	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromoLvlDiv, "class":"form-label", "for":"promotionLevel" + id, "nodeText":getStr("promotedToLevel") + " "});
+	let newPromotionSel = createHTMLElement("select", {"parentNode":newPromoLvlDiv, class:"form-select", "id":"promotionLevel" + id});
 	for (var j = 0; j < 6; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? getStr("selectLevel") : getStr(classification) + "-0" + j)});
 		if (plvl) {
@@ -1971,13 +1989,15 @@ function getStr (str) {
 
 	try {
 		rv = i18n[str][lang];
+
 		let repStr = null;
+		
 		while (repStr = rv.match(/(\{\{(.*?)\}\})/)) {
 			if (repStr) {
 				if (repStr[2] == "startDate") {
-					rvStr = repStr.replace(repStr[1], calcStartDate.getAttribute("datetime"));
+					rv = rv.replace(repStr[1], calcStartDate.getAttribute("datetime"));
 				} else if (repStr[2] == "endDate") {
-					rvStr = repStr.replace(repStr[1], EndDate.toISOString().substr(0,10));
+					rv = rv.replace(repStr[1], EndDate.toISOString().substr(0,10));
 				}
 			}
 		}

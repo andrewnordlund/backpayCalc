@@ -31,7 +31,7 @@ footer {
 	padding: 2em 1%;
 }
 .fieldHolder {
-	margin: 1.25em .5em; .5em;
+	margin: 1.25em .5em .5em;
 }
 .fieldHolder label {
 	font-weight: bold;
