@@ -13,7 +13,7 @@
  */
 
 var dbug = false;
-var version = "3.3.0-a1";
+var version = "3.3.0-b1";
 var lang = "en";
 var langFormat = "en-CA";
 var updateHash = true;
@@ -53,7 +53,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2023", "11", "12");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var lastModified = new Date("2023", "12", "25");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lastModTime = null;
 var salaries = [];
 var daily = [];
@@ -1876,7 +1876,7 @@ function calculate() {
 					var backpay = shouldHaveMade - made;
 					
 					var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"] + " - " + endDate.toISOString().substr(0,10)});
 					var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode": "(" + getStr("OTPayment") + " " + rate + ")", "class":"small"});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
@@ -1908,7 +1908,7 @@ function calculate() {
 				var backpay = shouldHaveMade - made;
 				
 				var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]+ " - " + endDate.toISOString().substr(0,10)});
 				var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + getStr("lumpSumPayment") + ")", "class":"small"});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
@@ -1921,7 +1921,7 @@ function calculate() {
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? getStr("no") : getStr("yes"))});
 					//var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + "/hr"});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(newRates[theYear][level][step]["hourly"] * periods[i]["multiplier"]) + "/hr"});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getStr("hourly") + lumpSumPeriods[periods[i]["startDate"]]});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getStr("hourly") + ": " + lumpSumPeriods[periods[i]["startDate"]]});
 				}
 
 				periods[i]["made"] += made;
