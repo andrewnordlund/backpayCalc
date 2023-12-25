@@ -987,17 +987,26 @@ function getLWoPs () {
 	
 function getOvertimes () {
 	// Add Overtimes
-	var overtimeStints = document.querySelectorAll(".overtimes");
+	dbug = true;
+	let overtimeStints = document.querySelectorAll(".overtimes");
+	let rates = getRates();
 	if (dbug) console.log ("overtimes::Dealing with " + overtimeStints.length + " overtimes.");
 	
 	for (var i =0; i < overtimeStints.length; i++) {
-		var overtimeDate = overtimeStints[i].querySelector("input[type=date]").value;
-		var overtimeAmount = overtimeStints[i].querySelector("input[type=text]").value.replace(/[^\d\.]/, "");
-		var overtimeRate = overtimeStints[i].querySelector("select").value;
+		let overtimeDateIn = overtimeStints[i].querySelector("input[type=date]");
+		let overtimeDate = overtimeDateIn.value;
+		let overtimeAmountIn = overtimeStints[i].querySelector("input[type=text]");
+		let overtimeAmount = overtimeAmountIn.value; //.replace(/[^\d\.]/, "");
+		let overtimeRateSel = overtimeStints[i].querySelector("select");
+		let overtimeRate = overtimeRateSel.value;
+		if (!(rates.hasOwnProperty(overtimeRate)) || overtimeRate == "0") {
+			if (dbug) console.log ("selected overtimeRate: " + overtimeRate + ".");
+			addErrorMessage (overtimeRateSel.id, getStr("invalidRateError"));
+		}
 		if (overtimeDate.match(/\d\d\d\d-\d\d-\d\d/)) {
-			if (dbug) console.log ("Passed the initial tests.");
+			if (dbug) console.log ("getOvertimes::Passed the initial tests.");
 			if (overtimeDate >= TABegin.toISOString().substr(0,10) && overtimeDate <= EndDate.toISOString().substr(0, 10) && overtimeAmount > 0) {
-				if (dbug) console.log ("overtimes::And the dates are in the right range.");
+				if (dbug) console.log ("getOvertimes::And the dates are in the right range.");
 				// add a period for starting
 				
 				var from = addPeriod({"startDate":overtimeDate, "increase":0, "reason":"Overtime", "multiplier":0, "hours":overtimeAmount, "rate":overtimeRate});
@@ -1006,18 +1015,25 @@ function getOvertimes () {
 				saveValues.push("otrt" + i + "=" + overtimeRate);
 
 			} else {
-				if (dbug) {
-					if (overtimeDate >= TABegin.toISOString().substr(0,10)) console.log ("overtimeDate is after startDate");
-					if (overtimeDate <= EndDate.toISOString().substr(0, 10)) console.log ("overtimeDate is before EndDate");
-					if (overtimeAmount > 0) console.log ("overtimeAmount > 0");
+				if (overtimeDate < TABegin.toISOString().substr(0,10))  {
+					if (dbug) console.log ("overtimeDate is before startDate");
+					addErrorMessage(overtimeDateIn.id, getStr("dateTooEarlyError"));
+				}
+				if (overtimeDate > EndDate.toISOString().substr(0, 10)) {
+					if (dbug) console.log ("overtimeDate is after EndDate");
+					addErrorMessage(overtimeDateIn.id, getStr("dateTooLateError"));
+				}
+				if (overtimeAmount <= 0 || overtimeAmount.match(/\D/)) {
+					if (dbug) console.log ("overtimeAmount < 0");
+					addErrorMessage(overtimeAmountIn.id, getStr("otHrsError"));
 				}
 			}
 		} else {
-			if (dbug) {
-				if (overtimeDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("overtimeDate is right format.");
-			}
+			if (dbug) console.log ("overtimeDate is not in the right format.");
+			addErrorMessage(overtimeDateIn.id, getStr("dateFormatError"));
 		}
 	}
+	dbug = false;
 } // End of getOvertimes
 
 function getLumpSums () {
@@ -1333,12 +1349,12 @@ function addOvertimeHandler () {
 
 	let newAmountFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
 	let newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":getStr("hrsOT"), "for":"overtimeAmount" + id});
-	let newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "class":"form-control", "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
+	let newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "class":"form-control", "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : "")});
 
 	let newRateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	let newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":getStr("OTRate"), "for":"overtimeRate" + id});
-	let newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, class:"form-select", "id":"overtimeRate"+id});
-	let rates = {"0" : getStr("selectOTRate"), "0.125" : "1/8x - " + getStr("standby"), "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
+	let newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newRateFieldHolder, "class":"form-label", "textNode":getStr("OTRate"), "for":"overtimeRate" + id});
+	let newOvertimeRate = createHTMLElement("select", {"parentNode":newRateFieldHolder, class:"form-select", "id":"overtimeRate"+id});
+	let rates = getRates();  //{"0" : getStr("selectOTRate"), "0.125" : "1/8x - " + getStr("standby"), "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
 	//createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":getStr("selectOTRate")});
 	
 	for (let r in rates) {
@@ -1363,6 +1379,10 @@ function addOvertimeHandler () {
 
 	resultStatus.innerHTML= getStr("newOTSection");
 } // End of addOvertimeHandler
+
+function getRates () {
+	return {"0" : getStr("selectOTRate"), "0.125" : "1/8x - " + getStr("standby"), "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
+} // End of getRates
 
 function addLumpSumHandler () {
 	let toFocus = true;
