@@ -922,7 +922,7 @@ function getActings () {
 function getLWoPs () {
 	// Add lwops
 	var lwopStints = document.querySelectorAll(".lwopStints");
-	if (dbug) console.log ("Dealing with " + lwopStints.length + " lwops.");
+	if (dbug) console.log ("getLWoPs::Dealing with " + lwopStints.length + " lwops.");
 	
 	for (var i =0; i < lwopStints.length; i++) {
 		var dates = lwopStints[i].getElementsByTagName("input");
@@ -954,16 +954,32 @@ function getLWoPs () {
 				//var fromParts = lwopFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				//lwopFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 			} else {
-				if (dbug) {
-					if (lwopFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("lwopFrom is before EndDate");
-					if (lwopToDate >= TABegin.toISOString().substr(0,10)) console.log ("lwopTo is after startDate");
-					if (lwopToDate > lwopFromDate) console.log ("lwopTo is after lwopFrom");
+				if (lwopFromDate >= EndDate.toISOString().substr(0, 10)) {
+					if (dbug) console.log ("lwopFrom is after EndDate");
+					addErrorMessage(dates[0].id, getStr("dateTooLateError"));
+				}
+				if (lwopToDate < TABegin.toISOString().substr(0,10)) {
+					if (dbug) console.log ("lwopTo is before startDate");
+					addErrorMessage(dates[1].id, getStr("dateTooEarlyError"));
+				}
+				if (lwopToDate < lwopFromDate) {
+					if (dbug) console.log ("lwopTo is before lwopFrom");
+					addErrorMessage(dates[0].id, getStr("dateWrongOrderError"));
+					addErrorMessage(dates[1].id, getStr("dateWrongOrderError"));
 				}
 			}
 		} else {
 			if (dbug) {
-				if (lwopFromDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getLWoPs::lwopFrom is right format.");
-				if (lwopToDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getLWoPs::lwopTo is right format.");
+				if (lwopFromDate.match(/\d\d\d\d-\d\d-\d\d/)) {
+					if (dbug) console.log ("getLWoPs::lwopFrom is right format.");
+				} else {
+					addErrorMessage(dates[0].id, getStr("dateFormatError"));
+				}
+				if (lwopToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
+					if (dbug) console.log ("getLWoPs::lwopTo is right format.");
+				} else {
+					addErrorMessage(dates[1].id, getStr("dateFormatError"));
+				}
 			}
 		}
 	}
