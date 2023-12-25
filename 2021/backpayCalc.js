@@ -987,7 +987,6 @@ function getLWoPs () {
 	
 function getOvertimes () {
 	// Add Overtimes
-	dbug = true;
 	let overtimeStints = document.querySelectorAll(".overtimes");
 	let rates = getRates();
 	if (dbug) console.log ("overtimes::Dealing with " + overtimeStints.length + " overtimes.");
@@ -1033,17 +1032,18 @@ function getOvertimes () {
 			addErrorMessage(overtimeDateIn.id, getStr("dateFormatError"));
 		}
 	}
-	dbug = false;
 } // End of getOvertimes
 
 function getLumpSums () {
 	// Add LumpSums
-	var lumpsums = document.querySelectorAll(".lumpSums");
+	let lumpsums = document.querySelectorAll(".lumpSums");
 	if (dbug) console.log ("Dealing with " + lumpsums.length + " lumpsums.");
 	
 	for (var i =0; i < lumpsums.length; i++) {
-		var lumpSumDate = lumpsums[i].querySelector("input[type=date]").value;
-		var lumpSumAmount = lumpsums[i].querySelector("input[type=text]").value.replace(/[^\d\.]/, "");
+		let lumpSumDateIn = lumpsums[i].querySelector("input[type=date]")
+		let lumpSumDate = lumpSumDateIn.value;
+		let lumpSumAmountIn = lumpsums[i].querySelector("input[type=text]");//.value.replace(/[^\d\.]/, "");
+		let lumpSumAmount = lumpSumAmountIn.value;
 		if (lumpSumDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("Passed the initial tests.");
 			if (lumpSumDate >= TABegin.toISOString().substr(0,10) && lumpSumDate <= EndDate.toISOString().substr(0, 10) && lumpSumAmount > 0) {
@@ -1055,16 +1055,22 @@ function getLumpSums () {
 				saveValues.push("lsamt" + i + "=" + lumpSumAmount);
 				
 			} else {
-				if (dbug) {
-					if (lumpSumDate >= TABegin.toISOString().substr(0,10)) console.log ("lumpSumDate is after startDate");
-					if (lumpSumDate <= EndDate.toISOString().substr(0, 10)) console.log ("lumpSumDate is before EndDate");
-					if (lumpSumAmount > 0) console.log ("lumpSumAmount > 0");
+				if (lumpSumDate < TABegin.toISOString().substr(0,10)) {
+					if (dbug) console.log ("lumpSumDate is after startDate");
+					addErrorMessage(lumpSumDateIn.id, getStr("dateTooEarlyError"));
+				}
+				if (lumpSumDate > EndDate.toISOString().substr(0, 10)) {
+					if (dbug) console.log ("lumpSumDate is before EndDate");
+					addErrorMessage(lumpSumDateIn.id, getStr("dateTooLateError"));
+				}
+				if (lumpSumAmount <= 0 || lumpSumAmount.match(/\D/)) {
+					if (dbug) console.log ("lumpSumAmount not right.");
+					addErrorMessage(lumpSumAmountIn.id, getStr("otHrsError"));
 				}
 			}
 		} else {
-			if (dbug) {
-				if (lumpSumDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("lumpSumDate is right format.");
-			}
+			if (dbug) console.log ("lumpSumDate is not in the right format.");
+			addErrorMessage(lumpSumDateIn.id, getStr("dateFormatError"));
 		}
 	}
 } // End of getLumpSums
