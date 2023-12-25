@@ -779,6 +779,7 @@ function addPromotions () {
 			}
 		} else {
 			if (dbug) console.log("addPromotions::Didn't get promoDate.");
+			addErrorMessage(promoDateIn.id, getStr("wrong date format"));
 		}
 	}
 } // End of addPromotions
@@ -786,34 +787,35 @@ function addPromotions () {
 function getActings () {
 	//dbug = true;
 	// Add actings
-	var actingStints = document.querySelectorAll(".actingStints");
+	let actingStints = document.querySelectorAll(".actingStints");
 	if (dbug) console.log ("getActings::Dealing with " + actingStints.length + " acting stints.");
 
-	for (var i =0; i < actings; i++) {
-		var actingLvl = actingStints[i].getElementsByTagName("select")[0].value;
-		var dates = actingStints[i].getElementsByTagName("input");
-		var enteredActingFromDate = dates[0].value;
-		var effectiveActingStart = dates[0].value;
-		var actingToDate = dates[1].value;
+	for (let i =0; i < actings; i++) {
+		let actingLvlSel = actingStints[i].getElementsByTagName("select")[0];
+		let actingLvl = actingLvlSel.value;
+		let dates = actingStints[i].getElementsByTagName("input");
+		let enteredActingFromDate = dates[0].value;	// What's the difference between "entered" and "effective"?
+		let effectiveActingStart = dates[0].value;	// Entered is what's entered. If that's before the TABegin, then the effective date is the TABegin.
+		let actingToDate = dates[1].value;
 		if (dbug) console.log("getActings::Checking acting at  level " + actingLvl + " from " + enteredActingFromDate + " to " + actingToDate + ".");
 		// Check if the acting level actually exists, and if the dates are in the right format.
 		if (actingLvl >=0 && actingLvl <=5 && enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("getActings::Passed the initial tests.  the Acting level exists and the dates are in the correct format.");
 			// Check if the from date is before the TA End Date, and the To Date is after the beginning of the TA period, and that to the Do date is after the From date.
 			if (enteredActingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= TABegin.toISOString().substr(0,10) && actingToDate > enteredActingFromDate) {
-				//var to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
+				//let to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
 
-				var fromParts = enteredActingFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+				let fromParts = enteredActingFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				enteredActingFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 
-				var toParts = actingToDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+				let toParts = actingToDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				actingToDate = new Date(toParts[1], (toParts[2]-1), toParts[3]);
 
 				// Is the Acting for more than 1 year?  If so, add Acting Anniversarys
 				if (actingToDate >= +enteredActingFromDate + (1000*60*60*24)) {
 					if (dbug) console.log ("getActings::" + actingToDate.toISOString().substr(0,10) + " is at least 1 year past " + enteredActingFromDate.toISOString().substr(0,10) + ".  So, gotta add Acting Anniversaries.");
 					// From: the year after the acting start to the acting end.
-					for (var j = parseInt(fromParts[1])+1; j <= toParts[1]; j++) {
+					for (let j = parseInt(fromParts[1])+1; j <= toParts[1]; j++) {
 						if (dbug) console.log ("getActings::j: " + j +".");
 						if ((j + "-" + fromParts[2] + "-" + fromParts[3] < actingToDate.toISOString().substr(0, 10)) && (j + "-" + fromParts[2] + "-" + fromParts[3] >= TABegin.toISOString().substr(0,10)) && (j + "-" + fromParts[2] + "-" + fromParts[3] <= EndDate.toISOString().substr(0,10))) {
 							addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1});
@@ -835,11 +837,11 @@ function getActings () {
 
 				if (dbug) console.log ("getActings::Gonna add the period for the effectiveActingStart: " + effectiveActingStart.toISOString().substr(0,10) + ".");
 				// Now add the period for start acting
-				var from = addPeriod({"startDate":effectiveActingStart.toISOString().substr(0,10), "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
+				let from = addPeriod({"startDate":effectiveActingStart.toISOString().substr(0,10), "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
 
 				// Add a period to end the acting.
 				actingToDate.setDate(actingToDate.getDate() + parseInt(1));	// Add 1 because this will be the start date of post-acting
-				var to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
+				let to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
 
 				saveValues.push("afrom" + i + "=" + enteredActingFromDate.toISOString().substr(0, 10));
 				actingToDate.setDate(actingToDate.getDate() - parseInt(1));
@@ -856,19 +858,19 @@ function getActings () {
 				}
 				if (dbug) console.log ("getActings::And the dates are in the right range.");
 				// add a period for starting
-				var from = addPeriod({"startDate":enteredActingFromDate, "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
+				let from = addPeriod({"startDate":enteredActingFromDate, "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
 
 				// add a period for returning
-				var toParts = actingToDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+				let toParts = actingToDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				actingToDate = new Date(toParts[1], (toParts[2]-1), toParts[3]);
 				actingToDate.setDate(actingToDate.getDate() + parseInt(1));
-				var to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
-				var fromParts = enteredActingFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+				let to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
+				let fromParts = enteredActingFromDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				enteredActingFromDate = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 				
 				// Check for Acting Anniversary
 				// From: the year after the acting start to the acting end.
-				for (var j = parseInt(fromParts[1])+1; j <= toParts[1]; j++) {
+				for (let j = parseInt(fromParts[1])+1; j <= toParts[1]; j++) {
 					console.log ("getActings::j: " + j +".");
 					if (j + "-" + fromParts[2] + "-" + fromParts[3] < actingToDate.toISOString().substr(0, 10)) {
 						addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1});
@@ -888,13 +890,16 @@ function getActings () {
 				}
 			}
 		} else {
-			if (actingLvl < 0 || actingLvl > 5) {
+			if (actingLvl < 0 || actingLvl > levels) {
 				if (dbug) {
 					if (actingLvl >=0) console.log ("getActings::actingLvl >= 0");
 					if (actingLvl <5) console.log ("getActings::actingLvl < 5");
 				}
 				// Add Error Message
-
+				addErrorMessage (actingLvlSel.id, getStr("Please select a valid value"));
+			}
+			if (!(dates[0].value.match(/\d\d\d\d-\d\d-\d\d/))) {
+				addErrorMessage(dates[0].id, "Date must be in the format....");
 			}
 			if (dbug) {
 				if (enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getActings::actingFrom is right format.");
@@ -1160,18 +1165,21 @@ function addActingHandler () {
 		}
 	}
 
-	var newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints border border-black p-2 m-2", "id":"acting"+id});
-	var newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode": getStr("actingStint") + " " + (id+1)});
+	let newActingFS = createHTMLElement("fieldset", {"parentNode":actingsDiv, "class":"fieldHolder actingStints border border-black p-2 m-2", "id":"acting"+id});
+	let newActingLegend = createHTMLElement("legend", {"parentNode":newActingFS, "textNode": getStr("actingStint") + " " + (id+1)});
 
-	var newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "textNode":getStr("from"), "for":"actingFrom" + id});
-	var newActingFromDate = createHTMLElement("input", {"parentNode":newActingFS, "class":"form-control", "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(afdate ? afdate : null)});
-	var newActingToLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "textNode":getStr("to"), "for":"actingTo"+id});
-	var newActingToDate = createHTMLElement("input", {"parentNode":newActingFS, "class":"form-control", "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat", "value":(atdate ? atdate : null)});
+	let newActingFromDiv = createHTMLElement("div", {"parentNode":newActingFS, "class" : "fieldHolder"});
+	let newActingFromLbl = createHTMLElement("label", {"parentNode":newActingFromDiv, "class":"form-label", "textNode":getStr("from"), "for":"actingFrom" + id});
+	let newActingFromDate = createHTMLElement("input", {"parentNode":newActingFromDiv, "class":"form-control", "id":"actingFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(afdate ? afdate : null)});
+	let newActingToDiv = createHTMLElement("div", {"parentNode":newActingFS, "class" : "fieldHolder"});
+	let newActingToLbl = createHTMLElement("label", {"parentNode":newActingToDiv, "class":"form-label", "textNode":getStr("to"), "for":"actingTo"+id});
+	let newActingToDate = createHTMLElement("input", {"parentNode":newActingToDiv, "class":"form-control", "id":"actingTo"+id, "type":"date", "aria-describedby":"dateFormat", "value":(atdate ? atdate : null)});
 
-	var newLevelLbl = createHTMLElement("label", {"parentNode":newActingFS, "class":"form-label", "for":"actingLevel" + id, "nodeText":getStr("actingLevel") + " "});
-	var newActingSel = createHTMLElement("select", {"parentNode":newActingFS, class:"form-select", "id":"actingLevel" + id});
-	for (var j = 0; j < 6; j++) {
-		var newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? getStr("selectLevel") : getStr(classification) + "-0" + j)});
+	let newActingLvlDiv = createHTMLElement("div", {"parentNode":newActingFS, "class" : "fieldHolder"});
+	let newLevelLbl = createHTMLElement("label", {"parentNode":newActingLvlDiv, "class":"form-label", "for":"actingLevel" + id, "nodeText":getStr("actingLevel") + " "});
+	let newActingSel = createHTMLElement("select", {"parentNode":newActingLvlDiv, class:"form-select", "id":"actingLevel" + id});
+	for (let j = 0; j < levels; j++) {
+		let newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? getStr("selectLevel") : getStr(classification) + "-0" + j)});
 		if (alvl) {
 			if (alvl == j) newPromoOpt.setAttribute("selected", "selected");
 		} else {
@@ -1229,13 +1237,16 @@ function addLWoPHandler () {
 		}
 	}
 
-	var newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints border border-black p-2 m-2", "id":"lwop"+id});
-	var newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":getStr("lwopStint") + " " + (id+1)});
+	let newLWoPFS = createHTMLElement("fieldset", {"parentNode":LWoPDiv, "class":"fieldHolder lwopStints border border-black p-2 m-2", "id":"lwop"+id});
+	let newLWoPLegend = createHTMLElement("legend", {"parentNode":newLWoPFS, "textNode":getStr("lwopStint") + " " + (id+1)});
 
-	var newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "class":"form-label", "textNode":getStr("from"), "for":"lwopFrom" + id});
-	var newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFS, "class":"form-control", "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(lfrom ? lfrom : null)});
-	var newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPFS, "class":"form-label", "textNode":getStr("to"), "for":"lwopTo"+id});
-	var newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPFS, "class":"form-control", "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lto ? lto : null)});
+	let newLWoPFromDiv = createHTMLElement("div", {"parentNode":newLWoPFS, "id":"actingButtonsDiv"});
+	let newLWoPFromLbl = createHTMLElement("label", {"parentNode":newLWoPFromDiv, "class":"form-label", "textNode":getStr("from"), "for":"lwopFrom" + id});
+	let newLWoPFromDate = createHTMLElement("input", {"parentNode":newLWoPFromDiv, "class":"form-control", "id":"lwopFrom"+id, "type":"date", "aria-describedby":"dateFormat", "value":(lfrom ? lfrom : null)});
+
+	let newLWoPToDiv = createHTMLElement("div", {"parentNode":newLWoPFS, "id":"actingButtonsDiv"});
+	let newLWoPToLbl = createHTMLElement("label", {"parentNode":newLWoPToDiv, "class":"form-label", "textNode":getStr("to"), "for":"lwopTo"+id});
+	let newLWoPToDate = createHTMLElement("input", {"parentNode":newLWoPToDiv, "class":"form-control", "id":"lwopTo"+id, "type":"date", "aria-describedby":"dateFormat", "value" : (lto ? lto : null)});
 
 	let lwopButtonsDiv = null;
 	if (id == 0) {
@@ -1276,10 +1287,10 @@ function addOvertimeHandler () {
 		if (dbug) console.log (`addOvertimeHandler::toFocus: ${toFocus}, date: ${otdate} hours ${othours}, rate: ${otrate}.`);
 	}
 
-	var OvertimeDiv = document.getElementById("overtimeDiv");
+	let OvertimeDiv = document.getElementById("overtimeDiv");
 
-	var id = overtimes;
-	var looking = true;
+	let id = overtimes;
+	let looking = true;
 	while (looking) {
 		if (document.getElementById("overtimeDate" + id)) {
 			id++;
@@ -1287,21 +1298,21 @@ function addOvertimeHandler () {
 			looking = false;
 		}
 	}
-	var newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes border border-black p-2 m-2", "id":"ot" + id});
-	var newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":getStr("otOrStby") + " " + (id+1)});
+	let newOvertimeFS = createHTMLElement("fieldset", {"parentNode":OvertimeDiv, "class":"fieldHolder overtimes border border-black p-2 m-2", "id":"ot" + id});
+	let newOvertimeLegend = createHTMLElement("legend", {"parentNode":newOvertimeFS, "textNode":getStr("otOrStby") + " " + (id+1)});
 
-	var newDateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "class":"form-label", "textNode":getStr("dtOfOT"), "for":"overtimeDate" + id});
-	var newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "class":"form-control", "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat", "value":(otdate ? otdate : null)});
+	let newDateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
+	let newOvertimeDateLbl = createHTMLElement("label", {"parentNode":newDateFieldHolder, "class":"form-label", "textNode":getStr("dtOfOT"), "for":"overtimeDate" + id});
+	let newOvertimeDate = createHTMLElement("input", {"parentNode":newDateFieldHolder, "class":"form-control", "id":"overtimeDate"+id, "type":"date", "aria-describedby":"dateFormat", "value":(otdate ? otdate : null)});
 
 
-	var newAmountFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":getStr("hrsOT"), "for":"overtimeAmount" + id});
-	var newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "class":"form-control", "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
+	let newAmountFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
+	let newOvertimeAmountLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":getStr("hrsOT"), "for":"overtimeAmount" + id});
+	let newOvertimeAmount = createHTMLElement("input", {"parentNode":newAmountFieldHolder, "class":"form-control", "id":"overtimeAmount"+id, "type":"text", "value" : (othours ? othours : null)});
 
-	var newRateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
-	var newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":getStr("OTRate"), "for":"overtimeRate" + id});
-	var newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, class:"form-select", "id":"overtimeRate"+id});
+	let newRateFieldHolder = createHTMLElement("div", {"parentNode":newOvertimeFS, "class":"fieldHolder"});
+	let newOvertimeRateLbl = createHTMLElement("label", {"parentNode":newAmountFieldHolder, "class":"form-label", "textNode":getStr("OTRate"), "for":"overtimeRate" + id});
+	let newOvertimeRate = createHTMLElement("select", {"parentNode":newAmountFieldHolder, class:"form-select", "id":"overtimeRate"+id});
 	let rates = {"0" : getStr("selectOTRate"), "0.125" : "1/8x - " + getStr("standby"), "1.0" : "1.0", "1.5" : "1.5", "2.0": "2.0"};
 	//createHTMLElement("option", {"parentNode":newOvertimeRate, "value":"0", "nodeText":getStr("selectOTRate")});
 	

@@ -233,16 +233,25 @@
 	"endDateTxtError" : {"en" : "This date should be the date on which the new pay rates take effect, must be after the date at which you started at your level (above), and must be of format YYYY-MM-DD",
 		"fr" : "Cette date doit être la date à laquelle les nouveaux taux de rémunération entrent en vigueur, doit être postérieure à la date à laquelle vous avez commencé à votre niveau (ci-dessus) et doit être au format AAAA-MM-JJ."
 	},
-	"promoTooEarlyError" : {"en" : "Promotions must be after {{startDate}}",
+	"dateTooEarlyError" : {"en" : "Please enter a date after {{startDate}}",
 		"fr" : ""
 	},
-	"promoTooLateError" : {"en" : "Promotions must be before {{endDate}}",
+	"dateTooLateError" : {"en" : "Please enter a date before {{endDate}}",
 		"fr" : ""
 	},
-	"promoTooLowError" : {"en" : "Invalid Level",
+	"invalidLevelError" : {"en" : "Please select a valid level.",
 		"fr" : ""
 	},
-	"promoTooHighError" : {"en" : "Invalid Level",
+	"dateFormatError" : {"en" : "Dates must be in the format of YYYY-MM-DD.",
+		"fr" : ""
+	},
+	"dateWrongOrderError" : {"en" : "The From date must be before the To date.",
+		"fr" : ""
+	},
+	"otHrsError" : {"en" : "This must be a number greater than or equal to zero.",
+		"fr" : ""
+	},
+	"invalidRateError" : {"en" : "Please select a valid rate",
 		"fr" : ""
 	}
 }
