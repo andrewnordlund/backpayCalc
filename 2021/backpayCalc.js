@@ -760,26 +760,22 @@ function addPromotions () {
 			} else {
 				let errMsg = null;
 				if (promoDate[0] < startDate) {
-					errMsg = getStr("promoTooEarlyError");
+					errMsg = getStr("dateTooEarlyError");
 					addErrorMessage(promoDateIn.id, errMsg);
 				}
 				if (promoDate[0] >= EndDate.toISOString().substr(0,10)) {
-					errMsg = getStr("promoTooLateError");
+					errMsg = getStr("dateTooLateError");
 					addErrorMessage(promoDateIn.id, errMsg);
 				}
-				if (promoLevel < 1) {
-					errMsg = getStr("promoTooLowError"); //console.log ("addPromotions::It's greater than 0.");
-					addErrorMessage(promoLevelSel.id, errMsg);
-				}
-				if (promoLevel > levels) {
-					errMsg = getStr("promoTooHighError"); //console.log ("addPromotions::It's less than or equal to 5.");
+				if (promoLevel < 1 || promoLevel > levels) {
+					errMsg = getStr("invalidLevelError"); //console.log ("addPromotions::It's greater than 0.");
 					addErrorMessage(promoLevelSel.id, errMsg);
 				}
 				if (dbug && errMsg) console.log ("addPromotion::Error: " + errMsg + ".");
 			}
 		} else {
 			if (dbug) console.log("addPromotions::Didn't get promoDate.");
-			addErrorMessage(promoDateIn.id, getStr("wrong date format"));
+			addErrorMessage(promoDateIn.id, getStr("dateFormatError"));
 		}
 	}
 } // End of addPromotions
@@ -799,7 +795,7 @@ function getActings () {
 		let actingToDate = dates[1].value;
 		if (dbug) console.log("getActings::Checking acting at  level " + actingLvl + " from " + enteredActingFromDate + " to " + actingToDate + ".");
 		// Check if the acting level actually exists, and if the dates are in the right format.
-		if (actingLvl >=0 && actingLvl <=5 && enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
+		if (actingLvl > 0 && actingLvl <= levels && enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("getActings::Passed the initial tests.  the Acting level exists and the dates are in the correct format.");
 			// Check if the from date is before the TA End Date, and the To Date is after the beginning of the TA period, and that to the Do date is after the From date.
 			if (enteredActingFromDate <= EndDate.toISOString().substr(0, 10) && actingToDate >= TABegin.toISOString().substr(0,10) && actingToDate > enteredActingFromDate) {
@@ -882,24 +878,37 @@ function getActings () {
 				saveValues.push("alvl" + i + "=" + actingLvl);
 				*/
 			} else {
+				if (enteredActingFromDate > EndDate.toISOString().substr(0, 10)) {
+					if (dbug) console.log ("getActings::actingFrom: "  + enteredActingFromDate + " is after EndDate: " + EndDate.toISOString().substr(0, 10) + ".");
+					addErrorMessage(dates[0].id, getStr("dateTooLateError"));
+				}
+				if (actingToDate <= TABegin.toISOString().substr(0,10)) {
+					if (dbug) console.log ("getActings::actingTo: " + actingToDate + " is before startDate: " + TABegin.toISOString().substr(0,10) + ".");
+					addErrorMessage(dates[1].id, getStr("dateTooEarlyError"));
+				}
+				if (actingToDate < enteredActingFromDate) {
+					if (dbug) console.log ("getActings::actingTo: "+ actingToDate + " is after actingFrom: " + enteredActingFromDate + ".");
+					addErrorMessage(dates[0].id, getStr("dateWrongOrderError"));
+					addErrorMessage(dates[1].id, getStr("dateWrongOrderError"));
+				}
 				if (dbug) {
-					if (enteredActingFromDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingFrom is before EndDate");
-					if (actingToDate >= TABegin.toISOString().substr(0,10)) console.log ("getActings::actingTo is after startDate");
-					if (actingToDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingTo is before EndDate");
-					if (actingToDate > enteredActingFromDate) console.log ("getActings::actingTo is after actingFrom");
+					if (actingToDate <= EndDate.toISOString().substr(0, 10)) console.log ("getActings::actingTo is before EndDate...which shouldn't be a problem");
 				}
 			}
 		} else {
-			if (actingLvl < 0 || actingLvl > levels) {
+			if (actingLvl < 1 || actingLvl > levels) {
 				if (dbug) {
 					if (actingLvl >=0) console.log ("getActings::actingLvl >= 0");
 					if (actingLvl <5) console.log ("getActings::actingLvl < 5");
 				}
 				// Add Error Message
-				addErrorMessage (actingLvlSel.id, getStr("Please select a valid value"));
+				addErrorMessage (actingLvlSel.id, getStr("invalidLevelError"));
 			}
 			if (!(dates[0].value.match(/\d\d\d\d-\d\d-\d\d/))) {
-				addErrorMessage(dates[0].id, "Date must be in the format....");
+				addErrorMessage(dates[0].id, getStr("dateFormatError"));
+			}
+			if (!(dates[1].value.match(/\d\d\d\d-\d\d-\d\d/))) {
+				addErrorMessage(dates[1].id, getStr("dateFormatError"));
 			}
 			if (dbug) {
 				if (enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/)) console.log ("getActings::actingFrom is right format.");
@@ -1102,7 +1111,7 @@ function addPromotionHandler (e, o) {
 	let newPromoLvlDiv = createHTMLElement("div", {"parentNode":newPromotionFS, "class":"fieldHolder"});
 	let newLevelLbl = createHTMLElement("label", {"parentNode":newPromoLvlDiv, "class":"form-label", "for":"promotionLevel" + id, "nodeText":getStr("promotedToLevel") + " "});
 	let newPromotionSel = createHTMLElement("select", {"parentNode":newPromoLvlDiv, class:"form-select", "id":"promotionLevel" + id});
-	for (var j = 0; j < 6; j++) {
+	for (var j = 0; j <= levels; j++) {
 		var newPromoOpt = createHTMLElement("option", {"parentNode":newPromotionSel, "value": j, "nodeText":(j == 0 ? getStr("selectLevel") : getStr(classification) + "-0" + j)});
 		if (plvl) {
 			if (plvl == j) newPromoOpt.setAttribute("selected", "selected");
@@ -1178,7 +1187,7 @@ function addActingHandler () {
 	let newActingLvlDiv = createHTMLElement("div", {"parentNode":newActingFS, "class" : "fieldHolder"});
 	let newLevelLbl = createHTMLElement("label", {"parentNode":newActingLvlDiv, "class":"form-label", "for":"actingLevel" + id, "nodeText":getStr("actingLevel") + " "});
 	let newActingSel = createHTMLElement("select", {"parentNode":newActingLvlDiv, class:"form-select", "id":"actingLevel" + id});
-	for (let j = 0; j < levels; j++) {
+	for (let j = 0; j <= levels; j++) {
 		let newPromoOpt = createHTMLElement("option", {"parentNode":newActingSel, "value": j, "nodeText":(j == 0 ? getStr("selectLevel") : getStr(classification) + "-0" + j)});
 		if (alvl) {
 			if (alvl == j) newPromoOpt.setAttribute("selected", "selected");
