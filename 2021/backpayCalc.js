@@ -147,7 +147,7 @@ function init () {
 		if (ths.length == 4) {
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("level")});
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("step")});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("onlwop") + "?"});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("there")});
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("salary")});
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("workingDays")});
 		}
@@ -335,6 +335,7 @@ function saveValue (e) {
 
 // set the URL
 function setURL () {
+	//console.log ("Setting hash.");
 	let url = new URL(document.location);
 	let newURL = url.toString().replace(/#.*$/, "");
 	newURL = newURL.replace(/\?.*$/, "");
@@ -522,7 +523,7 @@ function startProcess () {
 	errorDivs = document.querySelectorAll(".error");
 
 	if (errorDivs.length == 0 ) {
-		setURL();
+		if (updateHash) setURL();
 		calculate();
 	} else {
 		let firstErrorMessageID = errorDivs[0].id;
@@ -537,14 +538,45 @@ function startProcess () {
 } // End of startProcess
 
 function resetPeriods () {
-	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
-	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
+	if (dbug) {
+		//console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
+		let initMsg = [];
+		let oldMsg = [];
+		for (let i = 0; i < initPeriods.length; i++) {
+			initMsg.push(initPeriods[i]["reason"]);
+		}
+		console.log ("initMsg: " + initMsg.join(",") + ".");
+		//console.log ("resetPeriods::periods: " + periods + ".");
+		for (let i = 0; i < periods.length; i++) {
+			oldMsg.push(periods[i]["reason"]);
+		}
+		console.log ("oldMsg: " + oldMsg.join(",") + ".");
+	}
 	periods = [];
-	periods = Object.assign([], initPeriods);
+	try {
+		periods = structuredClone(initPeriods);
+	}
+	catch (ex) {
+		console.error ("Didn't do structuredClone. Gonna try sringigy->parse");
+		periods = JSON.parse(JSON.stringify(initPeriods));
+	}
+
 	// newRates = {};		Sound I reset newRates here?
 
-	if (dbug) console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
-	if (dbug) console.log ("resetPeriods::periods: " + periods + ".");
+	if (dbug) {
+		//console.log ("resetPeriods::initPeriods: " + initPeriods + ".");
+		let initMsg = [];
+		let oldMsg = [];
+		for (let i = 0; i < initPeriods.length; i++) {
+			initMsg.push(initPeriods[i]["reason"]);
+		}
+		console.log ("initMsg: " + initMsg.join(",") + ".");
+		//console.log ("resetPeriods::periods: " + periods + ".");
+		for (let i = 0; i < periods.length; i++) {
+			oldMsg.push(periods[i]["reason"]);
+		}
+		console.log ("oldMsg: " + oldMsg.join(",") + ".");
+	}
 } // End of resetPeriods
 
 
@@ -667,7 +699,7 @@ function getSalary () {
 		//dbug = true;
 		let startYear = Math.max(2021, startDate.getFullYear());
 		if (dbug) console.log ("getSalary::Going to set anniversary dates betwixt: " + startYear + " and " + EndDate.getFullYear() + ".");
-		for (var i = startYear; i <=EndDate.getFullYear(); i++) {
+		for (let i = startYear; i <=EndDate.getFullYear(); i++) {
 			if (stp < salaries[level].length) {
 				let dateToAdd = i + "-" + ((startDate.getMonth()+1) > 9 ? "" : "0") + (startDate.getMonth()+1)	+ "-" + (startDate.getDate() > 9 ? "" : "0") +  startDate.getDate();
 				if (dbug) console.log ("getSalary::Going to set anniversary date " + dateToAdd + ".");
@@ -686,7 +718,7 @@ function getSalary () {
 			// remove all older periods?? Maybe?  Or just somehow make them 0s?
 			// This one makes the mulitpliers 0.
 			addPeriod ({"startDate" : startDate.toISOString().substr(0,10), "increase":0, "reason":"Starting", "multiplier":1});
-			for (var i = 0; i < periods.length; i++) {
+			for (let i = 0; i < periods.length; i++) {
 				if (startDate.toISOString().substr(0,10) > periods[i]["startDate"]) periods[i]["multiplier"] = 0;
 			}
 			
@@ -710,7 +742,7 @@ function getSalary () {
 		}
 		if (dbug) {
 			console.log("getSalary::pre-calc checks:");
-			for (var i = 0; i < periods.length; i++) {
+			for (let i = 0; i < periods.length; i++) {
 				console.log ("getSalary::" + periods[i]["reason"] + ": " + periods[i]["startDate"] + ".");
 			}
 		}
@@ -1611,11 +1643,11 @@ function removeLumpSumDiv (e) {
 
 
 function addPeriod (p) {
-	var rv = null;
+	let rv = null;
 	if (dbug) console.log ("addPeriod::Gonna add period beginnging at " + p["startDate"] + " to periods (" + periods.length + ").");
 	if (p["reason"] == "end") periods.push(p);
 	if (p.startDate < periods[0]["startDate"]) return;
-	var looking = true;
+	let looking = true;
 	if (p["startDate"] == periods[0]["startDate"]) {
 		if (p["reason"] == "Anniversary Increase") {
 			periods[0]["reason"] += " & " + p["reason"];
@@ -1630,7 +1662,7 @@ function addPeriod (p) {
 			console.log ("addPeriod::Would look for the anniversary but looking is false.");
 		}
 	}
-	for (var i = 1; i < periods.length && looking; i++) {
+	for (let i = 1; i < periods.length && looking; i++) {
 		//if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]Is p[startDate](" + p["startDate"] + ") before periods["+i+"][startDate](" + periods[i]["startDate"] + ")?");
 		if (p["startDate"] < periods[i]["startDate"]) {
 			if (/*p["reason"] == "Anniversary Increase" && */dbug) console.log ("addPeriod::["+i+"]It is before the periods["+i+"][\"startDate\"]!");
@@ -1707,26 +1739,25 @@ function calculate() {
 			console.log ("\n\nCalculating:  There are " + periods.length + " periods to be concerned with.");
 			console.log ("With salary: " + salaries[level][step] + ".");
 		}
-		var actingStack = [];
-		var multiplier = 1;
-		//var newSalaries = JSON.parse(JSON.stringify(salaries));
-		//var newDaily = JSON.parse(JSON.stringify(daily));
-		//var newHourly = JSON.parse(JSON.stringify(hourly));
-		var preTotal = {"made":0, "shouldHaveMade":0, "backpay":0};	// What the heck are these?
-		var pTotal = {"made":0, "shouldHaveMade":0, "backpay":0};
-		var total = {"made":0, "shouldHaveMade":0, "backpay":0};
+		let actingStack = [];
+		let multiplier = 1;
+		//let newSalaries = JSON.parse(JSON.stringify(salaries));
+		//let newDaily = JSON.parse(JSON.stringify(daily));
+		//let newHourly = JSON.parse(JSON.stringify(hourly));
+		let preTotal = {"made":0, "shouldHaveMade":0, "backpay":0};	// What the heck are these?
+		let pTotal = {"made":0, "shouldHaveMade":0, "backpay":0};
+		let total = {"made":0, "shouldHaveMade":0, "backpay":0};
 		if (dbug) {
-			console.log("prelim checks:");
-			for (var i = 0; i < periods.length; i++) {
+			for (let i = 0; i < periods.length; i++) {
 				console.log (periods[i]["reason"] + ": " + periods[i]["startDate"] + ".");
 			}
 		}
 		let theYear = "current";
-		for (var i = 0; i < periods.length-1; i++) {
+		for (let i = 0; i < periods.length-1; i++) {
 			if (dbug) console.log(i + ": " + periods[i]["startDate"] + ":");
 			if (dbug) console.log (i + ": going between " + periods[i]["startDate"] + " and " + periods[i+1]["startDate"] + " for the reason of " + periods[i]["reason"] + ".");
 			if (periods[i]["reason"].match(/Anniversary Increase/)) {
-				var output = "";
+				let output = "";
 				if (actingStack.length == 0) {
 					if (i ==0) {
 						output += "Not increasing step because this is the first anniversary, and your anniversary is on this date.";

@@ -29,9 +29,6 @@
 	"step" : {"en" : "Step",
 		"fr" : "Échelon"
 	},
-	"there" : {"en" : "There",
-			"fr" : "Salarié"
-	},
 	"salary" : {"en" : "Salary",
 			"fr" : "Salaire"
 	},
@@ -253,5 +250,10 @@
 	},
 	"invalidRateError" : {"en" : "Please select a valid rate",
 		"fr" : ""
+	},
+	"Contractual Increase & Anniversary Increase" : {"en" : "Contractual Increase & Anniversary Increase",
+		"fr" : "Augmentation contractuelle & Anniversaire de la promotion"
+	},"there" : {"en" : "Were you there?",
+			"fr" : ""
 	}
 }
