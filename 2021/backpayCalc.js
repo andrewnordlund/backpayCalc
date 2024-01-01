@@ -2079,7 +2079,7 @@ var formatter = new Intl.NumberFormat(langFormat, {
 
 function getStr (str) {
 	let rv = null;
-
+	
 	try {
 		rv = i18n[str][lang];
 
@@ -2097,7 +2097,7 @@ function getStr (str) {
 
 	}
 	catch (ex) {
-		console.error ("Error getting Error Message String: " + ex.message);
+		console.error ("Error getting Error Message String: " + ex.message + "(" + str + ")");
 	}
 
 	return rv;
