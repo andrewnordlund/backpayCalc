@@ -53,7 +53,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2023", "12", "25");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var lastModified = new Date("2023", "11", "31");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lastModTime = null;
 var salaries = [];
 var daily = [];
