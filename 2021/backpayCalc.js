@@ -1813,8 +1813,23 @@ function calculate() {
 				var orig = actingStack.pop();
 				step = orig["step"];
 				level = orig["level"];
-			} else if (periods[i]["reason"] == "Contractual Increase") {
+			}/* else if (periods[i]["reason"].match(/Contractual Increase/)) {
 				theYear = periods[i]["startDate"];
+				if (dbug || true) console.log ("Setting theYear to " + theYear + ".");
+			}*/
+
+			if (periods[i]["increaes"] > 0) {
+				theYear = periods[i]["startDate"];
+				if (dbug) console.log ("Setting theYear to " + theYear + ".");
+			} else {
+				if (periods[i].hasOwnProperty("exceptions")) {
+					for (let exps = 0; exps < periods[i]["exceptions"].length; exps++) {
+						if (periods[i]["exceptions"][exps]["increase"] > 0) {
+							theYear = periods[i]["startDate"];
+							if (dbug) console.log ("Setting theYear to " + theYear + ".");
+						}
+					}
+				}
 			}
 			periods[i]["made"] = 0;
 			periods[i]["shouldHaveMade"] = 0;
@@ -1857,7 +1872,10 @@ function calculate() {
 				var future = new Date(parts[1], parts[2]-1, parts[3]);
 				//future.setDate(future.getDate() - 1);
 				var diff = (future  - current) / day;
-				if (dbug) console.log ("There were " + diff + " days between " + current.getFullYear() + "-" +  (current.getMonth()+1) +"-" + current.getDate() + " and " + future.getFullYear() + "-" + (future.getMonth()+1) + "-" + future.getDate() +".");
+				if (dbug) {
+					//console.log ("There were " + diff + " days between " + current.getFullYear() + "-" +  (current.getMonth()+1) +"-" + current.getDate() + " and " + future.getFullYear() + "-" + (future.getMonth()+1) + "-" + future.getDate() +".");
+					console.log ("Gonna calculate backpay based on current: " + newRates["current"][level][step]["daily"] + " and new ("+ theYear + "): " + newRates[theYear][level][step]["daily"] + ".");
+				}
 				while (current < future) {
 					//if (dbug) console.log ("Now calculating for day " + current.toString() + ".");
 					if (current.getDay() > 0 && current.getDay() < 6) {	// don't calculate weekends
