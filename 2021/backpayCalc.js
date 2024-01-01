@@ -2183,6 +2183,8 @@ function getHourly (an) {
 
 function genRates () {
 	//console.log ("in genRates.");
+	// At somet point you're gonna want to incorporate a CPI comparitor.
+	// Get the data from: https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000401&pickMembers%5B0%5D=1.2&cubeTimeFrame.startMonth=12&cubeTimeFrame.startYear=2021&cubeTimeFrame.endMonth=11&cubeTimeFrame.endYear=2023&referencePeriods=20211201%2C20231101
 
 	newRates["current"] = [];
 	for (let it = 0; it < levels; it++) {	// global variable levels
