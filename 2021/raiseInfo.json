@@ -25,10 +25,10 @@
 				]
 			},
 			"periods" : [
-				{"startDate" : "2021-12-22", "increase":3.0225, "compound" : 3.0225, "reason":"Contractual Increase", "multiplier" : 1, "exceptions" : [{"level" : "5", "increase" : 4.0527, "compound" : 4.0527}]},
-				{"startDate" : "2022-04-01", "increase":0.00, "compound" : 0.00, "reason":"Fiscal New Year", "multiplier" : 1},
-				{"startDate" : "2022-12-22", "increase":4.79375, "compound" : 7.96, "reason":"Contractual Increase", "multiplier" : 1, "exceptions" : [{"level" : "5", "increase" : 4.79375, "compound" : 9.041}]}, 
-				{"startDate" : "2023-04-01", "increase":0.00, "compound" : 0.00, "reason":"Fiscal New Year", "multiplier" : 1},
+				{"startDate" : "2021-12-22", "increase":3.0225, "compound" : 3.0225, "reason":"Contractual Increase", "multiplier" : 1, "cpi":144.0,  "exceptions" : [{"level" : "5", "increase" : 4.0527, "compound" : 4.0527}]},
+				{"startDate" : "2022-04-01", "increase":0.00, "compound" : 0.00, "reason":"Fiscal New Year", "multiplier" : 1, "cpi": 149.8},
+				{"startDate" : "2022-12-22", "increase":4.79375, "compound" : 7.96, "reason":"Contractual Increase", "multiplier" : 1, "cpi": 153.1, "exceptions" : [{"level" : "5", "increase" : 4.79375, "compound" : 9.041}]}, 
+				{"startDate" : "2023-04-01", "increase":0.00, "compound" : 0.00, "reason":"Fiscal New Year", "multiplier" : 1, "cpi":156.4},
 				{"startDate" : "2023-12-22", "increase":3.515, "compound" : 11.76, "reason":"Contractual Increase", "multiplier" : 1, "exceptions" : [{"level" : "5", "increase" : 3.515, "compound" : 12.8735}]},
 				{"startDate" : "2024-02-26", "increase":0.00, "reason":"Contract Signed", "multiplier" : 1},
 				{"startDate" : "2024-04-01", "increase":0.00, "compound" : 0.00, "reason":"Fiscal New Year", "multiplier" : 1},
