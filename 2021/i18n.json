@@ -252,8 +252,9 @@
 		"fr" : ""
 	},
 	"Contractual Increase & Anniversary Increase" : {"en" : "Contractual Increase & Anniversary Increase",
-		"fr" : "Augmentation contractuelle & Anniversaire de la promotion"
-	},"there" : {"en" : "Were you there?",
-			"fr" : ""
+		"fr" : "Augmentation contractuelle et anniversaire de la promotion"
+	},
+	"there" : {"en" : "Were you there?",
+			"fr" : "Étiez-vous là?"
 	}
 }
