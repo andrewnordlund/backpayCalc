@@ -225,36 +225,36 @@
 		"fr" : "En congé sans solde"
 	},
 	"stepSelectEmptyError" : {"en" : "This field is required. Please ensure that you've selected your classification level above, and that you have Javascript enabled.",
-		"fr": ""
+		"fr": "Ce champ est obligatoire. Veuillez vous assurer que vous avez sélectionné votre niveau de classification ci-dessus et que Javascript est activé."
 	},
 	"endDateTxtError" : {"en" : "This date should be the date on which the new pay rates take effect, must be after the date at which you started at your level (above), and must be of format YYYY-MM-DD",
-		"fr" : ""
+		"fr" : "Cette date doit être la date à laquelle les nouveaux taux de rémunération entrent en vigueur, doit être après la date à laquelle vous avez commencé à votre niveau (ci-dessus) et doit être au format AAAA-MM-JJ."
 	},
 	"dateTooEarlyError" : {"en" : "Please enter a date after {{startDate}}",
-		"fr" : ""
+		"fr" : "Veuillez saisir une date après le {{startDate}}"
 	},
 	"dateTooLateError" : {"en" : "Please enter a date before {{endDate}}",
-		"fr" : ""
+		"fr" : "Veuillez saisir une date avant le {{endDate}}"
 	},
 	"invalidLevelError" : {"en" : "Please select a valid level.",
-		"fr" : ""
+		"fr" : "Veuillez sélectionner un niveau valide."
 	},
 	"dateFormatError" : {"en" : "Dates must be in the format of YYYY-MM-DD.",
-		"fr" : ""
+		"fr" : "Les dates doivent être dans le format AAAA-MM-JJ."
 	},
 	"dateWrongOrderError" : {"en" : "The From date must be before the To date.",
-		"fr" : ""
+		"fr" : "La date « De » doit être avant la date « À »."
 	},
 	"otHrsError" : {"en" : "This must be a number greater than or equal to zero.",
-		"fr" : ""
+		"fr" : "Ce nombre doit être supérieur ou égal à zéro."
 	},
 	"invalidRateError" : {"en" : "Please select a valid rate",
-		"fr" : ""
+		"fr" : "Veuillez sélectionner un taux valide"
 	},
 	"Contractual Increase & Anniversary Increase" : {"en" : "Contractual Increase & Anniversary Increase",
 		"fr" : "Augmentation contractuelle et anniversaire de la promotion"
 	},
 	"there" : {"en" : "Were you there?",
-			"fr" : "Étiez-vous là?"
+		"fr" : "Étiez-vous là?"
 	}
 }
