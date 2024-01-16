@@ -56,6 +56,7 @@ var lwops = 0;
 var lastModified = new Date("2023", "11", "31");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lastModTime = null;
 var salaries = [];
+let weekly = [];
 var daily = [];
 var hourly = [];
 var newRates = {};
@@ -2192,9 +2193,10 @@ function genRates () {
 		let newStps = []; //
 		for (let stp = 0; stp < salaries[it].length; stp++) {	// steps
 			let newStp = {"annual" : salaries[it][stp],
-				"weekly" : getWeekly(salaries[it][stp]),
-				"daily" : getDaily(salaries[it][stp]),
-				"hourly" : getHourly(salaries[it][stp])
+				//"weekly" : getWeekly(salaries[it][stp]),
+				"weekly" : weekly[it][stp],
+				"daily" : (weekly[it][stp] / 5), //getDaily(salaries[it][stp]),
+				"hourly" : ((weekly[it][stp]/5)/7.5) //getHourly(salaries[it][stp])
 			};
 			//newStps["annual"].push(newStp);
 			//console.log ("Pushing " + newStp + " onto newStps[annual].");
@@ -2246,11 +2248,12 @@ function genRates () {
 				let newStps = [];
 				for (let stp = 0; stp < salaries[it].length; stp++) {	// steps
 					let newSal = salaries[it][stp] * multiplier;
+					let newWeekly = weekly[it][stp] * multiplier;
 
 					let newStp = {"annual" : newSal,
-						"weekly" : getWeekly(newSal),
-						"daily" : getDaily(newSal),
-						"hourly" : getHourly(newSal)
+						"weekly" : newWeekly, /*getWeekly(newSal),*/
+						"daily" : (newWeekly/5),
+						"hourly" : ((newWeekly/5) / 7.5)
 					}
 					//newStps["annual"].push(newStp);
 					//console.log ("Pushing " + newStp + " onto newStps[annual].");
@@ -2378,6 +2381,7 @@ function getData(classif, caname) {
 	if (dbug) console.log ("getData::Getting salaries from classification " + classif + " from CA/TA " + caname + ".");
 	salaries = payload[classif][caname]["salaries"]["annual"];
 	levels = salaries.length;
+	weekly = payload[classification][CAName]["salaries"]["weekly"];
 	//daily = json[classification][CAName]["salaries"]["daily"];
 	//hourly = json[classification][CAName]["salaries"]["hourly"];
 	initPeriods = payload[classification][CAName]["periods"];
