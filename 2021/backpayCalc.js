@@ -13,7 +13,7 @@
  */
 
 var dbug = false;
-var version = "3.3.0-b1";
+var version = "3.3.0";
 var lang = "en";
 var langFormat = "en-CA";
 var updateHash = true;
@@ -53,7 +53,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2023", "11", "31");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var lastModified = new Date("2024", "01", "12");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lastModTime = null;
 var salaries = [];
 let weekly = [];
@@ -1783,7 +1783,7 @@ function calculate() {
 			} else if (periods[i]["reason"] == "promotion") {
 				//var currentSal = salaries[level][step];
 				let currentSal = newRates["current"][level][step]["annual"];
-				let minNewSal = currentSal; // * 1.04;
+				let minNewSal = currentSal * 1.04;
 				level = periods[i]["level"];
 				let looking = true;
 				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
@@ -1798,7 +1798,7 @@ function calculate() {
 				actingStack.push({"level":level, "step":step});
 				//var currentSal = salaries[level][step];
 				let currentSal = newRates["current"][level][step]["annual"];
-				let minNewSal = currentSal; // * 1.04;
+				let minNewSal = currentSal * 1.04;
 				level = periods[i]["level"];
 				let looking = true;
 				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
