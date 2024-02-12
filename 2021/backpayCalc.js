@@ -13,7 +13,7 @@
  */
 
 var dbug = false;
-var version = "3.3.0-b1";
+var version = "3.3.0";
 var lang = "en";
 var langFormat = "en-CA";
 var updateHash = true;
@@ -37,7 +37,7 @@ var resultStatus = null;
 var calcStartDate = null;
 var endDateTxt = "2021-04-15";
 var TABegin = new Date("2021", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
-var DefEndDate = new Date("2024", "02", "17");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+var DefEndDate = new Date("2024", "01", "14");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var EndDate = new Date(DefEndDate.getTime());		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var day = (1000 * 60 * 60 * 24);
 var parts = [];
@@ -53,7 +53,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2023", "11", "31");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var lastModified = new Date("2024", "01", "12");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lastModTime = null;
 var salaries = [];
 let weekly = [];
@@ -2385,6 +2385,7 @@ function getData(classif, caname) {
 	//daily = json[classification][CAName]["salaries"]["daily"];
 	//hourly = json[classification][CAName]["salaries"]["hourly"];
 	initPeriods = payload[classification][CAName]["periods"];
+	// Now add something for start and end dates
 
 } // End of getData
 
