@@ -2327,7 +2327,7 @@ function genTables() {
 		//let checkbox = createHTMLElement("input", {"parentNode" : newDiv, "type":"checkbox", "id" : "level" + i + "Chk", "checked":"checked"});
 		//let lbl = createHTMLElement("label", { "parentNode":newDiv, "for": timeps[i] + "Chk", "textNode" : getStr(classification) + dl});
 
-		let newSect = createHTMLElement("details", {"parentNode" : payTablesSect, "id" : "payrateSect " + i, "open":"open"});
+		let newSect = createHTMLElement("details", {"parentNode" : payTablesSect, "id" : "payrateSect " + i});
 		let newSum = createHTMLElement("summary", {"parentNode": newSect});
 		let newSectH = createHTMLElement("h3", {"parentNode":newSum, "textNode" : getStr(classification) + dl});
 
