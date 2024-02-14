@@ -2406,15 +2406,15 @@ function genTables() {
 
 				let cpiDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpi")});
 				let cpiDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : (newRates[j]["cpi"])});
-				let cpiIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpiIncr")});
-				let cpiIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : totalInflation.toFixed(2) + " %"});
-				let payRaiseTotalIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("prIncr")});
-				let payraiseTotalIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : newRates[j]["compound"][i] + " %"});
 				let cpiYIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpiYIncr")});
 				let cpiYIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : yearlyInflation.toFixed(2) + " %"});
-				let prIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("prTIncr")});
-				let prIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : newRates[j]["increase"][i] + " %"});
+				let cpiIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpiIncr")});
+				let cpiIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : totalInflation.toFixed(2) + " %"});
 			}
+			let prIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("prTIncr")});
+			let prIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : newRates[j]["increase"][i] + " %"});
+			let payRaiseTotalIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("prIncr")});
+			let payraiseTotalIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : newRates[j]["compound"][i] + " %"});
 			lastYear = j;
 
 		//}
