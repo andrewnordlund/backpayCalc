@@ -261,7 +261,7 @@
 		"fr": "Info"
 	},
 	"cpi" : {"en" : "CPI",
-		"fr" : ""
+		"fr" : "IPC"
 	},
 	"cpiIncr" : {"en" :  "Inflation since beginning",
 		"fr" : ""
@@ -273,6 +273,9 @@
 		"fr" : ""
 	},
 	"prTIncr" : {"en" : "This increase",
+		"fr" : ""
+	},
+	"oldToNew" : {"en" : "(Old to New)",
 		"fr" : ""
 	}
 }

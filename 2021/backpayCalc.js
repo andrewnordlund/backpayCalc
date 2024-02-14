@@ -150,7 +150,7 @@ function init () {
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("level")});
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("step")});
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("there")});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("salary")});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("salary") + " " + getStr("oldToNew")});
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("workingDays")});
 		}
 	}
