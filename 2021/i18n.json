@@ -256,5 +256,23 @@
 	},
 	"there" : {"en" : "Were you there?",
 		"fr" : "Étiez-vous là?"
+	},
+	"info" : {"en" : "Info",
+		"fr": "Info"
+	},
+	"cpi" : {"en" : "CPI",
+		"fr" : ""
+	},
+	"cpiIncr" : {"en" :  "Inflation since beginning",
+		"fr" : ""
+	},
+	"prIncr" : {"en" : "Total compounded increase",
+		"fr" : ""
+	},
+	"cpiYIncr" : { "en" : "Inflation since last increase",
+		"fr" : ""
+	},
+	"prTIncr" : {"en" : "This increase",
+		"fr" : ""
 	}
 }
