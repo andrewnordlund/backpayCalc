@@ -66,6 +66,8 @@ var minIncs = [];
 var classification = "IT";
 var CAName = "2021-2025";
 let payload = {};
+let showInflation = false;
+let baseData = {"cpi" : null, "startFromDate" : null};
 	
 const wiy = 52.176;
 
@@ -319,6 +321,7 @@ function handleHash () {
 		calcBtn.dispatchEvent(clickEv);
 
 	}
+	return hasHash;
 
 
 } // End of handleHash
@@ -2124,24 +2127,27 @@ function getStr (str) {
 } // End of getStr
 
 function createHTMLElement (type, attribs) {
-	var newEl = document.createElement(type);
-	mainForm.appendChild(newEl);
-	var dbug = (arguments.length == 3 &&arguments[2] != null && arguments[2] != false ? true : false);
-	for (var k in attribs) {
+	let newEl = document.createElement(type);
+	let fdbug = (arguments.length == 3 &&arguments[2] != null && arguments[2] != false || dbug == true ? true : false);
+	for (let k in attribs) {
 		if (dbug) console.log("Dealing with attrib " + k + ".");
 		if (k == "parentNode") {
 			if (dbug) console.log("Dealing with parentnode.");
-			if (attribs[k] instanceof HTMLElement) {
-				if (dbug) console.log("Appending...");
-				attribs[k].appendChild(newEl);
-			} else if (attribs[k] instanceof String || typeof(attribs[k]) === "string") {
-				try {
-					if (dbug) console.log("Getting, then appending...");
-					document.getElementById(attribs[k]).appendChild(newEl);
+			let parentNode = getHTMLElement(attribs[k], dbug);
+
+			try {
+				if (attribs.hasOwnProperty("insertBefore")) {
+					var beforeEl = getHTMLElement(attribs["insertBefore"], dbug);
+					parentNode.insertBefore(newEl, beforeEl);
+				} else if (attribs.hasOwnProperty("insertAfter")) {
+					var afterEl = getHTMLElement(attribs["insertAfter"], dbug);
+					parentNode.insertBefore(newEl, afterEl.nextSibling);
+				} else {
+					parentNode.appendChild(newEl);
 				}
-				catch (er) {
-					console.error("Error creating HTML Element: " + er.message + ".");
-				}
+			}
+			catch (er) {
+				console.error("Error appending newEl to parentNode: " + er.message + ".");
 			}
 		} else if (k == "textNode" || k == "nodeText") {
 			if (dbug) console.log("Dealing with textnode " + attribs[k] + ".");
@@ -2158,12 +2164,33 @@ function createHTMLElement (type, attribs) {
 		} else if (k == "innerHTML") {
 			if (dbug) console.log ("Dealing with innerHTML " + attribs[k] + ".");
 			newEl.innerHTML = attribs[k];
+		} else if (k.match(/^insert(Before|After)$/)) {
+				// Do nothing.
 		} else {
 			newEl.setAttribute(k, attribs[k]);
 		}
 	}
 	return newEl;
 } // End of createHTMLElement
+
+function getHTMLElement (el) {
+	let rv = null;
+	let fdbug = (((arguments.length == 2 && arguments[1] != null && arguments[1] != undefined && arguments[1] !== false) || dbug == true) ? true : false); 
+	//var iwin = window;
+	if (el instanceof HTMLElement) { // || el instanceof iwin.HTMLElement) {
+		rv = el;
+	} else if (el instanceof String || typeof(el) === "string") {
+		try {
+			if (fdbug) console.log ("Trying to getHTMLElement " + el + ".");
+			rv = document.getElementById(el);
+		} catch (er) {
+			console.error("Error getting HTML Element #" + el + ".  Apparently that's not on this page.");
+		}
+	}
+	return rv;
+} // End of getHTMLElement
+
+
 function removeChildren (el) {
 	var dbug = (arguments.length == 2 && arguments[1] != null && arguments[1] != false ? true : false);
 	while (el.firstChild) {	
@@ -2294,6 +2321,13 @@ function genRates () {
 } // End of genRates
 
 function genTables() {
+	let thisURL = new URL(document.location);
+	let params = thisURL.searchParams;
+
+	if (params.has("showInflation")) {
+		if (params.get("showInflation") == "true") showInflation= true;
+	}
+
 	let payTablesSect = null;
 	payTablesSect = document.getElementById("payTablesSect");
 	if (!payTablesSect) {
@@ -2334,9 +2368,10 @@ function genTables() {
 		// You need a table for each year)
 		//console.log ("Periods: " + initPeriods.length + ".");
 
-		let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
+		let yearSect = createHTMLElement("section", {"parentNode" : newSect, "class" : "yearSect"});
+		let newTableH = createHTMLElement("h4", {"parentNode" : yearSect, "textNode" : getStr("current") + " (" + baseData["startFromDate"] + ")"});
+		let respDiv = createHTMLElement("div" , {"parentNode":yearSect, "class": "tables-responsive"});
 
-		let newTableH = createHTMLElement("h4", {"parentNode" : respDiv, "textNode" : getStr("current")});
 		let newTable = createHTMLElement("table", {"parentNode"  : respDiv, "class":"table caption-top"});
 		//let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : getStr("current")});
 
@@ -2356,12 +2391,15 @@ function genTables() {
 				let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : formatter.format(newRates["current"]["salary"][i][stp][timeps[t]])});
 			}
 		}
-		let infoH5 = createHTMLElement("h5", {"parentNode" : newSect, "textNode" : getStr("info")});
-		let infoDL = createHTMLElement("dl", {"parentNode" : newSect});
-		// Add dts and dds for: cpi for this table; inflation since the last table, total inflation since the start, and this raise compared to start and this raise compared to last table
-		if (payload[classification][CAName].hasOwnProperty("cpi")) {
-			let cpiDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpi")});
-			let cpiDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : (payload[classification][CAName]["cpi"])});
+		if (showInflation) {
+			let infoSect = createHTMLElement("section", {"parentNode" : yearSect});
+			let infoH5 = createHTMLElement("h5", {"parentNode" : infoSect, "textNode" : getStr("info")});
+			let infoDL = createHTMLElement("dl", {"parentNode" : infoSect});
+			// Add dts and dds for: cpi for this table; inflation since the last table, total inflation since the start, and this raise compared to start and this raise compared to last table
+			if (baseData.hasOwnProperty("cpi")) {
+				let cpiDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpi")});
+				let cpiDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : (baseData["cpi"])});
+			}
 		}
 
 
@@ -2374,9 +2412,11 @@ function genTables() {
 			if (j == "current") continue;
 			//if (initPeriods[j]["reason"] == "Contractual Increase") {
 
-			let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
+			let newYearSect = createHTMLElement("section", {"parentNode" : newSect, "class" : "yearSect"});
+			let newSectH = createHTMLElement("h4", {"parentNode" : newYearSect, "textNode" : j});
+			let respDiv = createHTMLElement("div" , {"parentNode":newYearSect, "class": "tables-responsive"});
 			let newTable = createHTMLElement("table", {"parentNode" : respDiv, "class":"table caption-top"});
-			let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : j});
+			//let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : j});
 
 			let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
 			let newTR = createHTMLElement("tr", {"parentNode" : newTHead});
@@ -2395,15 +2435,16 @@ function genTables() {
 					let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : formatter.format(newRates[j]["salary"][i][stp][timeps[t]])});
 				}
 			}
-			let infoH5 = createHTMLElement("h5", {"parentNode" : newSect, "textNode" : getStr("info")});
-			let infoDL = createHTMLElement("dl", {"parentNode" : newSect});
+			//let infoDialog = createHTMLElement("dialog", {"parentNode" : newSect, "insertBefore" : respDiv, "id" : "infoDialog" + i + j});
+			let infoSect = createHTMLElement("section", {"parentNode" : newYearSect/*, "insertBefore" : respDiv*/});
+			let infoH5 = createHTMLElement("h5", {"parentNode" : infoSect, "textNode" : getStr("info")});
+			let infoDL = createHTMLElement("dl", {"parentNode" : infoSect});
 			// Add dts and dds for: cpi for this table; inflation since the last table, total inflation since the start, and this raise compared to start and this raise compared to last table
-			if (newRates[j].hasOwnProperty("cpi")) {
-				let totalInflation = (100*(parseFloat(newRates[j]["cpi"]) - parseFloat(payload[classification][CAName]["cpi"]))/parseFloat(payload[classification][CAName]["cpi"]));
-				let lastCPI = (lastYear == "current" ? parseFloat(payload[classification][CAName]["cpi"]) : parseFloat(newRates[lastYear]["cpi"]));
+			if (newRates[j].hasOwnProperty("cpi") && showInflation) {
+				let totalInflation = (100*(parseFloat(newRates[j]["cpi"]) - parseFloat(baseData["cpi"]))/parseFloat(baseData["cpi"]));
+				let lastCPI = (lastYear == "current" ? parseFloat(baseData["cpi"]) : parseFloat(newRates[lastYear]["cpi"]));
 				let yearlyInflation = (100*(parseFloat(newRates[j]["cpi"]) - lastCPI)/lastCPI);
-
-
+	
 				let cpiDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpi")});
 				let cpiDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : (newRates[j]["cpi"])});
 				let cpiYIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpiYIncr")});
@@ -2411,12 +2452,21 @@ function genTables() {
 				let cpiIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpiIncr")});
 				let cpiIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : totalInflation.toFixed(2) + " %"});
 			}
-			let prIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("prTIncr")});
+			let prIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("payrateIncr")});
 			let prIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : newRates[j]["increase"][i] + " %"});
-			let payRaiseTotalIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("prIncr")});
+			let payRaiseTotalIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("payrateTotalIncr")});
 			let payraiseTotalIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : newRates[j]["compound"][i] + " %"});
-			lastYear = j;
+			
+			/*
+			let closeDiaBtn = createHTMLElement("button", {"parentNode" : infoDialog, "textNode" : "close", "id" : "closeDiaBtn" + i+j});
+			closeDiaBtn.addEventListener("click", closeDialog, false);
 
+			let infoBtn = createHTMLElement("button", {"parentNode" : newSect, "insertBefore" : respDiv, "textNode" : "Info", "id" : "openDiaBtn" + i+ j});
+			infoBtn.addEventListener("click", openDialog, false);
+			*/
+
+			lastYear = j;
+		
 		//}
 		}
 		
@@ -2426,6 +2476,21 @@ function genTables() {
 
 } // End of genTables
 
+function openDialog (e) {
+	let diaName = "infoDialog" + e.target.id.replace("openDiaBtn", "");
+	let infoDialog = document.getElementById(diaName);
+	console.log ("Opening info dialog: " + infoDialog + ", of name " + diaName);
+	infoDialog.showModal();
+
+} // End of openDialog
+
+function closeDialog (e) {
+	let diaName = "infoDialog" + e.target.id.replace("closeDiaBtn", "");
+	let infoDialog = document.getElementById(diaName);
+	console.log ("Closing info dialog: " + infoDialog + ", of name " + diaName);
+	infoDialog.close();
+
+} // End of closeDialog
 
 function getData(classif, caname) {
 
@@ -2437,6 +2502,9 @@ function getData(classif, caname) {
 	//hourly = json[classification][CAName]["salaries"]["hourly"];
 	initPeriods = payload[classification][CAName]["periods"];
 	// Now add something for start and end dates
+	baseData["cpi"] = payload[classif][CAName]["salaries"]["cpi"];
+	baseData["startFromDate"] = payload[classif][CAName]["salaries"]["startFromDate"];
+
 	
 
 } // End of getData

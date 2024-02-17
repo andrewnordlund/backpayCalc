@@ -266,13 +266,13 @@
 	"cpiIncr" : {"en" :  "Inflation since beginning",
 		"fr" : ""
 	},
-	"prIncr" : {"en" : "Total compounded increase",
+	"payrateTotalIncr" : {"en" : "Total compounded increase",
 		"fr" : ""
 	},
 	"cpiYIncr" : { "en" : "Inflation since last increase",
 		"fr" : ""
 	},
-	"prTIncr" : {"en" : "This increase",
+	"payrateIncr" : {"en" : "This increase",
 		"fr" : ""
 	},
 	"oldToNew" : {"en" : "(Old to New)",
