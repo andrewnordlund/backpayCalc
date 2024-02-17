@@ -1787,23 +1787,32 @@ function calculate() {
 			} else if (periods[i]["reason"] == "promotion") {
 				//var currentSal = salaries[level][step];
 				let currentSal = newRates["current"]["salary"][level][step]["annual"];
-				let minNewSal = currentSal * 1.04;
+				console.log ("Handling promotion from level " + level + " and step " + step + ".");
 				level = periods[i]["level"];
+				console.log ("to level " + level + ".");
+				console.log ("For that level, the minIncr is " + minIncs[level] + ".");
+				let minNewSal = currentSal + minIncs[level];
+				console.log ("With a current salary of " + currentSal + " for a min new salary of " + minNewSal + ".");
 				let looking = true;
 				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
 				for (let stp = 0; stp < newRates["current"]["salary"][level].length && looking; stp++) {
 					//if (salaries[level][stp] > minNewSal) {
-					if (newRates["current"]["salary"][level][stp]["annual"] > minNewSal) {
+					if (newRates["current"]["salary"][level][stp]["annual"] >= minNewSal) {
 						step = stp;
 						looking = false;
 					}
 				}
+				console.log ("For a step of " + step + ", giving a salary of " + newRates["current"]["salary"][level][step]["annual"] + ".");
 			} else if (periods[i]["reason"] == "Acting Start") {
 				actingStack.push({"level":level, "step":step});
+				console.log ("Handling acting from level " + level + " and step " + step + ".");
 				//var currentSal = salaries[level][step];
 				let currentSal = newRates["current"]["salary"][level][step]["annual"];
-				let minNewSal = currentSal * 1.04;
 				level = periods[i]["level"];
+				console.log ("to level " + level + ".");
+				console.log ("For that level, the minIncr is " + minIncs[level] + ".");
+				let minNewSal = currentSal + minIncs[level];
+				console.log ("With a current salary of " + currentSal + " for a min new salary of " + minNewSal + ".");
 				let looking = true;
 				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
 				for (let stp = 0; stp < newRates["current"]["salary"][level].length && looking; stp++) {
@@ -1813,7 +1822,7 @@ function calculate() {
 						looking = false;
 					}
 				}
-
+				console.log ("For a step of " + step + ", giving a salary of " + newRates["current"]["salary"][level][step]["annual"] + ".");
 			} else if (periods[i]["reason"] == "Acting Finished") {
 				var orig = actingStack.pop();
 				step = orig["step"];
@@ -2218,9 +2227,14 @@ function genRates () {
 	newRates["current"] = {};
 	newRates["current"]["salary"] = [];
 	for (let it = 0; it < levels; it++) {	// global variable levels
+		let incr = salaries[it][1] - salaries[it][0];
 		let lvl = [];
 		let newStps = []; //
 		for (let stp = 0; stp < salaries[it].length; stp++) {	// steps
+			if (stp > 1) {
+				if (salaries[it][stp] - salaries[it][stp-1] < incr) incr = salaries[it][stp] - salaries[it][stp-1];
+			}
+
 			let newStp = {"annual" : salaries[it][stp],
 				//"weekly" : getWeekly(salaries[it][stp]),
 				"weekly" : weekly[it][stp],
@@ -2236,6 +2250,9 @@ function genRates () {
 			lvl.push(newStp);
 
 		}
+		minIncs[it] = incr;
+		console.log ("MinIncr for IT-" + (it+1) + ": " + incr + ".");
+
 		//console.log ("newStps has length: " + newStps["annual"].length + ".");
 		newRates["current"]["salary"].push(lvl);
 
@@ -2285,11 +2302,7 @@ function genRates () {
 				let multiplier2 = ((increase/100) +1);
 				//let newStps = {"annual" : [], "weekly" : [], "daily" : [], "hourly" : []};
 				let newStps = [];
-				let incr = salaries[it][1] - salaries[it][0];
 				for (let stp = 0; stp < salaries[it].length; stp++) {	// steps
-					if (stp > 1) {
-						if (salaries[it][stp] - salaries[it][stp-1] < incr) incr = salaries[it][stp] - salaries[it][stp-1];
-					}
 					let newSal = salaries[it][stp] * multiplier;
 					let newWeekly = weekly[it][stp] * multiplier;
 
@@ -2306,10 +2319,7 @@ function genRates () {
 					//newStps["hourly"].push(((newStp/wiy)/5)/7.5);
 					lvl.push(newStp);
 				}
-				minIncs[it] = incr;
-				//console.log ("newStps has length: " + newStps["annual"].length + ".");
 				newRates[startDate]["salary"].push(lvl);
-				//console.log ("newRates has length: " + newRates[startDate]["salary"].length + ".");
 				newRates[startDate]["increase"].push(increase);
 				newRates[startDate]["compound"].push(compound);
 			}
