@@ -2207,6 +2207,10 @@ function removeChildren (el) {
 	}
 } // End of removeChildren
 
+function getAnnual(wk) {
+	return wk*wiy;
+} // End of getAnnual
+
 function getWeekly (an) {
 	return (an/wiy);
 } // End of getWeekly
