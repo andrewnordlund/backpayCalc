@@ -1815,12 +1815,12 @@ function calculate() {
 			} else if (periods[i]["reason"] == "promotion") {
 				//var currentSal = salaries[level][step];
 				let currentSal = newRates["current"]["salary"][level][step]["annual"];
-				console.log ("Handling promotion from level " + level + " and step " + step + ".");
+				//console.log ("Handling promotion from level " + level + " and step " + step + ".");
 				level = periods[i]["level"];
-				console.log ("to level " + level + ".");
-				console.log ("For that level, the minIncr is " + minIncs[level] + ".");
+				//console.log ("to level " + level + ".");
+				//console.log ("For that level, the minIncr is " + minIncs[level] + ".");
 				let minNewSal = currentSal + minIncs[level];
-				console.log ("With a current salary of " + currentSal + " for a min new salary of " + minNewSal + ".");
+				//console.log ("With a current salary of " + currentSal + " for a min new salary of " + minNewSal + ".");
 				let looking = true;
 				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
 				for (let stp = 0; stp < newRates["current"]["salary"][level].length && looking; stp++) {
@@ -1830,7 +1830,7 @@ function calculate() {
 						looking = false;
 					}
 				}
-				console.log ("For a step of " + step + ", giving a salary of " + newRates["current"]["salary"][level][step]["annual"] + ".");
+				//console.log ("For a step of " + step + ", giving a salary of " + newRates["current"]["salary"][level][step]["annual"] + ".");
 			} else if (periods[i]["reason"] == "Acting Start") {
 				actingStack.push({"level":level, "step":step});
 				console.log ("Handling acting from level " + level + " and step " + step + ".");
@@ -2305,7 +2305,7 @@ function genRates () {
 
 		}
 		minIncs[it] = incr;
-		console.log ("MinIncr for IT-" + (it+1) + ": " + incr + ".");
+		//console.log ("MinIncr for IT-" + (it+1) + ": " + incr + ".");
 
 		//console.log ("newStps has length: " + newStps["annual"].length + ".");
 		newRates["current"]["salary"].push(lvl);
