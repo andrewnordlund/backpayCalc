@@ -277,5 +277,11 @@
 	},
 	"oldToNew" : {"en" : "(Old to New)",
 		"fr" : ""
+	},
+	"warning" : {"en" : "warning",
+		"fr" : ""
+	},
+	"knownEndDateWarning" : {"en" : "Warning: you may want to update this to {{knownEndDate}}",
+		"fr" : ""
 	}
 }

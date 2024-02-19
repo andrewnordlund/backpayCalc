@@ -137,6 +137,15 @@ display: block;
 	color: #AA0000;
 	font-weight: bold;
 }
+.warning span, .warning p {
+	border: 2px solid #FF9900;
+	padding: 0.25em .2em;
+	margin: .5em 0;
+	/*display: block-inline;*/
+	color: #C05300;
+	font-weight: bold;
+}
+
 .invisibleStuff {
 	position: absolute;
 	height: 1px;

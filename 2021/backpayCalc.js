@@ -39,6 +39,8 @@ var endDateTxt = "2021-04-15";
 var TABegin = new Date("2021", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var DefEndDate = new Date("2024", "01", "14");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var EndDate = new Date(DefEndDate.getTime());		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+let knownEndDate = null;
+let knownCAEnd = false;
 var day = (1000 * 60 * 60 * 24);
 var parts = [];
 var resultsBody = null;
@@ -235,6 +237,10 @@ function handleHash () {
 		let ed = params.get("enddt");
 		if (ed.match(/\d\d\d\d-\d\d-\d\d/)) {
 			endDateTxt.value = ed;
+			if (ed != knownEndDate && knownCAEnd) {
+				//  Add an error message to the End Date
+				addWarningMessage (endDateTxt.id, getStr("knownEndDateWarning"));
+			}
 			toCalculate = toCalculate | 8;
 		}
 		hasHash = true;
@@ -504,6 +510,24 @@ function startProcess () {
 		}
 		errorDivs[i].parentNode.removeChild(errorDivs[i]);
 	}
+	// Remove any existing warning messages
+	let warningDivs = document.querySelectorAll(".warning");
+	if (dbug && warningDivs.length > 0) console.log ("Found " + warningDivs.length + " warningDivs.");
+	for (var i = 0; i < warningDivs.length; i++) {
+		if (warningDivs[i].hasAttribute("id")) {
+			var id = warningDivs[i].getAttribute("id");
+			var referrers = document.querySelectorAll("[aria-describedby="+id+"]");
+			for (var j = 0; j<referrers.length; j++) {
+				if (referrers[j].getAttribute("aria-describedby") == id) {
+					referrers[j].removeAttribute("aria-describedby");
+				} else {
+					referrers[j].setAttribute("aria-describedby", referrers[j].getAttribute("aria-describedby").replace(id, "").replace(/\s+/, " "));
+				}
+			}
+		}
+		warningDivs[i].parentNode.removeChild(warningDivs[i]);
+	}
+
 
 	initErrorHandling();
 
@@ -656,6 +680,10 @@ function getSalary () {
 			//let errDiv = createHTMLElement("div", {"parentNode":endDateTxt.parentNode, "id":"endDateTxtError", "class":"error"});
 			//createHTMLElement("span", {"parentNode":errDiv, "nodeText":getStr("endDateTxtEmptyError")});
 			//endDateTxt.setAttribute("aria-describedby", endDateTxt.getAttribute("aria-describedby") + " endDateTxtError");
+		}
+		if (endDateTxt.value != knownEndDate && knownCAEnd) {
+			//  Add an error message to the End Date
+			addWarningMessage (endDateTxt.id, getStr("knownEndDateWarning"));
 		}
 		if (dbug) console.log ("getSalary::Got EndDateTxt as " + endDateTxt.value + ".");
 		//if (dbug) console.log ("Got EndDate as " + EndDate.toISOString().substr(0, 10) + ".");
@@ -2075,6 +2103,26 @@ function addErrorMessage (inID, errMsg) {
 	}
 } // End of addErrorMessage
 
+function addWarningMessage (inID, errMsg) {
+	let el, errDiv = null;
+	el = document.getElementById(inID);
+	if (el) {
+		if (dbug) console.log ("addWarningMessage::value of " + inID + " is " + inID.value + ". Adding warningMessage: " + errMsg + ".");
+		errDiv = document.getElementById(inID + "Warning");
+
+		if (!errDiv) errDiv = createHTMLElement("div", {"parentNode" : el.parentNode, "id":inID + "Warning", "class" : "warning"});
+		createHTMLElement("p", {"parentNode" : errDiv, "nodeText" : errMsg});
+		if (el.hasAttribute("aria-describedby")) {
+			el.setAttribute("aria-describedby", el.getAttribute("aria-describedby") + " " + inID + "Warning");
+		} else {
+			el.setAttribute("aria-describedby", inID + "Warning");
+		}
+	} else {
+		console.error ("addWarningMessage::Couldn't get element " + inID);
+	}
+} // End of addWarningMessage
+
+
 function removeErrorMessage (inID) {
 	let inEL, errEl = null;
 	inEL = document.getElementById(inID);
@@ -2123,6 +2171,8 @@ function getStr (str) {
 					rv = rv.replace(repStr[1], calcStartDate.getAttribute("datetime"));
 				} else if (repStr[2] == "endDate") {
 					rv = rv.replace(repStr[1], EndDate.toISOString().substr(0,10));
+				} else if (repStr[2] == "knownEndDate") {
+					rv = rv.replace(repStr[1], knownEndDate);
 				}
 			}
 		}
@@ -2511,14 +2561,17 @@ function getData(classif, caname) {
 	if (dbug) console.log ("getData::Getting salaries from classification " + classif + " from CA/TA " + caname + ".");
 	salaries = payload[classif][caname]["salaries"]["annual"];
 	levels = salaries.length;
-	weekly = payload[classification][CAName]["salaries"]["weekly"];
+	weekly = payload[classification][caname]["salaries"]["weekly"];
 	//daily = json[classification][CAName]["salaries"]["daily"];
 	//hourly = json[classification][CAName]["salaries"]["hourly"];
-	initPeriods = payload[classification][CAName]["periods"];
+	initPeriods = payload[classification][caname]["periods"];
 	// Now add something for start and end dates
-	baseData["cpi"] = payload[classif][CAName]["salaries"]["cpi"];
-	baseData["startFromDate"] = payload[classif][CAName]["salaries"]["startFromDate"];
-
+	baseData["cpi"] = payload[classif][caname]["salaries"]["cpi"];
+	baseData["startFromDate"] = payload[classif][caname]["salaries"]["startFromDate"];
+	if (payload[classif][caname].hasOwnProperty("TAEnd")) {
+		knownEndDate = payload[classif][caname]["TAEnd"];
+		knownCAEnd = true;
+	}
 	
 
 } // End of getData
