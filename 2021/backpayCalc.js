@@ -556,11 +556,11 @@ function startProcess () {
 		calculate();
 	} else {
 		let firstErrorMessageID = errorDivs[0].id;
-		console.log ("First error Message ID: " + firstErrorMessageID + ".");
+		//console.log ("First error Message ID: " + firstErrorMessageID + ".");
 		let selector = "*[aria-describedby~=" + firstErrorMessageID + "]";
-		console.log ("Using selector "+ selector + ".");
+		//console.log ("Using selector "+ selector + ".");
 		let firstErrInput = document.querySelector(selector);
-		console.log ("Got first error input: "  + firstErrInput.id + ".");
+		//console.log ("Got first error input: "  + firstErrInput.id + ".");
 		if (firstErrInput) firstErrInput.focus();
 	}
 
@@ -1833,14 +1833,14 @@ function calculate() {
 				//console.log ("For a step of " + step + ", giving a salary of " + newRates["current"]["salary"][level][step]["annual"] + ".");
 			} else if (periods[i]["reason"] == "Acting Start") {
 				actingStack.push({"level":level, "step":step});
-				console.log ("Handling acting from level " + level + " and step " + step + ".");
+				//console.log ("Handling acting from level " + level + " and step " + step + ".");
 				//var currentSal = salaries[level][step];
 				let currentSal = newRates["current"]["salary"][level][step]["annual"];
 				level = periods[i]["level"];
-				console.log ("to level " + level + ".");
-				console.log ("For that level, the minIncr is " + minIncs[level] + ".");
+				//console.log ("to level " + level + ".");
+				//console.log ("For that level, the minIncr is " + minIncs[level] + ".");
 				let minNewSal = currentSal + minIncs[level];
-				console.log ("With a current salary of " + currentSal + " for a min new salary of " + minNewSal + ".");
+				//console.log ("With a current salary of " + currentSal + " for a min new salary of " + minNewSal + ".");
 				let looking = true;
 				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
 				for (let stp = 0; stp < newRates["current"]["salary"][level].length && looking; stp++) {
@@ -1850,7 +1850,7 @@ function calculate() {
 						looking = false;
 					}
 				}
-				console.log ("For a step of " + step + ", giving a salary of " + newRates["current"]["salary"][level][step]["annual"] + ".");
+				//console.log ("For a step of " + step + ", giving a salary of " + newRates["current"]["salary"][level][step]["annual"] + ".");
 			} else if (periods[i]["reason"] == "Acting Finished") {
 				var orig = actingStack.pop();
 				step = orig["step"];
@@ -2543,7 +2543,7 @@ function genTables() {
 function openDialog (e) {
 	let diaName = "infoDialog" + e.target.id.replace("openDiaBtn", "");
 	let infoDialog = document.getElementById(diaName);
-	console.log ("Opening info dialog: " + infoDialog + ", of name " + diaName);
+	//console.log ("Opening info dialog: " + infoDialog + ", of name " + diaName);
 	infoDialog.showModal();
 
 } // End of openDialog
@@ -2551,7 +2551,7 @@ function openDialog (e) {
 function closeDialog (e) {
 	let diaName = "infoDialog" + e.target.id.replace("closeDiaBtn", "");
 	let infoDialog = document.getElementById(diaName);
-	console.log ("Closing info dialog: " + infoDialog + ", of name " + diaName);
+	//console.log ("Closing info dialog: " + infoDialog + ", of name " + diaName);
 	infoDialog.close();
 
 } // End of closeDialog
