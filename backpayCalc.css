@@ -46,6 +46,20 @@ footer {
 	display: none;
 }
 
+.tables-responsive2 {
+	max-width: 95%;
+	overflow-x: scroll;
+	margin: 0;
+	padding: 0.25em 1% .2em;
+  	-ms-overflow-style: none;  /* IE and Edge */
+	scrollbar-width: none;  /* Firefox */
+}
+ /* Hide scrollbar for Chrome, Safari and Opera */
+.tables-responsive2::-webkit-scrollbar {
+	display: none;
+}
+
+
 ::backdrop {
   /*
      background-image: linear-gradient(
