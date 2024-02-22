@@ -256,5 +256,32 @@
 	},
 	"there" : {"en" : "Were you there?",
 		"fr" : "Étiez-vous là?"
+	},
+	"info" : {"en" : "Info",
+		"fr": "Info"
+	},
+	"cpi" : {"en" : "CPI",
+		"fr" : "IPC"
+	},
+	"cpiIncr" : {"en" :  "Inflation since beginning",
+		"fr" : "Inflation depuis le début"
+	},
+	"payrateTotalIncr" : {"en" : "Total compounded increase",
+		"fr" : "Augmentation totale composée"
+	},
+	"cpiYIncr" : { "en" : "Inflation since last increase",
+		"fr" : "Inflation depuis la dernière augmentation"
+	},
+	"payrateIncr" : {"en" : "This increase",
+		"fr" : "Cette augmentation"
+	},
+	"oldToNew" : {"en" : "(Old to New)",
+		"fr" : "(Ancien au nouveau)"
+	},
+	"warning" : {"en" : "warning",
+		"fr" : "avertissement"
+	},
+	"knownEndDateWarning" : {"en" : "Warning: you may want to update this to {{knownEndDate}}",
+		"fr" : "Avertissement : Vous souhaiterez peut-être mettre à jour ceci pour {{knownEndDate}}"
 	}
 }

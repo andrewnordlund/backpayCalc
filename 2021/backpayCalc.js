@@ -39,6 +39,8 @@ var endDateTxt = "2021-04-15";
 var TABegin = new Date("2021", "11", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var DefEndDate = new Date("2024", "01", "14");		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
 var EndDate = new Date(DefEndDate.getTime());		// This is the day after this should stop calculating; same as endDateTxt.value in the HTML
+let knownEndDate = null;
+let knownCAEnd = false;
 var day = (1000 * 60 * 60 * 24);
 var parts = [];
 var resultsBody = null;
@@ -53,7 +55,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2024", "01", "12");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var lastModified = new Date("2024", "01", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lastModTime = null;
 var salaries = [];
 let weekly = [];
@@ -62,9 +64,14 @@ var hourly = [];
 var newRates = {};
 var i18n = {};
 var levels = 0;
+var minIncs = [];
 var classification = "IT";
 var CAName = "2021-2025";
 let payload = {};
+let showInflation = false;
+let showPrecise = false;
+let calcRounded = false;
+let baseData = {"cpi" : null, "startFromDate" : null};
 	
 const wiy = 52.176;
 
@@ -149,7 +156,7 @@ function init () {
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("level")});
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("step")});
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("there")});
-			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("salary")});
+			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("salary") + " " + getStr("oldToNew")});
 			createHTMLElement("th", {"parentNode":resultsTheadTR, "scope":"col", "textNode":getStr("workingDays")});
 		}
 	}
@@ -232,6 +239,10 @@ function handleHash () {
 		let ed = params.get("enddt");
 		if (ed.match(/\d\d\d\d-\d\d-\d\d/)) {
 			endDateTxt.value = ed;
+			if (ed != knownEndDate && knownCAEnd) {
+				//  Add an error message to the End Date
+				addWarningMessage (endDateTxt.id, getStr("knownEndDateWarning"));
+			}
 			toCalculate = toCalculate | 8;
 		}
 		hasHash = true;
@@ -318,6 +329,7 @@ function handleHash () {
 		calcBtn.dispatchEvent(clickEv);
 
 	}
+	return hasHash;
 
 
 } // End of handleHash
@@ -364,6 +376,11 @@ function setURL () {
 		});
 	newURL = newURL.substring(0, newURL.length - 1);
 	*/
+
+	if (dbug) saveValues.push("dbug=true");
+	if (showInflation) saveValues.push("showInflation=true");
+	if (showPrecise) saveValues.push("showPrecise=true");
+	if (calcRounded) saveValues.push("calcRounded=true");
 	newURL += saveValues.join("&");
 	/*
 	if (params.length > 0) {
@@ -388,7 +405,7 @@ function populateSalary () {
 	if (levelSel.value >0 && levelSel.value <= levels) {
 		createHTMLElement("option", {"parentNode":stepSelect, "value":"-1", "textNode":getStr("selectSalaryLbl")});
 		for (var i = 0; i < salaries[(levelSel.value-1)].length; i++) {
-			createHTMLElement("option", {"parentNode":stepSelect, "value":i, "textNode": getStr("step") + " " + (+i+1) + " - " + formatter.format(salaries[levelSel.value-1][i])});
+			createHTMLElement("option", {"parentNode":stepSelect, "value":i, "textNode": getStr("step") + " " + (+i+1) + " - " + getNum(salaries[levelSel.value-1][i])});
 		}
 	}
 	if (startDateTxt.value.replace(/[^-\d]/, "").match(/(\d\d\d\d)-(\d\d)-(\d\d)/)) selectSalary();
@@ -500,6 +517,24 @@ function startProcess () {
 		}
 		errorDivs[i].parentNode.removeChild(errorDivs[i]);
 	}
+	// Remove any existing warning messages
+	let warningDivs = document.querySelectorAll(".warning");
+	if (dbug && warningDivs.length > 0) console.log ("Found " + warningDivs.length + " warningDivs.");
+	for (var i = 0; i < warningDivs.length; i++) {
+		if (warningDivs[i].hasAttribute("id")) {
+			var id = warningDivs[i].getAttribute("id");
+			var referrers = document.querySelectorAll("[aria-describedby="+id+"]");
+			for (var j = 0; j<referrers.length; j++) {
+				if (referrers[j].getAttribute("aria-describedby") == id) {
+					referrers[j].removeAttribute("aria-describedby");
+				} else {
+					referrers[j].setAttribute("aria-describedby", referrers[j].getAttribute("aria-describedby").replace(id, "").replace(/\s+/, " "));
+				}
+			}
+		}
+		warningDivs[i].parentNode.removeChild(warningDivs[i]);
+	}
+
 
 	initErrorHandling();
 
@@ -528,11 +563,11 @@ function startProcess () {
 		calculate();
 	} else {
 		let firstErrorMessageID = errorDivs[0].id;
-		console.log ("First error Message ID: " + firstErrorMessageID + ".");
+		//console.log ("First error Message ID: " + firstErrorMessageID + ".");
 		let selector = "*[aria-describedby~=" + firstErrorMessageID + "]";
-		console.log ("Using selector "+ selector + ".");
+		//console.log ("Using selector "+ selector + ".");
 		let firstErrInput = document.querySelector(selector);
-		console.log ("Got first error input: "  + firstErrInput.id + ".");
+		//console.log ("Got first error input: "  + firstErrInput.id + ".");
 		if (firstErrInput) firstErrInput.focus();
 	}
 
@@ -652,6 +687,10 @@ function getSalary () {
 			//let errDiv = createHTMLElement("div", {"parentNode":endDateTxt.parentNode, "id":"endDateTxtError", "class":"error"});
 			//createHTMLElement("span", {"parentNode":errDiv, "nodeText":getStr("endDateTxtEmptyError")});
 			//endDateTxt.setAttribute("aria-describedby", endDateTxt.getAttribute("aria-describedby") + " endDateTxtError");
+		}
+		if (endDateTxt.value != knownEndDate && knownCAEnd) {
+			//  Add an error message to the End Date
+			addWarningMessage (endDateTxt.id, getStr("knownEndDateWarning"));
 		}
 		if (dbug) console.log ("getSalary::Got EndDateTxt as " + endDateTxt.value + ".");
 		//if (dbug) console.log ("Got EndDate as " + EndDate.toISOString().substr(0, 10) + ".");
@@ -1764,7 +1803,7 @@ function calculate() {
 						output += "Not increasing step because this is the first anniversary, and your anniversary is on this date.";
 					} else {
 						output += "Increasing step from " + step + " to ";
-						step = Math.min(parseInt(step) + 1, salaries[level].length-1);	// Should this be salaries, or newRates[theYear]?
+						step = Math.min(parseInt(step) + 1, salaries[level].length-1);	// Should this be salaries, or newRates[theYear]["salary"]?
 						output += step + ".";
 					}
 				} else {
@@ -1782,34 +1821,43 @@ function calculate() {
 				//dbug = false;
 			} else if (periods[i]["reason"] == "promotion") {
 				//var currentSal = salaries[level][step];
-				let currentSal = newRates["current"][level][step]["annual"];
-				let minNewSal = currentSal * 1.04;
+				let currentSal = newRates["current"]["salary"][level][step]["annual"];
+				//console.log ("Handling promotion from level " + level + " and step " + step + ".");
 				level = periods[i]["level"];
+				//console.log ("to level " + level + ".");
+				//console.log ("For that level, the minIncr is " + minIncs[level] + ".");
+				let minNewSal = currentSal + minIncs[level];
+				//console.log ("With a current salary of " + currentSal + " for a min new salary of " + minNewSal + ".");
 				let looking = true;
 				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
-				for (let stp = 0; stp < newRates["current"][level].length && looking; stp++) {
+				for (let stp = 0; stp < newRates["current"]["salary"][level].length && looking; stp++) {
 					//if (salaries[level][stp] > minNewSal) {
-					if (newRates["current"][level][stp]["annual"] > minNewSal) {
+					if (newRates["current"]["salary"][level][stp]["annual"] >= minNewSal) {
 						step = stp;
 						looking = false;
 					}
 				}
+				//console.log ("For a step of " + step + ", giving a salary of " + newRates["current"]["salary"][level][step]["annual"] + ".");
 			} else if (periods[i]["reason"] == "Acting Start") {
 				actingStack.push({"level":level, "step":step});
+				//console.log ("Handling acting from level " + level + " and step " + step + ".");
 				//var currentSal = salaries[level][step];
-				let currentSal = newRates["current"][level][step]["annual"];
-				let minNewSal = currentSal * 1.04;
+				let currentSal = newRates["current"]["salary"][level][step]["annual"];
 				level = periods[i]["level"];
+				//console.log ("to level " + level + ".");
+				//console.log ("For that level, the minIncr is " + minIncs[level] + ".");
+				let minNewSal = currentSal + minIncs[level];
+				//console.log ("With a current salary of " + currentSal + " for a min new salary of " + minNewSal + ".");
 				let looking = true;
 				//for (var stp = 0; stp < salaries[level].length && looking; stp++) {
-				for (let stp = 0; stp < newRates["current"][level].length && looking; stp++) {
+				for (let stp = 0; stp < newRates["current"]["salary"][level].length && looking; stp++) {
 					//if (salaries[level][stp] > minNewSal) {
-					if (newRates["current"][level][stp]["annual"] > minNewSal) {
+					if (newRates["current"]["salary"][level][stp]["annual"] > minNewSal) {
 						step = stp;
 						looking = false;
 					}
 				}
-
+				//console.log ("For a step of " + step + ", giving a salary of " + newRates["current"]["salary"][level][step]["annual"] + ".");
 			} else if (periods[i]["reason"] == "Acting Finished") {
 				var orig = actingStack.pop();
 				step = orig["step"];
@@ -1819,7 +1867,7 @@ function calculate() {
 				if (dbug || true) console.log ("Setting theYear to " + theYear + ".");
 			}*/
 
-			if (periods[i]["increaes"] > 0) {
+			if (periods[i]["increase"] > 0) {
 				theYear = periods[i]["startDate"];
 				if (dbug) console.log ("Setting theYear to " + theYear + ".");
 			} else {
@@ -1875,7 +1923,7 @@ function calculate() {
 				var diff = (future  - current) / day;
 				if (dbug) {
 					//console.log ("There were " + diff + " days between " + current.getFullYear() + "-" +  (current.getMonth()+1) +"-" + current.getDate() + " and " + future.getFullYear() + "-" + (future.getMonth()+1) + "-" + future.getDate() +".");
-					console.log ("Gonna calculate backpay based on current: " + newRates["current"][level][step]["daily"] + " and new ("+ theYear + "): " + newRates[theYear][level][step]["daily"] + ".");
+					console.log ("Gonna calculate backpay based on current: " + newRates["current"]["salary"][level][step]["daily"] + " and new ("+ theYear + "): " + newRates[theYear]["salary"][level][step]["daily"] + ".");
 				}
 				while (current < future) {
 					//if (dbug) console.log ("Now calculating for day " + current.toString() + ".");
@@ -1884,8 +1932,14 @@ function calculate() {
 						//periods[i]["made"] = periods[i]["made"] + daily[level][step] * periods[i]["multiplier"];	// multiplier is if you were there then or not.
 						//periods[i]["shouldHaveMade"] = (periods[i]["shouldHaveMade"] + (newDaily[level][step] * periods[i]["multiplier"]));
 						
-						periods[i]["made"] = periods[i]["made"] + newRates["current"][level][step]["daily"] * periods[i]["multiplier"];	// multiplier is if you were there then or not.
-						periods[i]["shouldHaveMade"] = (periods[i]["shouldHaveMade"] + (newRates[theYear][level][step]["daily"] * periods[i]["multiplier"]));
+						periods[i]["made"] = periods[i]["made"] + newRates["current"]["salary"][level][step]["daily"] * periods[i]["multiplier"];	// multiplier is if you were there then or not.
+						periods[i]["shouldHaveMade"] = (periods[i]["shouldHaveMade"] + (newRates[theYear]["salary"][level][step]["daily"] * periods[i]["multiplier"]));
+
+						if (calcRounded) {
+							periods[i]["made"] = Math.round(periods[i]["made"]*100)/100;
+							periods[i]["shouldHaveMade"] = Math.round(periods[i]["shouldHaveMade"]*100)/100;
+							
+						}
 					}
 					current.setDate(current.getDate() + parseInt(1));
 		//			//if (dbug) console.log ("Now day is " + current.toString() + ".");
@@ -1900,16 +1954,16 @@ function calculate() {
 			endDate.setDate(endDate.getDate() -1);
 			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"] + " - " + endDate.toISOString().substr(0,10)});
 			var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + getStr(periods[i]["reason"]) + ")", "class":"small"});
-			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["made"])}); //.toFixed(2)});
-			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["shouldHaveMade"])}); //.toFixed(2)});
-			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(periods[i]["backpay"])}); //.toFixed(2)});
+			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getNum(periods[i]["made"])}); //.toFixed(2)});
+			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getNum(periods[i]["shouldHaveMade"])}); //.toFixed(2)});
+			var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getNum(periods[i]["backpay"])}); //.toFixed(2)});
 
 			if (dbug || showExtraCols) {
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getStr(classification) + "-0" + (level +1)});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (Math.max(1, (parseInt(step)+1)))});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? getStr("yes") : getStr("no"))});
 				//var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (step >=0 ? (daily[level][step] * periods[i]["multiplier"]).toFixed(2) + " -> " + (newDaily[level][step] * periods[i]["multiplier"]).toFixed(2) : "0") + " / " + getStr("day")});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "innerHTML": (step >=0 ? formatter.format(newRates["current"][level][step]["daily"] * periods[i]["multiplier"]) + " <span class=\"invisibleStuff\">" + getStr("to") + "</span><span aria-hidden=\"true\">-></span> " + formatter.format(newRates[theYear][level][step]["daily"] * periods[i]["multiplier"]) : "0") + " / " + getStr("day")});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "innerHTML": (step >=0 ? getNum(newRates["current"]["salary"][level][step]["daily"] * periods[i]["multiplier"]) + " <span class=\"invisibleStuff\">" + getStr("to") + "</span><span aria-hidden=\"true\">-></span> " + getNum(newRates[theYear]["salary"][level][step]["daily"] * periods[i]["multiplier"]) : "0") + " / " + getStr("day")});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": days});
 			}
 			
@@ -1921,23 +1975,29 @@ function calculate() {
 
 					//var made = overtimePeriods[periods[i]["startDate"]][rate] * hourly[level][step] * rate;
 					//var shouldHaveMade = overtimePeriods[periods[i]["startDate"]][rate] * newHourly[level][step] * rate;
-					let made = overtimePeriods[periods[i]["startDate"]][rate] * newRates["current"][level][step]["hourly"] * rate;
-					let shouldHaveMade = overtimePeriods[periods[i]["startDate"]][rate] * newRates[theYear][level][step]["hourly"] * rate;
+					let made = overtimePeriods[periods[i]["startDate"]][rate] * newRates["current"]["salary"][level][step]["hourly"] * rate;
+					let shouldHaveMade = overtimePeriods[periods[i]["startDate"]][rate] * newRates[theYear]["salary"][level][step]["hourly"] * rate;
+
+					if (calcRounded) {
+						made = Math.round(made*100)/100;
+						shouldHaveMade = Math.round(shouldHaveMade*100)/100;
+					}
+
 					var backpay = shouldHaveMade - made;
 					
 					var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"] + " - " + endDate.toISOString().substr(0,10)});
 					var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode": "(" + getStr("OTPayment") + " " + rate + ")", "class":"small"});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getNum(made)}); //.toFixed(2)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getNum(shouldHaveMade)}); //.toFixed(2)});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getNum(backpay)}); //.toFixed(2)});
 
 					if (dbug || showExtraCols) {
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getStr(classification) + "-0" + (level +1)});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? getStr("no") : getStr("yes"))});
 						//var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + " * " + rate + "/hr"});
-						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "innerHTML": formatter.format(newRates["current"][level][step]["hourly"] * periods[i]["multiplier"]) + " <span class=\"invisibleStuff\">" + getStr("to") + "</span><span aria-hidden=\"true\">-></span> " + formatter.format(newRates[theYear][level][step]["hourly"] * periods[i]["multiplier"]) + " * " + rate + "/hr"});
+						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "innerHTML": getNum(newRates["current"]["salary"][level][step]["hourly"] * periods[i]["multiplier"]) + " <span class=\"invisibleStuff\">" + getStr("to") + "</span><span aria-hidden=\"true\">-></span> " + getNum(newRates[theYear]["salary"][level][step]["hourly"] * periods[i]["multiplier"]) + " * " + rate + "/hr"});
 						var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": overtimePeriods[periods[i]["startDate"]][rate] + " " + getStr("hours")});
 					}
 	
@@ -1953,16 +2013,21 @@ function calculate() {
 			if (lumpSumPeriods.hasOwnProperty(periods[i]["startDate"])) {
 				//var made = lumpSumPeriods[periods[i]["startDate"]] * hourly[level][step];
 				//var shouldHaveMade = lumpSumPeriods[periods[i]["startDate"]] * newHourly[level][step];
-				let made = lumpSumPeriods[periods[i]["startDate"]] * newRates["current"][level][step]["hourly"];
-				let shouldHaveMade = lumpSumPeriods[periods[i]["startDate"]] * newRates[theYear][level][step]["hourly"];
+				let made = lumpSumPeriods[periods[i]["startDate"]] * newRates["current"]["salary"][level][step]["hourly"];
+				let shouldHaveMade = lumpSumPeriods[periods[i]["startDate"]] * newRates[theYear]["salary"][level][step]["hourly"];
+				if (calcRounded) {
+					made = Math.round(made*100)/100;
+					shouldHaveMade = Math.round(shouldHaveMade*100)/100;
+				}
+
 				var backpay = shouldHaveMade - made;
 				
 				var newTR = createHTMLElement("tr", {"parentNode":resultsBody});
 				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": periods[i]["startDate"]+ " - " + endDate.toISOString().substr(0,10)});
 				var reasonDiv = createHTMLElement("div", {"parentNode":newPaidTD, "textNode":"(" + getStr("lumpSumPayment") + ")", "class":"small"});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(made)}); //.toFixed(2)});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(shouldHaveMade)}); //.toFixed(2)});
-				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(backpay)}); //.toFixed(2)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getNum(made)}); //.toFixed(2)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getNum(shouldHaveMade)}); //.toFixed(2)});
+				var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getNum(backpay)}); //.toFixed(2)});
 
 				
 				if (dbug || showExtraCols) {
@@ -1970,7 +2035,7 @@ function calculate() {
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": parseInt(step)+1});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": (periods[i]["multiplier"] ? getStr("no") : getStr("yes"))});
 					//var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": hourly[level][step] * periods[i]["multiplier"] + "/hr"});
-					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": formatter.format(newRates[theYear][level][step]["hourly"] * periods[i]["multiplier"]) + "/hr"});
+					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getNum(newRates[theYear]["salary"][level][step]["hourly"] * periods[i]["multiplier"]) + "/hr"});
 					var newPaidTD = createHTMLElement("td", {"parentNode":newTR, "textNode": getStr("hourly") + ": " + lumpSumPeriods[periods[i]["startDate"]]});
 				}
 
@@ -2015,9 +2080,9 @@ function calculate() {
 			*/
 			var totalTR = createHTMLElement("tr", {"parentNode":resultsFoot});
 			var totalTH = createHTMLElement("th", {"parentNode":totalTR, "scope":"row", "nodeText":getStr("total")});
-			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["made"])});
-			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["shouldHaveMade"])});
-			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": formatter.format(total["backpay"])});
+			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": getNum(total["made"])});
+			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": getNum(total["shouldHaveMade"])});
+			var preTD = createHTMLElement("td", {"parentNode":totalTR, "nodeText": getNum(total["backpay"])});
 		}
 		resultStatus.innerHTML = getStr("resultsShownBelow"); 
 	//} else {
@@ -2062,6 +2127,26 @@ function addErrorMessage (inID, errMsg) {
 	}
 } // End of addErrorMessage
 
+function addWarningMessage (inID, errMsg) {
+	let el, errDiv = null;
+	el = document.getElementById(inID);
+	if (el) {
+		if (dbug) console.log ("addWarningMessage::value of " + inID + " is " + inID.value + ". Adding warningMessage: " + errMsg + ".");
+		errDiv = document.getElementById(inID + "Warning");
+
+		if (!errDiv) errDiv = createHTMLElement("div", {"parentNode" : el.parentNode, "id":inID + "Warning", "class" : "warning"});
+		createHTMLElement("p", {"parentNode" : errDiv, "nodeText" : errMsg});
+		if (el.hasAttribute("aria-describedby")) {
+			el.setAttribute("aria-describedby", el.getAttribute("aria-describedby") + " " + inID + "Warning");
+		} else {
+			el.setAttribute("aria-describedby", inID + "Warning");
+		}
+	} else {
+		console.error ("addWarningMessage::Couldn't get element " + inID);
+	}
+} // End of addWarningMessage
+
+
 function removeErrorMessage (inID) {
 	let inEL, errEl = null;
 	inEL = document.getElementById(inID);
@@ -2085,6 +2170,18 @@ function removeErrorMessage (inID) {
 	
 lang = document.documentElement.lang;
 if (lang == "fr") langFormat = "fr-CA";
+
+function getNum (num) {
+	if (showPrecise) {
+		if (calcRounded) {
+			return formatter.format(num);
+		} else {
+			return num;
+		}
+	} else {
+		return formatter.format(num);
+	}
+} // End of getNum
 
 var formatter = new Intl.NumberFormat(langFormat, {
   style: 'currency',
@@ -2110,6 +2207,8 @@ function getStr (str) {
 					rv = rv.replace(repStr[1], calcStartDate.getAttribute("datetime"));
 				} else if (repStr[2] == "endDate") {
 					rv = rv.replace(repStr[1], EndDate.toISOString().substr(0,10));
+				} else if (repStr[2] == "knownEndDate") {
+					rv = rv.replace(repStr[1], knownEndDate);
 				}
 			}
 		}
@@ -2123,24 +2222,27 @@ function getStr (str) {
 } // End of getStr
 
 function createHTMLElement (type, attribs) {
-	var newEl = document.createElement(type);
-	mainForm.appendChild(newEl);
-	var dbug = (arguments.length == 3 &&arguments[2] != null && arguments[2] != false ? true : false);
-	for (var k in attribs) {
+	let newEl = document.createElement(type);
+	let fdbug = (arguments.length == 3 &&arguments[2] != null && arguments[2] != false || dbug == true ? true : false);
+	for (let k in attribs) {
 		if (dbug) console.log("Dealing with attrib " + k + ".");
 		if (k == "parentNode") {
 			if (dbug) console.log("Dealing with parentnode.");
-			if (attribs[k] instanceof HTMLElement) {
-				if (dbug) console.log("Appending...");
-				attribs[k].appendChild(newEl);
-			} else if (attribs[k] instanceof String || typeof(attribs[k]) === "string") {
-				try {
-					if (dbug) console.log("Getting, then appending...");
-					document.getElementById(attribs[k]).appendChild(newEl);
+			let parentNode = getHTMLElement(attribs[k], dbug);
+
+			try {
+				if (attribs.hasOwnProperty("insertBefore")) {
+					var beforeEl = getHTMLElement(attribs["insertBefore"], dbug);
+					parentNode.insertBefore(newEl, beforeEl);
+				} else if (attribs.hasOwnProperty("insertAfter")) {
+					var afterEl = getHTMLElement(attribs["insertAfter"], dbug);
+					parentNode.insertBefore(newEl, afterEl.nextSibling);
+				} else {
+					parentNode.appendChild(newEl);
 				}
-				catch (er) {
-					console.error("Error creating HTML Element: " + er.message + ".");
-				}
+			}
+			catch (er) {
+				console.error("Error appending newEl to parentNode: " + er.message + ".");
 			}
 		} else if (k == "textNode" || k == "nodeText") {
 			if (dbug) console.log("Dealing with textnode " + attribs[k] + ".");
@@ -2157,18 +2259,43 @@ function createHTMLElement (type, attribs) {
 		} else if (k == "innerHTML") {
 			if (dbug) console.log ("Dealing with innerHTML " + attribs[k] + ".");
 			newEl.innerHTML = attribs[k];
+		} else if (k.match(/^insert(Before|After)$/)) {
+				// Do nothing.
 		} else {
 			newEl.setAttribute(k, attribs[k]);
 		}
 	}
 	return newEl;
 } // End of createHTMLElement
+
+function getHTMLElement (el) {
+	let rv = null;
+	let fdbug = (((arguments.length == 2 && arguments[1] != null && arguments[1] != undefined && arguments[1] !== false) || dbug == true) ? true : false); 
+	//var iwin = window;
+	if (el instanceof HTMLElement) { // || el instanceof iwin.HTMLElement) {
+		rv = el;
+	} else if (el instanceof String || typeof(el) === "string") {
+		try {
+			if (fdbug) console.log ("Trying to getHTMLElement " + el + ".");
+			rv = document.getElementById(el);
+		} catch (er) {
+			console.error("Error getting HTML Element #" + el + ".  Apparently that's not on this page.");
+		}
+	}
+	return rv;
+} // End of getHTMLElement
+
+
 function removeChildren (el) {
 	var dbug = (arguments.length == 2 && arguments[1] != null && arguments[1] != false ? true : false);
 	while (el.firstChild) {	
 		el.removeChild(el.firstChild);
 	}
 } // End of removeChildren
+
+function getAnnual(wk) {
+	return wk*wiy;
+} // End of getAnnual
 
 function getWeekly (an) {
 	return (an/wiy);
@@ -2186,17 +2313,35 @@ function genRates () {
 	//console.log ("in genRates.");
 	// At somet point you're gonna want to incorporate a CPI comparitor.
 	// Get the data from: https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=1810000401&pickMembers%5B0%5D=1.2&cubeTimeFrame.startMonth=12&cubeTimeFrame.startYear=2021&cubeTimeFrame.endMonth=11&cubeTimeFrame.endYear=2023&referencePeriods=20211201%2C20231101
+	let thisURL = new URL(document.location);
+	let params = thisURL.searchParams;
 
-	newRates["current"] = [];
+	if (params.has("calcRounded")) {
+		if (params.get("calcRounded") == "true") calcRounded= true;
+	}
+
+	newRates["current"] = {};
+	newRates["current"]["salary"] = [];
 	for (let it = 0; it < levels; it++) {	// global variable levels
+		let incr = salaries[it][1] - salaries[it][0];
 		let lvl = [];
 		let newStps = []; //
 		for (let stp = 0; stp < salaries[it].length; stp++) {	// steps
+			if (stp > 1) {
+				if (salaries[it][stp] - salaries[it][stp-1] < incr) incr = salaries[it][stp] - salaries[it][stp-1];
+			}
+
+			let oldDaily = (weekly[it][stp] / 5);
+			let oldHourly = ((weekly[it][stp]/5)/7.5);
+			if (calcRounded) {
+				oldDaily = oldDaily.toFixed(2);
+				oldHourly = oldHourly.toFixed(2);
+			}
 			let newStp = {"annual" : salaries[it][stp],
 				//"weekly" : getWeekly(salaries[it][stp]),
 				"weekly" : weekly[it][stp],
-				"daily" : (weekly[it][stp] / 5), //getDaily(salaries[it][stp]),
-				"hourly" : ((weekly[it][stp]/5)/7.5) //getHourly(salaries[it][stp])
+				"daily" : oldDaily, //getDaily(salaries[it][stp]),
+				"hourly" : oldHourly //getHourly(salaries[it][stp])
 			};
 			//newStps["annual"].push(newStp);
 			//console.log ("Pushing " + newStp + " onto newStps[annual].");
@@ -2207,24 +2352,33 @@ function genRates () {
 			lvl.push(newStp);
 
 		}
+		minIncs[it] = incr;
+		//console.log ("MinIncr for IT-" + (it+1) + ": " + incr + ".");
+
 		//console.log ("newStps has length: " + newStps["annual"].length + ".");
-		newRates["current"].push(lvl);
+		newRates["current"]["salary"].push(lvl);
 
 	}
 
 	//console.log ("initPeriods has " + initPeriods.length + " elements.");
 	for (let i = 0; i < initPeriods.length; i++) {
+		if (i == 0) newRates["current"]["cpi"] = initPeriods[0]["cpi"];
 		//console.log ("reason: " + initPeriods[i]["reason"]);
 		if (initPeriods[i]["reason"] == "Contractual Increase") {
 			//console.log ("period: " + i + ":");
 			
 			let startDate = initPeriods[i]["startDate"];
-			let multiplier = ((initPeriods[i]["compound"]/100) +1);
-			//console.log ("Multiplier: " + multiplier);
+			let increase = initPeriods[i]["increase"];
+			let compound = initPeriods[i]["compound"];
+			//console.log ("increase: " + increase);
 
-			if (!(newRates.hasOwnProperty(startDate))) newRates[startDate] = [];
+			//if (!(newRates[startDate].hasOwnProperty("increase")) && initPeriods[i].hasOwnProperty("increase")) newRates[startDate]["increase"] = [];
+			//if (!(newRates[startDate].hasOwnProperty("compound")) && initPeriods[i].hasOwnProperty("compound")) newRates[startDate]["compound"] = [];
+
+			if (!(newRates.hasOwnProperty(startDate))) newRates[startDate] = {"salary" : [], "increase" : [], "compound" : []};
+			if (!(newRates[startDate].hasOwnProperty("cpi")) && initPeriods[i].hasOwnProperty("cpi")) newRates[startDate]["cpi"] = initPeriods[i]["cpi"];
 			
-			//console.log ("newRates[" + startDate + "] has length " + newRates[startDate].length + ".");
+			//console.log ("newRates[" + startDate + "]["salary"] has length " + newRates[startDate]["salary"].length + ".");
 			
 			//let newLevels = [];
 			//console.log ("levels:  " + levels + ".");
@@ -2237,23 +2391,38 @@ function genRates () {
 						if (initPeriods[i]["exceptions"][k]["level"] == (it+1)) {
 							//console.log ("Dealing with exception....");
 							if (initPeriods[i]["exceptions"][k].hasOwnProperty("compound")) {
-								multiplier  = ((initPeriods[i]["exceptions"][k]["compound"]/100) +1);
+								compound  = initPeriods[i]["exceptions"][k]["compound"];
+								increase  = initPeriods[i]["exceptions"][k]["increase"];
 							}
 							//console.log ("multiplier is now: " + multiplier + ".");
+							//console.log ("increase is now: " + increase);
 						}
 					}
 				}
 				
+				let multiplier = ((compound /100) +1);
+				let multiplier2 = ((increase/100) +1);
 				//let newStps = {"annual" : [], "weekly" : [], "daily" : [], "hourly" : []};
 				let newStps = [];
 				for (let stp = 0; stp < salaries[it].length; stp++) {	// steps
 					let newSal = salaries[it][stp] * multiplier;
 					let newWeekly = weekly[it][stp] * multiplier;
+					let newDaily = (newWeekly/5);
+					let newHourly = ((newWeekly/5)/7.5);
+
+					if (calcRounded) {
+						newSal = newSal.toFixed(2);
+						newWeekly = newWeekly.toFixed(2);
+						newDaily = (newWeekly/5);
+						newDaily = newDaily.toFixed(2);
+						newHourly = ((newWeekly/5)/7.5);
+						newHourly = newHourly.toFixed(2);
+					}
 
 					let newStp = {"annual" : newSal,
 						"weekly" : newWeekly, /*getWeekly(newSal),*/
-						"daily" : (newWeekly/5),
-						"hourly" : ((newWeekly/5) / 7.5)
+						"daily" : newDaily,
+						"hourly" : newHourly
 					}
 					//newStps["annual"].push(newStp);
 					//console.log ("Pushing " + newStp + " onto newStps[annual].");
@@ -2263,17 +2432,29 @@ function genRates () {
 					//newStps["hourly"].push(((newStp/wiy)/5)/7.5);
 					lvl.push(newStp);
 				}
-				//console.log ("newStps has length: " + newStps["annual"].length + ".");
-				newRates[startDate].push(lvl);
-				//console.log ("newRates has length: " + newRates[startDate].length + ".");
+				newRates[startDate]["salary"].push(lvl);
+				newRates[startDate]["increase"].push(increase);
+				newRates[startDate]["compound"].push(compound);
 			}
-			//newRates[startDate].push(newLevels);
-			//console.log ("Should have a newRates[" + startDate + "] now: " + newRates[startDate].length + ".");
+			//console.log ("Setting inrease as " + increase);
+			//newRates[startDate]["salary"].push(newLevels);
+			//console.log ("Should have a newRates[" + startDate + "]["salary"] now: " + newRates[startDate]["salary"].length + ".");
 		}
 	}
 } // End of genRates
 
 function genTables() {
+	let thisURL = new URL(document.location);
+	let params = thisURL.searchParams;
+
+	if (params.has("showInflation")) {
+		if (params.get("showInflation") == "true") showInflation= true;
+	}
+
+	if (params.has("showPrecise")) {
+		if (params.get("showPrecise") == "true") showPrecise= true;
+	}
+
 	let payTablesSect = null;
 	payTablesSect = document.getElementById("payTablesSect");
 	if (!payTablesSect) {
@@ -2314,16 +2495,18 @@ function genTables() {
 		// You need a table for each year)
 		//console.log ("Periods: " + initPeriods.length + ".");
 
-		let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
+		let yearSect = createHTMLElement("section", {"parentNode" : newSect, "class" : "yearSect"});
+		let newTableH = createHTMLElement("h4", {"parentNode" : yearSect, "textNode" : getStr("current") + " (" + baseData["startFromDate"] + ")"});
+		let respDiv = createHTMLElement("div" , {"parentNode":yearSect, "class": "tables-responsive"});
 
 		let newTable = createHTMLElement("table", {"parentNode"  : respDiv, "class":"table caption-top"});
-		let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : getStr("current")});
+		//let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : getStr("current")});
 
 		let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
 		let newTR = createHTMLElement("tr", {"parentNode" : newTHead});
 		let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode":""});
 
-		for (let stp = 0; stp < newRates["current"][i].length; stp++) {
+		for (let stp = 0; stp < newRates["current"]["salary"][i].length; stp++) {
 			let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : getStr("step") + "  " + (stp+1), "scope":"col"});
 		}
 
@@ -2331,8 +2514,18 @@ function genTables() {
 		for (let t = 0; t<timeps.length; t++) {
 			let newTR = createHTMLElement("tr", {"parentNode" : newTBody});
 			let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode": getStr(timeps[t]), "scope":"row"});
-			for (let stp = 0; stp < newRates["current"][i].length; stp++) {
-				let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : formatter.format(newRates["current"][i][stp][timeps[t]])});
+			for (let stp = 0; stp < newRates["current"]["salary"][i].length; stp++) {
+				let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : getNum(newRates["current"]["salary"][i][stp][timeps[t]])});
+			}
+		}
+		if (showInflation) {
+			let infoSect = createHTMLElement("section", {"parentNode" : yearSect});
+			let infoH5 = createHTMLElement("h5", {"parentNode" : infoSect, "textNode" : getStr("info")});
+			let infoDL = createHTMLElement("dl", {"parentNode" : infoSect});
+			// Add dts and dds for: cpi for this table; inflation since the last table, total inflation since the start, and this raise compared to start and this raise compared to last table
+			if (baseData.hasOwnProperty("cpi")) {
+				let cpiDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpi")});
+				let cpiDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : (baseData["cpi"])});
 			}
 		}
 
@@ -2340,52 +2533,109 @@ function genTables() {
 		//for (let j = 0; j < initPeriods.length; j++) {
 		//console.log ("newRates.length has " + newRates.length + ".");
 		//for (let j = 1; j < newRates.length; j++) {
+		let lastYear = "current";
 		for (let j in newRates) {
 			//console.log ("j: " + j);
 			if (j == "current") continue;
 			//if (initPeriods[j]["reason"] == "Contractual Increase") {
 
-				let respDiv = createHTMLElement("div" , {"parentNode":newSect, "class": "tables-responsive"});
-				let newTable = createHTMLElement("table", {"parentNode" : respDiv, "class":"table caption-top"});
-				let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : j});
+			let newYearSect = createHTMLElement("section", {"parentNode" : newSect, "class" : "yearSect"});
+			let newSectH = createHTMLElement("h4", {"parentNode" : newYearSect, "textNode" : j});
+			let respDiv = createHTMLElement("div" , {"parentNode":newYearSect, "class": "tables-responsive"});
+			let newTable = createHTMLElement("table", {"parentNode" : respDiv, "class":"table caption-top"});
+			//let newTableCaption = createHTMLElement("caption", {"parentNode" : newTable, "textNode" : j});
 
-				let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
-				let newTR = createHTMLElement("tr", {"parentNode" : newTHead});
-				let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode":""});
+			let newTHead = createHTMLElement("thead", {"parentNode" : newTable});
+			let newTR = createHTMLElement("tr", {"parentNode" : newTHead});
+			let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode":""});
 
-				//console.log ("initPeriods[j]: " + initPeriods[j]["startDate"] +".");
-				for (let stp = 0; stp < newRates[j][i].length; stp++) {
-					let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : getStr("step") + "  " + (stp+1), "scope":"col"});
+			//console.log ("initPeriods[j]: " + initPeriods[j]["startDate"] +".");
+			for (let stp = 0; stp < newRates[j]["salary"][i].length; stp++) {
+				let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : getStr("step") + "  " + (stp+1), "scope":"col"});
+			}
+
+			let newTBody = createHTMLElement("tbody", {"parentNode" : newTable});
+			for (let t = 0; t<timeps.length; t++) {
+				let newTR = createHTMLElement("tr", {"parentNode" : newTBody});
+				let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode": getStr(timeps[t]), "scope":"row"});
+				for (let stp = 0; stp < newRates[j]["salary"][i].length; stp++) {
+					let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : getNum(newRates[j]["salary"][i][stp][timeps[t]])});
 				}
+			}
+			//let infoDialog = createHTMLElement("dialog", {"parentNode" : newSect, "insertBefore" : respDiv, "id" : "infoDialog" + i + j});
+			let infoSect = createHTMLElement("section", {"parentNode" : newYearSect/*, "insertBefore" : respDiv*/});
+			let infoH5 = createHTMLElement("h5", {"parentNode" : infoSect, "textNode" : getStr("info")});
+			let infoDL = createHTMLElement("dl", {"parentNode" : infoSect});
+			// Add dts and dds for: cpi for this table; inflation since the last table, total inflation since the start, and this raise compared to start and this raise compared to last table
+			if (newRates[j].hasOwnProperty("cpi") && showInflation) {
+				let totalInflation = (100*(parseFloat(newRates[j]["cpi"]) - parseFloat(baseData["cpi"]))/parseFloat(baseData["cpi"]));
+				let lastCPI = (lastYear == "current" ? parseFloat(baseData["cpi"]) : parseFloat(newRates[lastYear]["cpi"]));
+				let yearlyInflation = (100*(parseFloat(newRates[j]["cpi"]) - lastCPI)/lastCPI);
+	
+				let cpiDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpi")});
+				let cpiDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : (newRates[j]["cpi"])});
+				let cpiYIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpiYIncr")});
+				let cpiYIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : yearlyInflation.toFixed(2) + " %"});
+				let cpiIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpiIncr")});
+				let cpiIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : totalInflation.toFixed(2) + " %"});
+			}
+			let prIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("payrateIncr")});
+			let prIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : newRates[j]["increase"][i] + " %"});
+			let payRaiseTotalIncrDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("payrateTotalIncr")});
+			let payraiseTotalIncrDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : newRates[j]["compound"][i] + " %"});
+			
+			/*
+			let closeDiaBtn = createHTMLElement("button", {"parentNode" : infoDialog, "textNode" : "close", "id" : "closeDiaBtn" + i+j});
+			closeDiaBtn.addEventListener("click", closeDialog, false);
 
-				let newTBody = createHTMLElement("tbody", {"parentNode" : newTable});
-				for (let t = 0; t<timeps.length; t++) {
-					let newTR = createHTMLElement("tr", {"parentNode" : newTBody});
-					let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode": getStr(timeps[t]), "scope":"row"});
-					for (let stp = 0; stp < newRates[j][i].length; stp++) {
-						let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : formatter.format(newRates[j][i][stp][timeps[t]])});
-					}
-				}
+			let infoBtn = createHTMLElement("button", {"parentNode" : newSect, "insertBefore" : respDiv, "textNode" : "Info", "id" : "openDiaBtn" + i+ j});
+			infoBtn.addEventListener("click", openDialog, false);
+			*/
 
+			lastYear = j;
+		
 		//}
 		}
+		
 	}
 
 	
 
 } // End of genTables
 
+function openDialog (e) {
+	let diaName = "infoDialog" + e.target.id.replace("openDiaBtn", "");
+	let infoDialog = document.getElementById(diaName);
+	//console.log ("Opening info dialog: " + infoDialog + ", of name " + diaName);
+	infoDialog.showModal();
+
+} // End of openDialog
+
+function closeDialog (e) {
+	let diaName = "infoDialog" + e.target.id.replace("closeDiaBtn", "");
+	let infoDialog = document.getElementById(diaName);
+	//console.log ("Closing info dialog: " + infoDialog + ", of name " + diaName);
+	infoDialog.close();
+
+} // End of closeDialog
 
 function getData(classif, caname) {
 
 	if (dbug) console.log ("getData::Getting salaries from classification " + classif + " from CA/TA " + caname + ".");
 	salaries = payload[classif][caname]["salaries"]["annual"];
 	levels = salaries.length;
-	weekly = payload[classification][CAName]["salaries"]["weekly"];
+	weekly = payload[classification][caname]["salaries"]["weekly"];
 	//daily = json[classification][CAName]["salaries"]["daily"];
 	//hourly = json[classification][CAName]["salaries"]["hourly"];
-	initPeriods = payload[classification][CAName]["periods"];
+	initPeriods = payload[classification][caname]["periods"];
 	// Now add something for start and end dates
+	baseData["cpi"] = payload[classif][caname]["salaries"]["cpi"];
+	baseData["startFromDate"] = payload[classif][caname]["salaries"]["startFromDate"];
+	if (payload[classif][caname].hasOwnProperty("TAEnd")) {
+		knownEndDate = payload[classif][caname]["TAEnd"];
+		knownCAEnd = true;
+	}
+	
 
 } // End of getData
 
