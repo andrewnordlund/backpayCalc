@@ -24,12 +24,109 @@ footer {
 	font-size: 80%;
 }
 
+.yearSect {
+	padding: 0;
+	margin: 1em 0 2.5em;
+}
+.yearSect h4 {
+	margin-bottom: 0;
+	padding-bottom: 0;
+}
+
 .tables-responsive {
 	max-width: 95%;
 	overflow-x: scroll;
 	margin: 0;
-	padding: 2em 1%;
+	padding: 0.25em 1% .2em;
+  	-ms-overflow-style: none;  /* IE and Edge */
+	scrollbar-width: none;  /* Firefox */
 }
+ /* Hide scrollbar for Chrome, Safari and Opera */
+.tables-responsive::-webkit-scrollbar {
+	display: none;
+}
+
+.tables-responsive2 {
+	max-width: 95%;
+	overflow-x: scroll;
+	margin: 0;
+	padding: 0.25em 1% .2em;
+  	-ms-overflow-style: none;  /* IE and Edge */
+	scrollbar-width: none;  /* Firefox */
+}
+ /* Hide scrollbar for Chrome, Safari and Opera */
+.tables-responsive2::-webkit-scrollbar {
+	display: none;
+}
+
+
+::backdrop {
+  /*
+     background-image: linear-gradient(
+    45deg,
+    magenta,
+    rebeccapurple,
+    dodgerblue,
+    green
+  );
+  */
+	background-color: #606060;
+  opacity: 0.75;
+}
+
+/*   Open state of the dialog  */
+dialog[open] {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+/*   Closed state of the dialog   */
+dialog {
+  opacity: 0;
+  transform: scaleY(0);
+  transition:
+    opacity 0.7s ease-out,
+    transform 0.7s ease-out,
+    overlay 0.7s ease-out allow-discrete,
+    display 0.7s ease-out allow-discrete;
+  /* Equivalent to
+  transition: all 0.7s allow-discrete; */
+}
+
+/*   Before-open state  */
+/* Needs to be after the previous dialog[open] rule to take effect,
+    as the specificity is the same */
+@starting-style {
+  dialog[open] {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+}
+
+/* Transition the :backdrop when the dialog modal is promoted to the top layer */
+dialog::backdrop {
+  background-color: rgb(0 0 0 / 0%);
+  transition:
+    display 0.7s allow-discrete,
+    overlay 0.7s allow-discrete,
+    background-color 0.7s;
+  /* Equivalent to
+  transition: all 0.7s allow-discrete; */
+}
+
+dialog[open]::backdrop {
+  background-color: rgb(0 0 0 / 35%);
+}
+
+/* This starting-style rule cannot be nested inside the above selector
+because the nesting selector cannot represent pseudo-elements. */
+
+@starting-style {
+  dialog[open]::backdrop {
+    background-color: rgb(0 0 0 / 0%);
+  }
+}
+
 .fieldHolder {
 	margin: 1.25em .5em .5em;
 }
@@ -54,6 +151,15 @@ display: block;
 	color: #AA0000;
 	font-weight: bold;
 }
+.warning span, .warning p {
+	border: 2px solid #FF9900;
+	padding: 0.25em .2em;
+	margin: .5em 0;
+	/*display: block-inline;*/
+	color: #C05300;
+	font-weight: bold;
+}
+
 .invisibleStuff {
 	position: absolute;
 	height: 1px;
@@ -132,7 +238,7 @@ dl dd:after{
 }
 
 #payTablesSect details table {
-	margin-top: 2em;
+	margin-top: .75em;
 }
 #payTablesSect details table caption {
 	text-align: left;
