@@ -55,7 +55,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2024", "01", "12");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var lastModified = new Date("2024", "01", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lastModTime = null;
 var salaries = [];
 let weekly = [];
