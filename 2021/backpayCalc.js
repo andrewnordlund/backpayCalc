@@ -71,6 +71,7 @@ let payload = {};
 let showInflation = false;
 let showPrecise = false;
 let calcRounded = false;
+let calcInterest = true;
 let baseData = {"cpi" : null, "startFromDate" : null};
 	
 const wiy = 52.176;
@@ -2292,6 +2293,22 @@ function removeChildren (el) {
 		el.removeChild(el.firstChild);
 	}
 } // End of removeChildren
+
+
+function isPayDay(d) {
+	let rv = false;
+	try {
+		firstPayday = new Date(2005, 04, 04);
+		pdmod = 1000 * 60 * 60 * 24*14;
+
+		rv = ((d - firstPayday) % pdmod == 0 ? true : false);
+
+	}
+	catch (er) {
+		console.error("Error seeing if " + d + " is payday: " + er.message + ".");
+	}
+	return rv;
+}
 
 function getAnnual(wk) {
 	return wk*wiy;
