@@ -13,7 +13,7 @@
  */
 
 var dbug = false;
-var version = "3.3.0";
+var version = "3.3.1-a1";
 var lang = "en";
 var langFormat = "en-CA";
 var updateHash = true;
@@ -50,6 +50,7 @@ var periods = [];
 var initPeriods = [];
 var lumpSumPeriods = {};
 var overtimePeriods = {};
+var anniversary[null, null, null, null, null];
 var promotions = 0;
 var actings = 0;
 var lumpSums = 0;
