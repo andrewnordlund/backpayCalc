@@ -50,7 +50,7 @@ var periods = [];
 var initPeriods = [];
 var lumpSumPeriods = {};
 var overtimePeriods = {};
-var anniversary[null, null, null, null, null];
+var anniversary = {};
 var promotions = 0;
 var actings = 0;
 var lumpSums = 0;
@@ -71,6 +71,7 @@ var CAName = "2021-2025";
 let payload = {};
 let showInflation = false;
 let showPrecise = false;
+let showMinIncr = false;
 let calcRounded = false;
 let calcInterest = true;
 let baseData = {"cpi" : null, "startFromDate" : null};
@@ -380,6 +381,7 @@ function setURL () {
 	*/
 
 	if (dbug) saveValues.push("dbug=true");
+	if (showMinIncr) saveValues.push("showMinIncr=true");
 	if (showInflation) saveValues.push("showInflation=true");
 	if (showPrecise) saveValues.push("showPrecise=true");
 	if (calcRounded) saveValues.push("calcRounded=true");
@@ -489,6 +491,7 @@ function startProcess () {
 	saveValues = [];
 	lumpSumPeriods = {};
 	overtimePeriods = {};
+	anniversary = {};
 	if (resultsBody) {
 		removeChildren (resultsBody);
 	} else {
@@ -882,13 +885,16 @@ function getActings () {
 				actingToDate = new Date(toParts[1], (toParts[2]-1), toParts[3]);
 
 				// Is the Acting for more than 1 year?  If so, add Acting Anniversarys
+				// Note that this may not necessarily be so.  What if the acting turns into a promotion?
+				// Also, an anniversary at the substantive level will cause an increase.
+				// What if each "Anniversary" reason came with a level?
 				if (actingToDate >= +enteredActingFromDate + (1000*60*60*24)) {
 					if (dbug) console.log ("getActings::" + actingToDate.toISOString().substr(0,10) + " is at least 1 year past " + enteredActingFromDate.toISOString().substr(0,10) + ".  So, gotta add Acting Anniversaries.");
 					// From: the year after the acting start to the acting end.
 					for (let j = parseInt(fromParts[1])+1; j <= toParts[1]; j++) {
 						if (dbug) console.log ("getActings::j: " + j +".");
 						if ((j + "-" + fromParts[2] + "-" + fromParts[3] < actingToDate.toISOString().substr(0, 10)) && (j + "-" + fromParts[2] + "-" + fromParts[3] >= TABegin.toISOString().substr(0,10)) && (j + "-" + fromParts[2] + "-" + fromParts[3] <= EndDate.toISOString().substr(0,10))) {
-							addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1});
+							addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1, "level" : actingLvl});
 						}
 					}
 				} else {
@@ -911,7 +917,7 @@ function getActings () {
 
 				// Add a period to end the acting.
 				actingToDate.setDate(actingToDate.getDate() + parseInt(1));	// Add 1 because this will be the start date of post-acting
-				let to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1});
+				let to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1, "level" : actingLvl});
 
 				saveValues.push("afrom" + i + "=" + enteredActingFromDate.toISOString().substr(0, 10));
 				actingToDate.setDate(actingToDate.getDate() - parseInt(1));
@@ -1807,11 +1813,67 @@ function calculate() {
 						output += "Increasing step from " + step + " to ";
 						step = Math.min(parseInt(step) + 1, salaries[level].length-1);	// Should this be salaries, or newRates[theYear]["salary"]?
 						output += step + ".";
+						if (dbug) console.log ("Increasing step because actingStack.length == " + actingStack.length + ".");
 					}
 				} else {
 					output += "Increasing non-acting step from " + actingStack[0]["step"] + " to ";
 					actingStack[0]["step"] = Math.min(parseInt(actingStack[0]["step"]) +1, salaries[actingStack[0]["level"]].length-1);
 					output += actingStack[0]["step"] + ".";
+					// Now check if you should get a raise at your acting; and if so, reset the acting anniversaries
+					if (salaries[level][step] - salaries[actingStack[0]["level"]][actingStack[0]["step"]] < minIncs[level]) {
+						/* Okay, so now what.  Do the following:
+						 * 1. Look for the new rate at your acting level.
+						 *	1. a. If you're acting more than one up, do this test again.  this shouldn't ever happen though.
+						 * 2. Reset Acting Anniversary date
+						 *	2. a. Delete old ones.
+						 *	2. b. Add new ones
+						 */
+						let looking = true;
+						let minNewSal = newRates["current"]["salary"][level][step]["annual"] + minIncs[level];
+
+						for (let j = step; j < salaries[level].length && looking; j++) {
+							if (newRates["current"]["salary"][level][j]["annual"] >= minNewSal) {
+								looking = false;
+								step = j;
+							}
+						}
+						// Now remove acting anniversaries
+						for (let j = i; j < periods.length; j++) {
+							if (periods[j]["reason"] == "Acting Anniversary") {
+								if (dbug) console.log ("Found an Acting Anniversary.  Removing.  Periods is length " + periods.length + ".");
+								if (dbug) console.log ("Removing " + periods[j]["startDate"] + ", level: " + periods[j]["level"] +".");
+								periods.splice(j, 1);
+								if (dbug) console.log ("Periods is now " + periods.length + ".");
+							}
+						}
+						// Add new acting anniversaries
+						// To do so, you need the date....
+						// Well....first see if the acting end date is within a year...
+						looking = true;
+						for (let j =i; j < periods.length && looking; j++) {
+							if (periods[j]["reason"] == "Acting Finished") {
+								looking = false;
+								let thisDate = periods[i]["startDate"].match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+								let thisDt = new Date(thisDate[1], thisDate[2]-1, thisDate[3]);
+								let endDate = periods[j]["startDate"].match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+								let endDt = new Date(endDate[1], endDate[2]-1, endDate[3]);
+								
+								if (endDt >= +thisDt + (1000*60*60*24)) {
+									if (dbug) console.log ("updateActings::" + endDt.toISOString().substr(0,10) + " is at least 1 year past " + thisDt.toISOString().substr(0,10) + ".  So, gotta add Acting Anniversaries.");
+									// From: the year after the acting start to the acting end.
+									for (let k = parseInt(thisDate[1])+1; k <= endDate[1]; k++) {
+										if (dbug) console.log ("updateActings::k: " + k +".");
+										if (k + "-" + thisDate[2] + "-" + thisDate[3] < endDt.toISOString().substr(0, 10)) {
+											addPeriod({"startDate":k + "-" + thisDate[2] + "-" + thisDate[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1, "level" : level});
+										}
+									}
+								}
+
+							}
+						}
+					} else {
+						// Carry on
+					}
 				}
 				if (dbug) console.log (output);
 			} else if (periods[i]["reason"] == "Acting Anniversary") {
@@ -2465,6 +2527,10 @@ function genTables() {
 	let thisURL = new URL(document.location);
 	let params = thisURL.searchParams;
 
+	if (params.has("showMinIncr")) {
+		if (params.get("showMinIncr") == "true") showMinIncr= true;
+	}
+
 	if (params.has("showInflation")) {
 		if (params.get("showInflation") == "true") showInflation= true;
 	}
@@ -2527,7 +2593,7 @@ function genTables() {
 		for (let stp = 0; stp < newRates["current"]["salary"][i].length; stp++) {
 			let newTH = createHTMLElement("th", {"parentNode" : newTR, "textNode" : getStr("step") + "  " + (stp+1), "scope":"col"});
 		}
-
+		
 		let newTBody = createHTMLElement("tbody", {"parentNode" : newTable});
 		for (let t = 0; t<timeps.length; t++) {
 			let newTR = createHTMLElement("tr", {"parentNode" : newTBody});
@@ -2536,12 +2602,17 @@ function genTables() {
 				let newTD = createHTMLElement("td", {"parentNode" : newTR, "textNode" : getNum(newRates["current"]["salary"][i][stp][timeps[t]])});
 			}
 		}
-		if (showInflation) {
+		if (showInflation || showMinIncr) {
 			let infoSect = createHTMLElement("section", {"parentNode" : yearSect});
 			let infoH5 = createHTMLElement("h5", {"parentNode" : infoSect, "textNode" : getStr("info")});
 			let infoDL = createHTMLElement("dl", {"parentNode" : infoSect});
+			if (showMinIncr) {
+				let minIncrDT = createHTMLElement("dt", {"parentNode" : infoDL, "textNode" : getStr("minIncrement")});
+				let minIncrDD = createHTMLElement("dd", {"parentNode" : infoDL, "textNode" : getNum(minIncs[i])});
+
+			}
 			// Add dts and dds for: cpi for this table; inflation since the last table, total inflation since the start, and this raise compared to start and this raise compared to last table
-			if (baseData.hasOwnProperty("cpi")) {
+			if (showInflation && baseData.hasOwnProperty("cpi")) {
 				let cpiDT = createHTMLElement("dt", {"parentNode":infoDL, "textNode" : getStr("cpi")});
 				let cpiDD = createHTMLElement("dd", {"parentNode":infoDL, "textNode" : (baseData["cpi"])});
 			}
