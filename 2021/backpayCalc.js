@@ -925,6 +925,7 @@ function getActings () {
 				}
 				// Now add the period for start acting
 				let from = addPeriod({"startDate":effectiveActingStart.toISOString().substr(0,10), "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
+				//dbug = true;
 
 				if (dbug) console.log ("actingToDate: " + actingToDate.toISOString());
 				actingToDate.setDate(actingToDate.getDate() + parseInt(1));	// Add 1 because this will be the start date of post-acting
@@ -959,6 +960,7 @@ function getActings () {
 									console.log ("And it's on or before " + actingToDate.toISOString().substr(0,10) + ".");
 									console.log ("Setting actingToPromotion to TRUE.");
 								}
+								
 								actingToPromotion = true;
 								// Promotion starts before this acting starts.
 								//actingToDate.setDate(pDate.getDate() -10);
@@ -973,12 +975,17 @@ function getActings () {
 								// Just put these in from the date of the Acting.  If there's a bump because of the substantive,
 								// It'll be taken care of in the calculate part
 								// add anniversaries
-								var k = parseInt(effectiveActingStart.getFullYear()+1);
+								let k = parseInt(effectiveActingStart.getFullYear()+1);
 								if (dbug) console.log ("getActings::Starting with anniversaries k: " + k + ", and make sure it's <= " + EndDate.getFullYear() + ".");
-								for (k; k <= EndDate.getFullYear(); k++) {
-									let anDtStr = k + effectiveActingStart.toISOString().substr(4,6);
-									if (dbug) console.log ("getActings::Adding anniversary date " + anDtStr + ".");
-									addPeriod ({"startDate": anDtStr, "increase":0, "reason":"Anniversary Increase", "multiplier":1, "level" : (actingLvl-1)});
+								let c = 0;
+								
+								for (let j = k; j <= EndDate.getFullYear() && c <10; j++) {
+									let anDtStr = j + effectiveActingStart.toISOString().substr(4,6);
+									if (dbug) console.log (j + ": getActings::Adding anniversary date " + anDtStr + ".");
+									//dbug = false;
+									if (addPeriod ({"startDate": anDtStr, "increase":0, "reason":"Anniversary Increase", "multiplier":1, "level" : (actingLvl-1)})) pr++;
+									//dbug = true;
+									c++;
 								}
 							} else {
 								if (dbug) {
@@ -995,7 +1002,6 @@ function getActings () {
 					console.error (ex.message);
 				}
 
-
 				// Add a period to end the acting.
 				if (dbug) console.log ("setting Acting finished date to " + actingToDate.toISOString().substr(0,10) + ".");
 				let to = null;
@@ -1008,6 +1014,7 @@ function getActings () {
 				saveValues.push("ato" + i + "=" + actingToDate.toISOString().substr(0, 10));
 				saveValues.push("alvl" + i + "=" + actingLvl);
 
+				//dbug = false;
 				
 
 				/*
@@ -1778,7 +1785,7 @@ function addPeriod (p) {
 	let rv = null;
 	if (dbug) console.log ("addPeriod::Gonna add period beginnging at " + p["startDate"] + " to periods (" + periods.length + ").");
 	if (p["reason"] == "end") periods.push(p);
-	if (p.startDate < periods[0]["startDate"]) return;
+	if (p.startDate < periods[0]["startDate"] || p.startDate > EndDate.toISOString().substr(0,10) ) return rv;
 	let looking = true;
 	if (p["startDate"] == periods[0]["startDate"]) {
 		if (p["reason"] == "Anniversary Increase") {
