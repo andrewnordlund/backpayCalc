@@ -56,7 +56,7 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2024", "01", "22");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var lastModified = new Date("2024", "03", "01");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lastModTime = null;
 var salaries = [];
 let weekly = [];
@@ -874,7 +874,7 @@ function getActings () {
 		let effectiveActingStart = dates[0].value;	// Entered is what's entered. If that's before the TABegin, then the effective date is the TABegin.
 		let actingToDate = dates[1].value;
 		let enteredActingToDate = dates[1].value;
-		if (dbug || true) console.log("getActings::Checking acting at level " + actingLvl + " from " + enteredActingFromDate + " to " + actingToDate + ".");
+		if (dbug) console.log("getActings::Checking acting at level " + actingLvl + " from " + enteredActingFromDate + " to " + actingToDate + ".");
 		// Check if the acting level actually exists, and if the dates are in the right format.
 		if (actingLvl > 0 && actingLvl <= levels && enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("getActings::Passed the initial tests.  the Acting level exists and the dates are in the correct format.");
@@ -887,7 +887,9 @@ function getActings () {
 
 				let toParts = actingToDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				actingToDate = new Date(toParts[1], (toParts[2]-1), toParts[3]);
+				//actingToDate = new Date(toParts[0]);
 
+				if (dbug) console.log ("actingToDate: " + actingToDate.toISOString());
 				
 				// Is the Acting for more than 1 year?  If so, add Acting Anniversarys
 				// Note that this may not necessarily be so.  What if the acting turns into a promotion?
@@ -917,12 +919,16 @@ function getActings () {
 					effectiveActingStart = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 
 				}
-				console.log ("At this point, actingLvl is " + actingLvl + ".");
-				if (dbug) console.log ("getActings::Gonna add the period for the effectiveActingStart: " + effectiveActingStart.toISOString().substr(0,10) + ".");
+				if (dbug) {
+					console.log ("At this point, actingLvl is " + actingLvl + ".");
+					console.log ("getActings::Gonna add the period for the effectiveActingStart: " + effectiveActingStart.toISOString().substr(0,10) + ".");
+				}
 				// Now add the period for start acting
 				let from = addPeriod({"startDate":effectiveActingStart.toISOString().substr(0,10), "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
 
+				if (dbug) console.log ("actingToDate: " + actingToDate.toISOString());
 				actingToDate.setDate(actingToDate.getDate() + parseInt(1));	// Add 1 because this will be the start date of post-acting
+				if (dbug) console.log ("actingToDate: " + actingToDate.toISOString());
 
 				// Okay, we need to figure out how actings work with promotions.  I suppose we could cycle throuh all periods looking for promotions to this level.
 				// This acting should start before that promotion starts.
@@ -930,19 +936,32 @@ function getActings () {
 				// But if this acting ends after the promotion happens, or the business day before the promotion, then, fella, ya got trouble!  Right here in River City!
 
 				let actingToPromotion = false;
+				try {
 				for (let pr = 0; pr < periods.length; pr++) {
 					if (periods[pr]["reason"] == "promotion") {
-						console.log ("Found a promotion " + pr + " with level " + periods[pr]["level"] + " compared to this level: " + (actingLvl-1) + ".");
+						if (dbug) console.log ("Found a promotion " + pr + " with level " + periods[pr]["level"] + " compared to this level: " + (actingLvl-1) + ".");
 						// Check to make sure the levels are the same.
 						if (periods[pr]["level"] == (actingLvl-1)) {
-							console.log (`And it's at level ${actingLvl}.`);
+							if (dbug) console.log (`And it's at level ${actingLvl}.`);
 							// Okay, it's the same level.  This promotion should end the acting if they overlap.
-							let pDate = new Date(periods[pr]["startDate"]);
-							if (pDate < actingToDate) {
-								console.log ("And it's before " + actingToDate.toISOString().substr(0,10) + ".");
+							
+							let pDates = periods[pr]["startDate"].match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+							
+							let pDate = new Date(pDates[1], (pDates[2]-1), pDates[3]);
+							let atpDate = new Date(actingToDate);
+							//atpDate.setDate(pDate.getDate() - 1);
+							if (dbug) {
+								console.log ("Checking pDate " + pDate.toISOString()+ " vs atpDate " + atpDate.toISOString() + ".");
+								console.log ("And pDate is on a " + pDate.getDay() + ".");
+							}
+							if (pDate <= atpDate || (pDate.valueOf() == (atpDate.valueOf() + (2000*60*60*24)) && pDate.getDay() == "1")) {
+								if (dbug) {
+									console.log ("And it's on or before " + actingToDate.toISOString().substr(0,10) + ".");
+									console.log ("Setting actingToPromotion to TRUE.");
+								}
 								actingToPromotion = true;
 								// Promotion starts before this acting starts.
-								actingToDate.setDate(pDate.getDate() -10);
+								//actingToDate.setDate(pDate.getDate() -10);
 								// But make sure you have the right anniversaries
 								// Remove promotion anniversaries
 								for (let j = pr; j < periods.length; j++) {
@@ -955,20 +974,30 @@ function getActings () {
 								// It'll be taken care of in the calculate part
 								// add anniversaries
 								var k = parseInt(effectiveActingStart.getFullYear()+1);
-								if (dbug || true) console.log ("getActings::Starting with anniversaries k: " + k + ", and make sure it's <= " + EndDate.getFullYear() + ".");
+								if (dbug) console.log ("getActings::Starting with anniversaries k: " + k + ", and make sure it's <= " + EndDate.getFullYear() + ".");
 								for (k; k <= EndDate.getFullYear(); k++) {
 									let anDtStr = k + effectiveActingStart.toISOString().substr(4,6);
-									if (dbug || true) console.log ("getActings::Adding anniversary date " + anDtStr + ".");
+									if (dbug) console.log ("getActings::Adding anniversary date " + anDtStr + ".");
 									addPeriod ({"startDate": anDtStr, "increase":0, "reason":"Anniversary Increase", "multiplier":1, "level" : (actingLvl-1)});
-				}
+								}
+							} else {
+								if (dbug) {
+									console.log ("atpDate: " + atpDate.toISOString() + ".");
+									console.log ("What's atpDate + 2000*60*60*24: " + parseInt(atpDate.valueOf() + (1000*60*60*24*2)) + ".");
+									console.log ("pDate: " + pDate.toISOString() + ".");
+									console.log ("What's pDate.valueOf() " + pDate.valueOf() + ".");
+								}
 							}
 						}
 					}
 				}
+				} catch (ex) {
+					console.error (ex.message);
+				}
 
 
 				// Add a period to end the acting.
-				console.log ("setting Acting finished date to " + actingToDate.toISOString().substr(0,10) + ".");
+				if (dbug) console.log ("setting Acting finished date to " + actingToDate.toISOString().substr(0,10) + ".");
 				let to = null;
 				if (!actingToPromotion) {
 					to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1, "level" : (actingLvl-1)});
@@ -1866,7 +1895,7 @@ function calculate() {
 						output += "Not increasing step because this is the first anniversary, and your anniversary is on this date.";
 					} else {
 						output += "Increasing step from " + step + " to ";
-						step = Math.min(parseInt(step) + 1, salaries[level].length-1);	// Should this be salaries, or newRates[theYear]["salary"]?
+						step = Math.min(parseInt(step) + 1, salaries[level].length-1);	// Should this be salaries, or newRates[theYear]["salary"]? doesn't matter
 						output += step + ".";
 						if (dbug) console.log ("Increasing step because actingStack.length == " + actingStack.length + ".");
 					}
@@ -1892,15 +1921,21 @@ function calculate() {
 								step = j;
 							}
 						}
+						if (dbug) console.log ("Removing acting anniversaries...");
 						// Now remove acting anniversaries
-						for (let j = i; j < periods.length; j++) {
-							if (periods[j]["reason"] == "Acting Anniversary") {
+						looking = true;
+						dbug = true;
+						for (let j = i; j < periods.length && looking; j++) {
+							if (periods[j]["reason"] == "Acting Finished") {
+								looking = false;
+							} else if (periods[j]["reason"] == "Acting Anniversary") {
 								if (dbug) console.log ("Found an Acting Anniversary.  Removing.  Periods is length " + periods.length + ".");
 								if (dbug) console.log ("Removing " + periods[j]["startDate"] + ", level: " + periods[j]["level"] +".");
 								periods.splice(j, 1);
 								if (dbug) console.log ("Periods is now " + periods.length + ".");
 							}
 						}
+						dbug = false;
 						// Add new acting anniversaries
 						// To do so, you need the date....
 						// Well....first see if the acting end date is within a year...
@@ -1926,7 +1961,28 @@ function calculate() {
 
 							}
 						}
+						if (looking) {
+							if (dbug) console.log ("If you got here, it's cuz the acting turned into a promotion.  Which means you probably have anniversaries that aren't correct.");
+							let thisDate = periods[i]["startDate"].match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
+							let thisDt = new Date(thisDate[1], thisDate[2]-1, thisDate[3]);
+							
+							// Remove anniversaries
+							for (let j = i; j < periods.length; j++) {
+								if (periods[j]["reason"] == "Anniversary Increase" && periods[j]["level"] == level) {
+									periods.splice(j, 1);
+								}
+							}
+
+							for (let k = parseInt(thisDate[1])+1; k <= EndDate.getFullYear(); k++) {
+								if (dbug) console.log ("updateActings::k: " + k +".");
+								if (k + "-" + thisDate[2] + "-" + thisDate[3] < EndDate.toISOString().substr(0, 10)) {
+									addPeriod({"startDate":k + "-" + thisDate[2] + "-" + thisDate[3], "increase":0, "reason":"Anniversary Increase", "multiplier":1, "level" : level});
+								}
+							}
+
+						}
 					} else {
+						if (dbug) console.log ("Carrying on because " + (salaries[level][step] - salaries[actingStack[0]["level"]][actingStack[0]["step"]]) + " < " + minIncs[level] + ".");
 						// Carry on
 					}
 				}
