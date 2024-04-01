@@ -1924,7 +1924,6 @@ function calculate() {
 						if (dbug) console.log ("Removing acting anniversaries...");
 						// Now remove acting anniversaries
 						looking = true;
-						dbug = true;
 						for (let j = i; j < periods.length && looking; j++) {
 							if (periods[j]["reason"] == "Acting Finished") {
 								looking = false;
@@ -1935,7 +1934,6 @@ function calculate() {
 								if (dbug) console.log ("Periods is now " + periods.length + ".");
 							}
 						}
-						dbug = false;
 						// Add new acting anniversaries
 						// To do so, you need the date....
 						// Well....first see if the acting end date is within a year...
