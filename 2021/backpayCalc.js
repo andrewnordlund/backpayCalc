@@ -801,6 +801,7 @@ function getSalary () {
 
 function addPromotions () {
 	// Add promotions
+	// Actings come later
 	var promotions = document.querySelectorAll(".promotions");
 	var numOfPromotions = promotions.length;
 	if (dbug) console.log("addPromotions::Checking for " + numOfPromotions + " promotions.");
@@ -817,6 +818,7 @@ function addPromotions () {
 			//if (promoDate[0] > TABegin.toISOString().substr(0,10) && promoDate[0] < EndDate.toISOString().substr(0, 10) && promoLevel > 0 && promoLevel <=levels) {
 				if (dbug) console.log ("addPromotions::Adding a promotion on " + promoDate[0] + " at level " + promoLevel +".");
 				// add the promo period
+				// Note that the level that's saved starts from 0.  ie: selected-1.
 				var j = addPeriod ({"startDate":promoDate[0],"increase":0, "reason":"promotion", "multiplier":1, "level":(promoLevel-1)});
 				// remove future anniversaries
 				for (var k = j; k < periods.length; k++) {
@@ -829,7 +831,7 @@ function addPromotions () {
 				if (dbug) console.log ("addPromotions::Starting with promo anniversaries k: " + k + ", and make sure it's <= " + EndDate.getFullYear() + ".");
 				for (k; k <= EndDate.getFullYear(); k++) {
 					if (dbug) console.log ("addPromotions::Adding anniversary date " + k + "-" + promoDate[2] + "-" + promoDate[3] + ".");
-					addPeriod ({"startDate": k + "-" + promoDate[2] + "-" + promoDate[3], "increase":0, "reason":"Anniversary Increase", "multiplier":1});
+					addPeriod ({"startDate": k + "-" + promoDate[2] + "-" + promoDate[3], "increase":0, "reason":"Anniversary Increase", "multiplier":1, "level" : (promoLevel-1)});
 				}
 				saveValues.push("pdate" + i + "=" + promoDate[0]);
 				saveValues.push("plvl" + i + "=" + promoLevel);
@@ -860,6 +862,7 @@ function addPromotions () {
 function getActings () {
 	//dbug = true;
 	// Add actings
+	// Promotions were already done.
 	let actingStints = document.querySelectorAll(".actingStints");
 	if (dbug) console.log ("getActings::Dealing with " + actingStints.length + " acting stints.");
 
@@ -870,7 +873,8 @@ function getActings () {
 		let enteredActingFromDate = dates[0].value;	// What's the difference between "entered" and "effective"?
 		let effectiveActingStart = dates[0].value;	// Entered is what's entered. If that's before the TABegin, then the effective date is the TABegin.
 		let actingToDate = dates[1].value;
-		if (dbug) console.log("getActings::Checking acting at  level " + actingLvl + " from " + enteredActingFromDate + " to " + actingToDate + ".");
+		let enteredActingToDate = dates[1].value;
+		if (dbug || true) console.log("getActings::Checking acting at level " + actingLvl + " from " + enteredActingFromDate + " to " + actingToDate + ".");
 		// Check if the acting level actually exists, and if the dates are in the right format.
 		if (actingLvl > 0 && actingLvl <= levels && enteredActingFromDate.match(/\d\d\d\d-\d\d-\d\d/) && actingToDate.match(/\d\d\d\d-\d\d-\d\d/)) {
 			if (dbug) console.log ("getActings::Passed the initial tests.  the Acting level exists and the dates are in the correct format.");
@@ -884,6 +888,7 @@ function getActings () {
 				let toParts = actingToDate.match(/(\d\d\d\d)-(\d\d)-(\d\d)/);
 				actingToDate = new Date(toParts[1], (toParts[2]-1), toParts[3]);
 
+				
 				// Is the Acting for more than 1 year?  If so, add Acting Anniversarys
 				// Note that this may not necessarily be so.  What if the acting turns into a promotion?
 				// Also, an anniversary at the substantive level will cause an increase.
@@ -894,7 +899,7 @@ function getActings () {
 					for (let j = parseInt(fromParts[1])+1; j <= toParts[1]; j++) {
 						if (dbug) console.log ("getActings::j: " + j +".");
 						if ((j + "-" + fromParts[2] + "-" + fromParts[3] < actingToDate.toISOString().substr(0, 10)) && (j + "-" + fromParts[2] + "-" + fromParts[3] >= TABegin.toISOString().substr(0,10)) && (j + "-" + fromParts[2] + "-" + fromParts[3] <= EndDate.toISOString().substr(0,10))) {
-							addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1, "level" : actingLvl});
+							addPeriod({"startDate":j + "-" + fromParts[2] + "-" + fromParts[3], "increase":0, "reason":"Acting Anniversary", "multiplier":1, "level" : (actingLvl-1)});
 						}
 					}
 				} else {
@@ -902,6 +907,8 @@ function getActings () {
 				}
 
 				// If the from-date starts before the TA begin, then re-set the from date to the start of the TA.
+				// This isn't right.  An acting that started before the TABegin may have an anniversary at the substantive level
+				// that bumps up the step of the Acting
 				if (enteredActingFromDate < TABegin && actingToDate >= TABegin) {
 					// Problem is here, is that you need to account for an Acting Anniversary.  Actually, those were just added above.
 					effectiveActingStart = new Date(TABegin.getFullYear(), TABegin.getMonth(), TABegin.getDate());//.toISOString().substr(0,10);
@@ -910,14 +917,62 @@ function getActings () {
 					effectiveActingStart = new Date(fromParts[1], (fromParts[2]-1), fromParts[3]);
 
 				}
-
+				console.log ("At this point, actingLvl is " + actingLvl + ".");
 				if (dbug) console.log ("getActings::Gonna add the period for the effectiveActingStart: " + effectiveActingStart.toISOString().substr(0,10) + ".");
 				// Now add the period for start acting
 				let from = addPeriod({"startDate":effectiveActingStart.toISOString().substr(0,10), "increase":0, "reason":"Acting Start", "multiplier":1, "level":(actingLvl-1)});
 
-				// Add a period to end the acting.
 				actingToDate.setDate(actingToDate.getDate() + parseInt(1));	// Add 1 because this will be the start date of post-acting
-				let to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1, "level" : actingLvl});
+
+				// Okay, we need to figure out how actings work with promotions.  I suppose we could cycle throuh all periods looking for promotions to this level.
+				// This acting should start before that promotion starts.
+				// If this acting ends well before the promotion happens, then just carry on as before.
+				// But if this acting ends after the promotion happens, or the business day before the promotion, then, fella, ya got trouble!  Right here in River City!
+
+				let actingToPromotion = false;
+				for (let pr = 0; pr < periods.length; pr++) {
+					if (periods[pr]["reason"] == "promotion") {
+						console.log ("Found a promotion " + pr + " with level " + periods[pr]["level"] + " compared to this level: " + (actingLvl-1) + ".");
+						// Check to make sure the levels are the same.
+						if (periods[pr]["level"] == (actingLvl-1)) {
+							console.log (`And it's at level ${actingLvl}.`);
+							// Okay, it's the same level.  This promotion should end the acting if they overlap.
+							let pDate = new Date(periods[pr]["startDate"]);
+							if (pDate < actingToDate) {
+								console.log ("And it's before " + actingToDate.toISOString().substr(0,10) + ".");
+								actingToPromotion = true;
+								// Promotion starts before this acting starts.
+								actingToDate.setDate(pDate.getDate() -10);
+								// But make sure you have the right anniversaries
+								// Remove promotion anniversaries
+								for (let j = pr; j < periods.length; j++) {
+									if (periods[j]["reason"] == "Anniversary Increase" && periods[j]["level"] == (actingLvl-1)) {
+										periods.splice(j, 1);
+									}
+								}
+								// Add anniversaries starting from the starting date
+								// Just put these in from the date of the Acting.  If there's a bump because of the substantive,
+								// It'll be taken care of in the calculate part
+								// add anniversaries
+								var k = parseInt(effectiveActingStart.getFullYear()+1);
+								if (dbug || true) console.log ("getActings::Starting with anniversaries k: " + k + ", and make sure it's <= " + EndDate.getFullYear() + ".");
+								for (k; k <= EndDate.getFullYear(); k++) {
+									let anDtStr = k + effectiveActingStart.toISOString().substr(4,6);
+									if (dbug || true) console.log ("getActings::Adding anniversary date " + anDtStr + ".");
+									addPeriod ({"startDate": anDtStr, "increase":0, "reason":"Anniversary Increase", "multiplier":1, "level" : (actingLvl-1)});
+				}
+							}
+						}
+					}
+				}
+
+
+				// Add a period to end the acting.
+				console.log ("setting Acting finished date to " + actingToDate.toISOString().substr(0,10) + ".");
+				let to = null;
+				if (!actingToPromotion) {
+					to = addPeriod({"startDate":actingToDate.toISOString().substr(0, 10), "increase":0, "reason":"Acting Finished", "multiplier":1, "level" : (actingLvl-1)});
+				}
 
 				saveValues.push("afrom" + i + "=" + enteredActingFromDate.toISOString().substr(0, 10));
 				actingToDate.setDate(actingToDate.getDate() - parseInt(1));
@@ -1884,6 +1939,11 @@ function calculate() {
 				if (dbug) console.log (output);
 				//dbug = false;
 			} else if (periods[i]["reason"] == "promotion") {
+				if (actingStack.length > 0) {
+					var orig = actingStack.pop();
+					step = orig["step"];
+					level = orig["level"];
+				}
 				//var currentSal = salaries[level][step];
 				let currentSal = newRates["current"]["salary"][level][step]["annual"];
 				//console.log ("Handling promotion from level " + level + " and step " + step + ".");
