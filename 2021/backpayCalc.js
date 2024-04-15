@@ -13,7 +13,8 @@
  */
 
 var dbug = false;
-var version = "3.3.1-a1";
+var version = "3.3.1";
+var lastModified = new Date("2024", "03", "15");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lang = "en";
 var langFormat = "en-CA";
 var updateHash = true;
@@ -56,7 +57,6 @@ var actings = 0;
 var lumpSums = 0;
 var overtimes = 0;
 var lwops = 0;
-var lastModified = new Date("2024", "03", "01");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lastModTime = null;
 var salaries = [];
 let weekly = [];
