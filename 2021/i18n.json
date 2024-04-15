@@ -283,5 +283,8 @@
 	},
 	"knownEndDateWarning" : {"en" : "Warning: you may want to update this to {{knownEndDate}}",
 		"fr" : "Avertissement : Vous souhaiterez peut-être mettre à jour ceci pour {{knownEndDate}}"
+	},
+	"minIncrement" : {"en" : "Minimum Increment",
+		"fr" : "Incrément minimum"
 	}
 }
