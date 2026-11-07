@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+
+<html lang="fr" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+		<!-- <meta content="width=device-width,initial-scale=1" name="viewport"> -->
+		<title>Calculateur d’ajustement salarial rétroactif pour les conventions collectives du SCT</title>
+		<meta name="dc.title" content="Calculateur d’ajustement salarial rétroactif">
+		<meta name="dcterms.title" content="Calculateur d’ajustement salarial rétroactif">
+		
+		<!-- Bootstrap 5.3.2 Stylesheet -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+		<link rel="Stylesheet" type="text/css" href="../backpayCalc.css" >
+	</head>
+	<body class="container">
+		<ul id="skipLinks">
+			<li><a href="#mainForm">Passe au contenu prinicpal</a></li>
+			<li><a href="#resultsDiv">Passe au Résultats</a></li>
+		</ul>
+		<header>
+			<div id="LangSwitcher">
+				<h2 class="invisibleStuff">Sélection de la langue</h2>
+				<a id="langSwitchA" href="backpayCalc.html" lang="en">English</a>
+			</div>
+
+			<h1>Calculateur d’ajustement salarial rétroactif pour les conventions collectives du SCT</h1>
+		</header>
+		<main>
+		<details>
+		<summary><h2 class="summary">Comment fonctionne ce calculateur</h2></summary>
+		<p>Après avoir saisi toutes vos détails, ce calculateur décompose en <dfn>périodes</dfn> composées de plages de dates avec le même taux de rémunération annuel, horaire et/ou journalier.</p>
+		<p><p>Par exemple, disons que vous êtes devenu TI-02 (échelon 1) le 1er août 2019. Cet accord de principe entrerait en vigueur le <time datetime="2021-12-22">22 décembre 2021</time>. Aucun ajustement salarial ne sera calculé avant la date de début de l’entente de principe. Ainsi, du <time datetime="2021-12-22">22 décembre 2021</time> au <time datetime="2022-07-31">31 juillet 2022</time>, votre taux de rémunération annuel sera 79&nbsp;937&nbsp;$. C'est la première période. Ensuite, le <time datetime="2022-08-01">1er août 2022</time>, vous fêtez votre troisième anniversaire en tant que TI-02 et vous passez à l'échelon 4. À partir du <time datetime="2022-08-01">1er août 2022</time> au <time datetime="2022-12-21">21 décembre 2022</time>, vous bénéficierez d'un taux de rémunération annuel de 82&nbsp;340&nbsp;$. C'est la deuxième période.</p>
+		<p>Si vous commencez une période d'intérimaire, cela démarre une nouvelle période qui s'étend jusqu'à ce que votre salaire change à nouveau, soit par une augmentation dans l'accord de principe, soit par la fin de votre période d'intérimaire, soit par une augmentation d'anniversaire.</p>
+		<p>Tout ce qui entraîne une modification de votre taux de rémunération fait démarrer une nouvelle période. Et la période dure aussi longtemps que vous êtes à ce taux de rémunération.</p>
+		<p>Lorsque vous cliquez sur « Calculer », le calculateur prend en compte votre taux de rémunération annuel pour déterminer l'échelon auquel vous vous trouvez et la date de votre anniversaire (si vous n'êtes pas encore à l'échelon le plus élevé). Il prend toutes vos périodes d'intérimaire et de congés non payé et crée une succession de périodes ayant chacune son propre taux de rémunération. Ensuite, pour chacune de ces périodes, il calcule ce que vous avez gagné (sur la base des taux les plus élevés de la dernière convention collective) et ce que vous auriez gagné si l’entente de principe actuel avait été signé à la date d'entrée en vigueur de cet accord. Le tableau des résultats, qui apparaît sous le bouton Calculer après avoir cliqué dessus, affiche les montants ainsi que la différence, votre niveau, votre échelon, votre taux de rémunération et le nombre utilisé pour calculer ce taux de rémunération.</p>
+		<p>Pour chacune de ces périodes, le calculateur compte les jours de la semaine de la période et multiplie cela par le taux de rémunération journalier à cet échelon. <strong>Ce calculateur suppose que vous travaillez à temps plein selon un horaire régulier. Cela ne fonctionnera pas pour ceux qui travaillent à temps partiel ou qui travaillent selon des horaires irréguliers.</strong></p>
+		<p>Au cours de chaque période, l'argent supplémentaire gagné grâce aux heures supplémentaires, à la disponibilité ou aux vacances payés sera payé en fonction de votre taux de rémunération à ce moment-là.<p>
+		<p>En utilisant l'exemple ci-dessus, si vous effectuez 4 heures supplémentaires à taux et demi le <time datetime="2022-05-15">15 mai 2022</time>, cela fait partie de la premier période. En termes de calcul de votre ajustement salarial rétroactif, la date exacte à laquelle vous avez effectué ces heures supplémentaires n'a pas d'importance. Tout ce qui compte, c'est votre taux de rémunération pendant cette période. C'est pourquoi les dates dans le tableau des résultats ne sont pas les mêmes que celles que vous avez saisies dans les champs de date.</p>
+		<p>Cela signifie également que si vous effectuez une heure supplémentaire une fois par semaine pendant 4 semaines au cours d'une période donnée, vous n'avez pas besoin d'ajouter 4 montants d'heures supplémentaires distincts. Choisissez plutôt une seule date dans cette période et saisissez 4 heures.</p>
+		<h3>Ce que cette calculatrice ne fait pas</h3>
+		<dl><dt>Congé parental</dt><dd>Ce calculateur ne gère pas le congé parental. Je ne sais pas comment cela fonctionne. Si vous savez comment cela fonctionne et souhaitez l'ajouter, <a href="https://github.com/andrewnordlund/backpayCalc/">soumettez un problème sur le site GitHub</a> avec un lien ou une explication de son fonctionnement. Ou créez un "fork" du répertoire, ajoutez-le et soumettez une demande "pull request".</dd>
+		<dt>Conventions collectives autres que les groupes informatiques de l'IPFPC</dt><dd>Éventuellement, j'aimerais intégrer cela. Donc, si vous êtes un CS avec l'ARC, cela n'aura pas vos chiffres. Si vous êtes un AS, cela ne vous sera d'aucune utilité.</dd>
+		<dt>Travail à temps partiel</dt><dd>Si vous travaillez seulement 3 jours par semaine ou 5 heures par jour, cela ne vous aidera pas. Peut-être un jour.</dd>
+		</dl>
+		</details>
+		<details>
+			<summary><h2 class="summary">Quoi de neuf</h2></summary>
+			<!--
+			<h3><time datetime="2024-02-14">2024-02-14</time></h3>
+			<ul>
+				<li>Ajout des taux d'inflation ainsi que les tableaux avec taux de rémunération.</li>
+			</ul>
+			-->
+			<h3><time datetime="2024-01-02">2024-01-02</time></h3>
+			<ul>
+				<li>Ajout de la validation des formulaires pour une plus grande accessibilité.</li>
+			</ul>
+			<h3><time datetime="2023-12-12">2023-12-12</time></h3>
+			<ul>
+				<li>Ajout des tableaux de taux de rémunération pour chaque classification sous le tableau des résultats.</li>
+				<li>Taux de rémunération mis à jour pour les IT-05 pour tenir compte du 1 % supplémentaire dans l'entente 2021-2025.</li>
+			</ul>
+			<h3><time datetime="2023-10-28">2023-10-28</time></h3>
+			<ul>
+				<li><strong>Accord de principe 2021-2025</strong> : J'ai ajouté les taux publiés dans notre accord de principe : 3,00 %, 4,75 % et 3,50 % pour 2021, 2022 et 2023 respectivement. Je n'ai pas ajouté les chiffres de 2024 car je pense que cet accord de principe sera soit rejetée, soit mise en œuvre d'ici là.</li>
+			</ul>
+			<h3><time datetime="2023-10-26">2023-10-26</time></h3>
+			<ul>
+				<li><strong>Accord de principe préliminaire 2021-2025</strong> : Nous avons un nouveau accord de principe. Je n'ai pas encore de détails, j'utilise donc une augmentation annuelle de 3,22 %, qui s'élève sur 4 ans à 1,35 %, et je suppose que l'accord de principe sera signé le 17 mars 2024, donc les ajustements salariales cesseront d'être calculer ensuite. Je mettrai à jour lorsque nous aurons plus de détails.<p>Alors, entrez vos détails maintenant, cliquez sur « Calculer », puis ajoutez la page à vos favoris. Revenez à ce favori lorsque plus de détails sont ajoutés et un tableau plus précis sera généré.</li>
+			</ul>
+			<h3><time datetime="2023-09-17">2023-09-17</time></h3>
+			<ul>
+				<li><strong>Quoi de neuf</strong> : Il existe désormais une liste de nouvelles fonctionnalités en haut de la page.</li>
+				<li><strong>Résultats pouvant être ajoutés à vos favoris</strong> : Lorsque vous cliquez sur le bouton « Calculer », l'URL dans la barre d'adresse est mise à jour avec les informations que vous avez saisies. Cela vous permet d'ajouter à vos favoris ou de partager les résultats.</li>
+			</ul>
+		</details>
+		<form id="mainForm" tabindex="-1">
+			<h2>Vos informations</h2>
+			<p><strong>Remarque :</strong> Toutes les dates doivent être dans le format <span id="dateFormat">AAAA-MM-JJ</span>.</p>
+			<div class="fieldHolder">
+				<label class="form-label" for="levelSelect">Sélectionnez votre niveau le 22 décembre 2021 (de votre poste d'attache)</label>
+				<select class="form-select" id="levelSelect">
+					<option value="0">Sélectionnez votre niveau</option>
+					<option value="1">TI-01</option>
+					<option value="2">TI-02</option>
+					<option value="3">TI-03</option>
+					<option value="4">TI-04</option>
+					<option value="5">TI-05</option>
+				</select>
+			</div>
+			<div class="fieldHolder">
+				<label class="form-label" for="startDateTxt">Quand avez-vous commencé à ce niveau ?</label> 
+				<p id="startDateDesc">Par exemple, si vous avez commencé en tant qu'IT-02 le 15 mars 2015, saisissez <time>2015-03-15</time>.</p>
+				<input class="form-control" type="date" id="startDateTxt" aria-describedby="dateFormat startDateDesc" value="">
+			</div>
+			<div class="fieldHolder">
+				<label  class="form-label"for="stepSelect">Sélectionnez votre salaire le <time datetime="2021-12-22" id="calcStartDate">22 décembre 2021</time> (de votre poste d'attache)</label>
+				<select class="form-select" id="stepSelect">
+				</select>
+			</div>
+			<div class="fieldHolder">
+				<label class="form-label" for="endDateTxt">Quel est le dernier jour où ce calcul devrait cesser ?</label> 
+				<input type="date" id="endDateTxt" aria-describedby="endDateFormat dateFormat" value="2024-03-17">
+				<span id="endDateFormat" class="helper">(soit la date à laquelle vous avez cessé d’être TI ou la date de mise en œuvre du contrat)</span>
+			</div>
+			<fieldset class="border border-black p-2 m-2" id="promotionsFS">
+				<legend>Promotions</legend>
+				<p id="promoDesc">Avez-vous été promu (à un autre niveau TI) pendant cette période ? (Les promotions au niveau EX doivent être considérées comme un congé sans solde.)</p>
+				<div class="fieldHolder">
+					<button id="addPromotionBtn" class="btn btn-success" aria-describedby="promoDesc" type="button">Ajouter une promotion</button>
+				</div>
+				<div id="promotionsDiv"></div>
+			</fieldset>
+			<fieldset class="border border-black p-2 m-2" id="actingFS">
+				<legend>Intérimaire</legend>
+				<input type="button" id="addActingBtn" class="btn btn-success" value="Ajoutez une période intérimaire">
+				<div id="actingsDiv"></div>
+			</fieldset>
+			<fieldset class="border border-black p-2 m-2" id="LWoPFS">
+				<legend>Congé non payé</legend>
+				<input type="button" id="addLwopBtn" class="btn btn-success" value="Ajouter une période de congé non payé">
+				<div id="LWoPDiv"></div>
+			</fieldset>
+			<fieldset class="border border-black p-2 m-2" id="overtimeFS">
+				<legend>Heures supplémentaires/disponibilité</legend>
+				<p id="overtimeExp">Vous n'avez pas besoin d'inclure chaque instance d'heures supplémentaires. Juste un total d'heures pour chaque taux (1,5 ou 2,0) par période. Exemple : si vous avez travaillé une heure supplémentaire chaque jour pendant une semaine pendant laquelle votre taux de rémunération n'a pas changé, saisissez n'importe quelle date au cours de cette semaine, puis saisissez 5 pour le nombre d'heures et 1,5x pour le taux.</p>
+				<input type="button" id="addOvertimeBtn" class="btn btn-success" value="Ajouter les heures supplémentaires" aria-describedby="overtimeExp">
+				<div id="overtimeDiv"></div>
+			</fieldset>
+			<fieldset class="border border-black p-2 m-2" id="lumpSumsFS">
+				<legend>Paiements forfaitaires</legend>
+				<p id="lumpSumExp">Exemple : paiement de vacances non utilisé.</p>
+				<input type="button" id="addLumpSumBtn" class="btn btn-success" value="Ajouter un paiement forfaitaire" aria-describedby="lumpSumExp">
+				<div id="lumpSumDiv"></div>
+			</fieldset>
+			<div class="fieldHolder">
+				<input type="button" class="btn btn-primary" id="calcBtn" value="Calculer">
+			</div>
+		</form>
+		<div id="resultsDiv" tabindex="-1" class="tables-responsive">
+			<h2>Résultats</h2>
+			<p>Tous les montants sont bruts. Vous devrez calculer vos propres impôts. (Et parfois, vos impôts sont assez bruts ! Ha Ha Ha!)</p>
+			<div class="tables-responsive">
+				<table id="resultsTable" class="table caption-top">
+					<caption>Périodes de paie</caption>
+					<thead>
+						<tr id="resultsTheadTR">
+							<th scope="col">Période</th>
+							<th scope="col">Ce que vous avez gagné</th>
+							<th scope="col">Ce que vous auriez dû gagner</th>
+							<th scope="col">Montant de l'ajustement</th>
+						</tr>
+					</thead>
+					<tbody id="resultsBody">
+					</tbody>
+					<tfoot id="resultsFoot">
+					</tfoot>
+				</table>
+			</div>
+		</div>
+		<section id="payTablesSect"></section>
+		</main>
+		<footer>
+			<h2>Note</h2>
+			<p>Ce calculateur a été conçu de façon « artisanale ». Il est présenté « tel quel » à titre de référence seulement. Il n’y a absolument aucune garantie d’exactitude ou de conformité. Il doit être utilisé comme un outil informel sans aucune valeur officielle.</p>
+			<p>Vous voyez un problème ? Vous avez une suggestion ? <a href="https://github.com/andrewnordlund/backpayCalc/issues">Soumettre un problème</a>.</p>
+			<p>Retour à la page d'accueil du <a href="../index.html">calculateur d’ajustement salarial rétroactif</a>.</p>
+		<script src="backpayCalc.js"></script>
+		<div id="resultStatus" role="status" aria-live="polite" class="invisibleStuff"></div>
+		<dl>
+			<dt>Dernière modification :</dt>
+			<dd><time id="lastModTime" datetime="2024-02-22">2024-02-22</time</dd>
+		</dl>
+		</footer>
+		<!-- Bootstrap 5.3.2 Javascript -->
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+	</body>
+</html>
