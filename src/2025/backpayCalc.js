@@ -14,7 +14,7 @@
 
 var dbug = false;
 var version = "3.3.1";
-var lastModified = new Date("2024", "03", "15");		// Remember months:  0 == Janaury, 1 == Feb, etc.
+var lastModified = new Date("2026", "11", "07");		// Remember months:  0 == Janaury, 1 == Feb, etc.
 var lang = "en";
 var langFormat = "en-CA";
 var updateHash = true;
